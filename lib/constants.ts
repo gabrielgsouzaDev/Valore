@@ -389,6 +389,8 @@ export const defaultSettings: Settings = {
     capitalInvestido: 0,
     metaReservaEmergencia: 6,
     themeId: "midnight",
+    onboardingCompleted: false,
+    investmentStrategy: "rebalance",
 }
 
 export const STORAGE_KEY = "gabriel-sa-app-data"

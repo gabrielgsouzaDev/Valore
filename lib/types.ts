@@ -74,6 +74,8 @@ export type Settings = {
     moeda?: string
     proximidadeAlerta?: number
     investmentStrategy: InvestmentStrategy
+    onboardingCompleted: boolean
+    userFocus?: "finances" | "investments" | "both"
 }
 
 export type ScheduledTransaction = {
