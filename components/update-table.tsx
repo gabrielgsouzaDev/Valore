@@ -7,14 +7,7 @@ import { Button } from "@/components/ui/button"
 import { RefreshCcw, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface Asset {
-  id: number
-  name: string
-  quantity: number
-  price: number
-  ceilingPrice?: number
-  priority?: number
-}
+import type { Asset } from "@/lib/types"
 
 interface UpdateTableProps {
   assets: Asset[]
@@ -140,7 +133,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleUpdate(asset.id)}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium min-h-[44px]"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium min-h-[44px]"
                   >
                     <Check className="h-4 w-4 mr-1" />
                     Salvar

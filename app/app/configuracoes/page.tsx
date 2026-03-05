@@ -35,11 +35,99 @@ import {
   FileSpreadsheet,
   Sparkles,
   Zap,
+  Download,
+  RefreshCcw,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
 import type { Bank, BankType, ThemePreset, InvestmentStrategy } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+function isIOS() {
+  if (typeof window === "undefined") return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+}
+
+function isInStandaloneMode() {
+  if (typeof window === "undefined") return false
+  return (window.navigator as any).standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+}
+
+function PWAInstallCard() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [isInstallable, setIsInstallable] = useState(false)
+  const [isIOSDevice, setIsIOSDevice] = useState(false)
+  const [installed, setInstalled] = useState(false)
+
+  useEffect(() => {
+    if (isInStandaloneMode()) {
+      setInstalled(true)
+      return
+    }
+
+    const ios = isIOS()
+    setIsIOSDevice(ios)
+
+    if (ios) {
+      setIsInstallable(true)
+      return
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setIsInstallable(true)
+    }
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+
+    const handleAppInstalled = () => {
+      setInstalled(true)
+      setIsInstallable(false)
+    }
+    window.addEventListener("appinstalled", handleAppInstalled)
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+      window.removeEventListener("appinstalled", handleAppInstalled)
+    }
+  }, [])
+
+  if (installed || !isInstallable) return null
+
+  return (
+    <Card className="bg-primary/5 border-primary/20 mt-4">
+      <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-bold text-foreground">Instalar Aplicativo</p>
+          {isIOSDevice ? (
+            <p className="text-xs text-muted-foreground">Toque em Compartilhar → Adicionar à Tela de Início.</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">Instale o Valore nativamente para rápido acesso.</p>
+          )}
+        </div>
+        {!isIOSDevice && (
+          <Button
+            onClick={async () => {
+              if (!deferredPrompt) return
+              deferredPrompt.prompt()
+              const { outcome } = await deferredPrompt.userChoice
+              if (outcome === "accepted") {
+                setDeferredPrompt(null)
+                setIsInstallable(false)
+              }
+            }}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm w-full sm:w-auto shrink-0"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Instalar o Valore
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 const bankTypes: { value: BankType; label: string; icon: React.ReactNode }[] = [
   { value: "conta_corrente", label: "Conta Corrente", icon: <Landmark className="h-4 w-4" /> },
@@ -594,7 +682,7 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <Label className="text-foreground/80 text-xs sm:text-sm">Assistência</Label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
@@ -618,6 +706,8 @@ export default function ConfiguracoesPage() {
                         Modo Demo
                       </Button>
                     </div>
+
+                    <PWAInstallCard />
                   </div>
 
                   <input

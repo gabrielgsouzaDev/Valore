@@ -9,12 +9,7 @@ import { calculateInvestmentDistribution } from "@/lib/services"
 import { useApp } from "@/contexts/app-context"
 import { cn } from "@/lib/utils"
 
-interface Asset {
-  id: number
-  name: string
-  targetPercentage: number
-  currentValue: number
-}
+import type { Asset } from "@/lib/types"
 
 interface ContributionWidgetProps {
   assets: Asset[]
@@ -82,7 +77,7 @@ export function ContributionWidget({ assets, totalNetWorth }: ContributionWidget
                   <span
                     className={cn(
                       "text-sm font-bold",
-                      rec.amount > 0 ? "text-emerald-400 dark:text-emerald-300" : "text-red-400 dark:text-red-300"
+                      rec.amount > 0 ? "text-primary" : "text-destructive"
                     )}
                   >
                     {rec.amount > 0 ? "+" : ""}

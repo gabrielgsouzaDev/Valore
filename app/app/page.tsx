@@ -114,8 +114,8 @@ export default function DashboardPage() {
                   <CardHeader className="pb-2 p-4 sm:p-5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-emerald-400/10">
-                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                         </div>
                         <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Economia</CardTitle>
                       </div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="w-full bg-muted rounded-full h-1.5 mt-2">
                       <div
-                        className="bg-emerald-400 h-1.5 rounded-full transition-all"
+                        className="bg-primary h-1.5 rounded-full transition-all"
                         style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
                       />
                     </div>

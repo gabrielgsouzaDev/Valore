@@ -99,8 +99,7 @@ export default function LandingPage() {
       <header className="fixed top-0 w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-md z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-[#8B5E3C] rotate-45" />
-            <span className="font-bold text-xl tracking-tight">Valore</span>
+            <span className="font-extrabold text-[#8B5E3C] text-xl tracking-tight">Valore</span>
           </div>
         </div>
       </header>

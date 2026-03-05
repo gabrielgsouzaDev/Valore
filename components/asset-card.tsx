@@ -6,14 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, AlertTriangle, Pencil, Trash2 } from "lucide-react"
 
-interface Asset {
-  id: number
-  name: string
-  targetPercentage: number
-  currentValue: number
-  priority?: number
-  lastUpdated?: string
-}
+import type { Asset } from "@/lib/types"
 
 interface AssetCardProps {
   asset: Asset
@@ -39,22 +32,22 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
   const getBorderColor = () => {
     if (showSellAlert) return "border-destructive"
     if (showBuyAlert) return "border-accent"
-    if (isStale) return "border-amber-500/50"
-    if (Math.abs(difference) < 2) return "border-emerald-500"
+    if (isStale) return "border-muted-foreground/50"
+    if (Math.abs(difference) < 2) return "border-primary"
     return "border-border"
   }
 
   const getAlertColor = () => {
-    if (showSellAlert) return "rgb(248 113 113)"
-    if (showBuyAlert) return "rgb(34 211 238)"
-    return "rgb(52 211 153)"
+    if (showSellAlert) return "var(--theme-danger)"
+    if (showBuyAlert) return "var(--theme-accent)"
+    return "var(--theme-primary)"
   }
 
   return (
     <Card className={`bg-card ${getBorderColor()} border-2 p-6 relative overflow-hidden transition-theme`}>
       {/* Background glow effect */}
       <div
-        className={`absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none ${showSellAlert ? "from-red-500" : showBuyAlert ? "from-cyan-500" : isStale ? "from-amber-500" : "from-emerald-500"
+        className={`absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none ${showSellAlert ? "from-destructive" : showBuyAlert ? "from-accent" : isStale ? "from-muted" : "from-primary"
           } to-transparent`}
       />
 
@@ -88,25 +81,25 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
               )}
             </div>
             {showSellAlert && (
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/50">
+              <Badge className="bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 VENDER
               </Badge>
             )}
             {showBuyAlert && (
-              <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50">
+              <Badge className="bg-accent/20 text-accent hover:bg-accent/30 border-accent/50">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 COMPRAR
               </Badge>
             )}
             {isStale && !showSellAlert && !showBuyAlert && (
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/50">
+              <Badge className="bg-muted-foreground/20 text-muted-foreground border-muted-foreground/50">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Preço Antigo
               </Badge>
             )}
             {Math.abs(difference) < 2 && !showSellAlert && !showBuyAlert && !isStale && (
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50">✓ Balanceado</Badge>
+              <Badge className="bg-primary/20 text-primary border-primary/50">✓ Balanceado</Badge>
             )}
           </div>
         </div>
@@ -150,7 +143,7 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
             <Progress
               value={Math.min(progressValue, 100)}
               className="h-2 bg-muted"
-              indicatorClassName={showSellAlert ? "bg-red-500" : showBuyAlert ? "bg-cyan-500" : "bg-emerald-500"}
+              indicatorClassName={showSellAlert ? "bg-destructive" : showBuyAlert ? "bg-accent" : "bg-primary"}
             />
           </div>
         </div>

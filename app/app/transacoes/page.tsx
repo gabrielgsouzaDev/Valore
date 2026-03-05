@@ -108,14 +108,17 @@ export default function TransacoesPage() {
         return t
     })
 
-    const filteredTransactions = processedTransactions
+    const agendadasTransactions = processedTransactions.filter(t => t.status === "pendente" || t.status === "agendado")
+
+    const filteredTransactions = agendadasTransactions
         .filter((t) => filter === "todos" || t.status === filter)
         .filter((t) => typeFilter === "todos" || t.type === typeFilter)
         .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
 
-    const pendingCount = processedTransactions.filter((t) => t.status === "pendente").length
-    const overdueCount = processedTransactions.filter((t) => t.status === "atrasado").length
-    const monthlyBalance = monthlyScheduledIncome - monthlyScheduledExpenses
+    // ── Resumo Financeiro Agendadas ──
+    const agendadasIncome = filteredTransactions.filter(t => t.type === "ganho").reduce((sum, t) => sum + t.amount, 0)
+    const agendadasExpenses = filteredTransactions.filter(t => t.type === "pagamento").reduce((sum, t) => sum + t.amount, 0)
+    const agendadasBalance = agendadasIncome - agendadasExpenses
 
     // ── ABA HISTÓRICO ─────────────────────────────────────────────
     const getPeriodMs = (): number => {
@@ -125,8 +128,9 @@ export default function TransacoesPage() {
         return Infinity
     }
 
-    const historyTransactions = transactions
-        .filter((t) => t.status === "pago")
+    const historyBaseTransactions = processedTransactions.filter(t => t.status === "pago" || t.status === "atrasado" || t.status === "realizado")
+
+    const historyTransactions = historyBaseTransactions
         .filter((t) => {
             if (histTypeFilter !== "todos" && t.type !== histTypeFilter) return false
             if (getPeriodMs() === Infinity) return true
@@ -135,12 +139,10 @@ export default function TransacoesPage() {
         })
         .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
 
-    const historyIncome = historyTransactions
-        .filter((t) => t.type === "ganho")
-        .reduce((sum, t) => sum + t.amount, 0)
-    const historyExpenses = historyTransactions
-        .filter((t) => t.type === "pagamento")
-        .reduce((sum, t) => sum + t.amount, 0)
+    // ── Resumo Financeiro Histórico ──
+    const historyIncome = historyTransactions.filter(t => t.type === "ganho").reduce((sum, t) => sum + t.amount, 0)
+    const historyExpenses = historyTransactions.filter(t => t.type === "pagamento").reduce((sum, t) => sum + t.amount, 0)
+    const historyBalance = historyIncome - historyExpenses
 
     // ── FORM HANDLERS ──────────────────────────────────────────────
     const handleSubmit = () => {
@@ -180,9 +182,11 @@ export default function TransacoesPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "pago": return "text-emerald-400 bg-emerald-400/10"
-            case "pendente": return "text-amber-400 bg-amber-400/10"
-            case "atrasado": return "text-red-400 bg-red-400/10"
+            case "pago":
+            case "realizado": return "text-primary bg-primary/10"
+            case "pendente":
+            case "agendado": return "text-accent bg-accent/10"
+            case "atrasado": return "text-destructive bg-destructive/10"
             default: return "text-muted-foreground bg-muted"
         }
     }
@@ -211,9 +215,9 @@ export default function TransacoesPage() {
                 )}
             >
                 <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-emerald-400/10" : "bg-muted")}>
+                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-primary/10" : "bg-muted")}>
                         {transaction.type === "ganho"
-                            ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                            ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                             : <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         }
                     </div>
@@ -243,7 +247,7 @@ export default function TransacoesPage() {
 
                 <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-emerald-400" : "text-foreground")}>
+                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-primary" : "text-foreground")}>
                             {transaction.type === "ganho" ? "+" : "-"}{formatCurrency(transaction.amount)}
                         </span>
                         <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full capitalize", getStatusColor(transaction.status))}>
@@ -253,8 +257,8 @@ export default function TransacoesPage() {
 
                     {showActions && (
                         <div className="flex gap-1">
-                            {transaction.status !== "pago" && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-emerald-400" onClick={() => markAsPaid(transaction.id)}>
+                            {transaction.status !== "pago" && transaction.status !== "realizado" && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-primary" onClick={() => markAsPaid(transaction.id)}>
                                     <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                 </Button>
                             )}
@@ -381,14 +385,18 @@ export default function TransacoesPage() {
 
                 <div className="p-4 sm:p-6 lg:p-8">
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className="p-1.5 sm:p-2 bg-emerald-400/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" /></div>
+                                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" /></div>
                                     <div className="min-w-0">
-                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Entradas</p>
-                                        <p className="text-sm sm:text-xl font-bold text-emerald-400 truncate">{formatCurrency(monthlyScheduledIncome)}</p>
+                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                            {activeTab === "agendadas" ? "Entradas Previstas" : "Entradas Realizadas"}
+                                        </p>
+                                        <p className="text-sm sm:text-xl font-bold text-primary truncate">
+                                            {formatCurrency(activeTab === "agendadas" ? agendadasIncome : historyIncome)}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -398,8 +406,12 @@ export default function TransacoesPage() {
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <div className="p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" /></div>
                                     <div className="min-w-0">
-                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Saídas</p>
-                                        <p className="text-sm sm:text-xl font-bold text-foreground truncate">{formatCurrency(monthlyScheduledExpenses)}</p>
+                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                            {activeTab === "agendadas" ? "Saídas Previstas" : "Saídas Realizadas"}
+                                        </p>
+                                        <p className="text-sm sm:text-xl font-bold text-foreground truncate">
+                                            {formatCurrency(activeTab === "agendadas" ? agendadasExpenses : historyExpenses)}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -407,28 +419,16 @@ export default function TransacoesPage() {
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className={cn("p-1.5 sm:p-2 rounded-lg flex-shrink-0", monthlyBalance >= 0 ? "bg-primary/10" : "bg-muted")}>
-                                        <Calendar className={cn("h-4 w-4 sm:h-5 sm:w-5", monthlyBalance >= 0 ? "text-primary" : "text-muted-foreground")} />
+                                    <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"}>
+                                        <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-primary" : "h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground"} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Saldo</p>
-                                        <p className={cn("text-sm sm:text-xl font-bold truncate", monthlyBalance >= 0 ? "text-primary" : "text-foreground")}>{formatCurrency(monthlyBalance)}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="bg-card border-border">
-                            <CardContent className="p-3 sm:p-4">
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className={cn("p-1.5 sm:p-2 rounded-lg flex-shrink-0", overdueCount > 0 ? "bg-muted" : "bg-amber-400/10")}>
-                                        {overdueCount > 0 ? <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" /> : <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Pendentes</p>
-                                        <div className="flex items-center gap-1 sm:gap-2">
-                                            <span className="text-sm sm:text-xl font-bold text-amber-400">{pendingCount}</span>
-                                            {overdueCount > 0 && <span className="text-[10px] sm:text-sm text-muted-foreground">({overdueCount} atrasadas)</span>}
-                                        </div>
+                                        <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                            {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
+                                        </p>
+                                        <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-primary" : "text-foreground")}>
+                                            {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -448,9 +448,6 @@ export default function TransacoesPage() {
                         >
                             <ListTodo className="h-4 w-4" />
                             Agendadas
-                            {pendingCount + overdueCount > 0 && (
-                                <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount + overdueCount}</span>
-                            )}
                         </button>
                         <button
                             onClick={() => setActiveTab("historico")}
