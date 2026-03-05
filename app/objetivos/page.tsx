@@ -279,12 +279,12 @@ export default function ObjetivosPage() {
                       </p>
                     </div>
                     <Progress
-                      value={(totalCurrent / totalTarget) * 100}
+                      value={totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0}
                       className="h-2 sm:h-3 bg-muted"
                       indicatorClassName="bg-emerald-500"
                     />
                     <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
-                      {((totalCurrent / totalTarget) * 100).toFixed(1)}% alcançado
+                      {totalTarget > 0 ? ((totalCurrent / totalTarget) * 100).toFixed(1) : "0.0"}% alcançado
                     </p>
                   </div>
                 </Card>

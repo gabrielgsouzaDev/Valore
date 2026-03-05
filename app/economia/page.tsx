@@ -290,13 +290,13 @@ export default function EconomiaPage() {
                     </div>
 
                     <Progress
-                      value={(totalSpent / totalBudgeted) * 100}
+                      value={totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0}
                       className="h-2 sm:h-3 bg-muted"
                       indicatorClassName={getProgressColor(totalSpent, totalBudgeted)}
                     />
 
                     <p className="text-xs text-muted-foreground text-center">
-                      {((totalSpent / totalBudgeted) * 100).toFixed(1)}% utilizado
+                      {totalBudgeted > 0 ? ((totalSpent / totalBudgeted) * 100).toFixed(1) : "0.0"}% utilizado
                     </p>
                   </div>
                 </Card>

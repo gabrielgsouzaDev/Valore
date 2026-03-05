@@ -33,6 +33,7 @@ import {
   Check,
   FileJson,
   FileSpreadsheet,
+  Zap,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
@@ -81,7 +82,8 @@ export default function ConfiguracoesPage() {
     getTotalBankBalance,
     currentTheme,
     setTheme,
-    clearAllData, // Importando função de limpeza
+    clearAllData,
+    loadExampleData,
   } = useApp()
 
   const [localSettings, setLocalSettings] = useState({
@@ -221,8 +223,8 @@ export default function ConfiguracoesPage() {
         {/* Header */}
         <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
           <div className="px-4 sm:px-6 py-3 sm:py-4 pl-14 lg:pl-6">
-            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Configuracoes</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Ajuste as informacoes essenciais do sistema</p>
+            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Configurações</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Ajuste as informações essenciais do sistema</p>
           </div>
         </header>
 
@@ -237,7 +239,7 @@ export default function ConfiguracoesPage() {
                     <User className="h-4 w-4 sm:h-5 sm:w-5" />
                     Perfil
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Informacoes pessoais basicas</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Informações pessoais básicas</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                   <div className="space-y-1.5 sm:space-y-2">
@@ -439,14 +441,28 @@ export default function ConfiguracoesPage() {
 
                   <div className="space-y-2">
                     <Label className="text-foreground/80 text-xs sm:text-sm">Importar Dados</Label>
-                    <Button
-                      variant="outline"
-                      className="border-border text-foreground/80 hover:bg-muted hover:text-foreground bg-transparent text-xs sm:text-sm w-full sm:w-auto"
-                      onClick={() => document.getElementById("file-upload")?.click()}
-                    >
-                      <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                      {saveStatus === "import" ? "Importado!" : "Importar JSON"}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        className="border-border text-foreground/80 hover:bg-muted hover:text-foreground bg-transparent text-xs sm:text-sm flex-1"
+                        onClick={() => document.getElementById("file-upload")?.click()}
+                      >
+                        <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                        {saveStatus === "import" ? "Importado!" : "Importar JSON"}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="bg-primary/20 text-primary hover:bg-primary/30 text-xs sm:text-sm flex-1 border border-primary/20"
+                        onClick={() => {
+                          if (confirm("Isso carregará dados fictícios para demonstração. Deseja continuar?")) {
+                            loadExampleData()
+                          }
+                        }}
+                      >
+                        <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                        Modo Demo
+                      </Button>
+                    </div>
                     <input
                       id="file-upload"
                       type="file"

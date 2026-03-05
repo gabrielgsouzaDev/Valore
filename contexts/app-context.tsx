@@ -108,6 +108,7 @@ type AppContextType = {
   exportData: (format: "json" | "csv") => void
   importData: (data: string) => boolean
   clearAllData: () => void
+  loadExampleData: () => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -571,6 +572,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const loadExampleData = () => {
+    importData(JSON.stringify(require("@/lib/constants").exampleData))
+  }
+
   const clearAllData = () => {
     if (typeof window !== "undefined" && confirm("Tem certeza que deseja apagar todos os dados?")) {
       window.localStorage.removeItem(STORAGE_KEY)
@@ -611,7 +616,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         settings, updateSettings, currentTheme, setTheme,
         totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
         monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
-        exportData, importData, clearAllData,
+        exportData, importData, clearAllData, loadExampleData,
       }}
     >
       {children}

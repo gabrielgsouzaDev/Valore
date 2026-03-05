@@ -400,3 +400,48 @@ export const defaultTransactions: ScheduledTransaction[] = []
 export const defaultCreditCards: CreditCard[] = []
 export const defaultCardExpenses: CardExpense[] = []
 export const defaultBanks: Bank[] = []
+
+export const exampleData = {
+    banks: [
+        { id: 1, name: "Nubank", type: "banco_digital", color: "violet", balance: 5420.50, isMain: true, notes: "Conta principal" },
+        { id: 2, name: "Itaú", type: "banco_tradicional", color: "orange", balance: 12850.20, isMain: false, notes: "Reserva e investimentos" }
+    ] as Bank[],
+    assets: [
+        { id: 1, name: "IVVB11", targetPercentage: 35, currentValue: 12500, quantity: 45, price: 277.70, bankId: 2 },
+        { id: 2, name: "Bitcoin", targetPercentage: 10, currentValue: 8500, quantity: 0.025, price: 340000, bankId: 2 },
+        { id: 3, name: "CDB Pós-Fixado", targetPercentage: 55, currentValue: 25000, quantity: 1, price: 25000, bankId: 2 }
+    ] as Asset[],
+    categories: [
+        {
+            id: 1, name: "Moradia", percentage: 30, budgeted: 3500, spent: 3450, color: "blue", expanded: false, subcategories: [
+                { id: 11, name: "Aluguel", budgeted: 2500, spent: 2500 },
+                { id: 12, name: "Energia", budgeted: 300, spent: 320 },
+                { id: 13, name: "Internet", budgeted: 150, spent: 150 }
+            ]
+        },
+        {
+            id: 2, name: "Alimentação", percentage: 15, budgeted: 1200, spent: 980, color: "emerald", expanded: false, subcategories: [
+                { id: 21, name: "Mercado", budgeted: 800, spent: 750 },
+                { id: 22, name: "Ifood/Restaurantes", budgeted: 400, spent: 230 }
+            ]
+        },
+        { id: 3, name: "Investimentos", percentage: 50, budgeted: 5000, spent: 4800, color: "cyan", expanded: false, subcategories: [] }
+    ] as Category[],
+    goals: [
+        { id: 1, name: "Reserva de Emergência", target: 30000, current: 18500, deadline: "2026-12-31", monthlyContribution: 1500, priority: "alta", category: "Segurança", bankId: 2 },
+        { id: 2, name: "Viagem Europa", target: 15000, current: 4200, deadline: "2027-06-15", monthlyContribution: 500, priority: "média", category: "Lazer", bankId: 1 }
+    ] as Goal[],
+    creditCards: [
+        { id: 1, name: "Nubank Ultra", limit: 15000, closingDay: 25, dueDay: 2, color: "violet", bankId: 1 },
+        { id: 2, name: "Mercado Pago", limit: 8000, closingDay: 10, dueDay: 17, color: "pink", bankId: 1 }
+    ] as CreditCard[],
+    cardExpenses: [
+        { id: 1, description: "MacBook Air M2", totalAmount: 8500, purchaseDate: new Date().toISOString(), installments: 10, cardId: 1 },
+        { id: 2, description: "Jantar Especial", totalAmount: 350, purchaseDate: new Date().toISOString(), installments: 1, cardId: 1 },
+        { id: 3, description: "Supermercado", totalAmount: 650, purchaseDate: new Date().toISOString(), installments: 1, cardId: 2 }
+    ] as CardExpense[],
+    transactions: [
+        { id: 1, name: "Salário Software Engineer", amount: 12500, type: "ganho", status: "pago", recurrence: "mensal", dueDate: new Date().toISOString() },
+        { id: 2, name: "Condomínio", amount: 650, type: "pagamento", status: "pendente", recurrence: "mensal", dueDate: new Date().toISOString() }
+    ] as ScheduledTransaction[]
+}
