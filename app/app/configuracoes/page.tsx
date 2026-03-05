@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -268,6 +268,13 @@ export default function ConfiguracoesPage() {
           metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
           investmentStrategy: settings.investmentStrategy,
           userFocus: settings.userFocus || "both",
+          activeModules: settings.activeModules || {
+            investimentos: true,
+            economia: true,
+            objetivos: true,
+            transacoes: true,
+            cartoes: true,
+          },
         })
         setSaveStatus("import")
         setTimeout(() => setSaveStatus(null), 2000)
@@ -925,12 +932,12 @@ export default function ConfiguracoesPage() {
                 </CardContent>
               </Card>
             </div>
-          </div >
-        </div >
-      </main >
+          </div>
+        </div>
+      </main>
 
       {/* Bank Dialog */}
-      < Dialog open={bankDialogOpen} onOpenChange={setBankDialogOpen} >
+      <Dialog open={bankDialogOpen} onOpenChange={setBankDialogOpen}>
         <DialogContent className="bg-card border-border text-foreground max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg">{editingBank ? "Editar Banco" : "Novo Banco"}</DialogTitle>
@@ -1025,7 +1032,7 @@ export default function ConfiguracoesPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog >
-    </div >
+      </Dialog>
+    </div>
   )
 }
