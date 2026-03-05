@@ -78,7 +78,7 @@ export default function Dashboard() {
 
               <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
                 {totalCardDebt > 0 && (
-                  <Link href="/cartoes" className="text-right hover:opacity-80 transition-opacity flex-shrink-0">
+                  <Link href="/app/cartoes" className="text-right hover:opacity-80 transition-opacity flex-shrink-0">
                     <div
                       className="flex items-center gap-1.5 sm:gap-2 font-medium"
                       style={{ color: "rgb(248 113 113)" }}
@@ -96,7 +96,7 @@ export default function Dashboard() {
                   <p className="text-xl sm:text-3xl font-bold text-primary">{formatCurrency(totalNetWorth)}</p>
                 </div>
                 <Link
-                  href="/configuracoes"
+                  href="/app/configuracoes"
                   className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary hidden sm:flex"
                   aria-label="Configurações"
                 >

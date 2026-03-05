@@ -2,8 +2,6 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { AppProvider } from "@/contexts/app-context"
-import { InstallPrompt } from "@/components/install-prompt"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -15,8 +13,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
 })
-
-import { OnboardingWrapper } from "../components/onboarding-wrapper"
 
 export const viewport: Viewport = {
   themeColor: "#D4AF37",
@@ -84,11 +80,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <AppProvider>
-          {children}
-          <OnboardingWrapper />
-          <InstallPrompt />
-        </AppProvider>
+        {children}
         <Analytics />
       </body>
     </html>

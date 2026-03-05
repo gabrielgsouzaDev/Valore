@@ -32,7 +32,7 @@ export function OnboardingWizard() {
             })
 
             if (focus === "finances") {
-                router.push("/economia")
+                router.push("/app/economia")
             }
         }, 1500)
     }

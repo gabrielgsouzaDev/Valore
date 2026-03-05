@@ -9,20 +9,20 @@ import { useApp } from "@/contexts/app-context"
 
 // Os 5 itens do bottom nav (limite de visibilidade mobile)
 const navItems = [
-  { name: "Invest.", href: "/", icon: TrendingUp },
-  { name: "Economia", href: "/economia", icon: Wallet },
-  { name: "Objetivos", href: "/objetivos", icon: Target },
-  { name: "Cartões", href: "/cartoes", icon: CreditCard },
-  { name: "Config.", href: "/configuracoes", icon: Settings },
+  { name: "Invest.", href: "/app", icon: TrendingUp },
+  { name: "Economia", href: "/app/economia", icon: Wallet },
+  { name: "Objetivos", href: "/app/objetivos", icon: Target },
+  { name: "Cartões", href: "/app/cartoes", icon: CreditCard },
+  { name: "Config.", href: "/app/configuracoes", icon: Settings },
 ]
 
 // Itens apenas do menu lateral desktop (inclui Planejamento)
 const sidebarItems = [
-  { name: "Investimentos", href: "/", icon: TrendingUp },
-  { name: "Economia", href: "/economia", icon: Wallet },
-  { name: "Objetivos", href: "/objetivos", icon: Target },
-  { name: "Planejamento", href: "/planejamento", icon: CalendarClock },
-  { name: "Cartões", href: "/cartoes", icon: CreditCard },
+  { name: "Investimentos", href: "/app", icon: TrendingUp },
+  { name: "Economia", href: "/app/economia", icon: Wallet },
+  { name: "Objetivos", href: "/app/objetivos", icon: Target },
+  { name: "Planejamento", href: "/app/planejamento", icon: CalendarClock },
+  { name: "Cartões", href: "/app/cartoes", icon: CreditCard },
 ]
 
 export function Sidebar() {
@@ -66,10 +66,10 @@ export function Sidebar() {
         {/* Settings */}
         <div className="p-4 border-t border-border">
           <Link
-            href="/configuracoes"
+            href="/app/configuracoes"
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium min-h-[44px]",
-              pathname === "/configuracoes"
+              pathname === "/app/configuracoes"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
