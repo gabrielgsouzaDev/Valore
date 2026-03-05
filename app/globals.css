@@ -20,21 +20,21 @@
   --theme-danger: 248 113 113;
 
   --background: rgb(var(--theme-background));
-  --foreground: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
   --card: rgb(var(--theme-card));
-  --card-foreground: oklch(0.985 0 0);
+  --card-foreground: oklch(0.145 0 0);
   --popover: rgb(var(--theme-card));
-  --popover-foreground: oklch(0.985 0 0);
+  --popover-foreground: oklch(0.145 0 0);
   --primary: rgb(var(--theme-primary));
   --primary-foreground: rgb(var(--theme-primary-foreground));
   --secondary: rgb(var(--theme-muted));
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary-foreground: oklch(0.145 0 0);
   --muted: rgb(var(--theme-muted));
   --muted-foreground: rgb(var(--theme-muted-foreground));
   --accent: rgb(var(--theme-accent));
   --accent-foreground: rgb(var(--theme-accent-foreground));
   --destructive: rgb(var(--theme-danger));
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive-foreground: oklch(0.145 0 0);
   --border: rgb(var(--theme-border));
   --input: rgb(var(--theme-border));
   --ring: rgb(var(--theme-primary));
@@ -45,13 +45,24 @@
   --chart-5: rgb(var(--theme-warning));
   --radius: 0.75rem;
   --sidebar: rgb(var(--theme-card));
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: rgb(var(--theme-primary));
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
   --sidebar-accent: rgb(var(--theme-muted));
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
   --sidebar-border: rgb(var(--theme-border));
   --sidebar-ring: rgb(var(--theme-primary));
+}
+
+.dark {
+  --foreground: oklch(0.985 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --destructive-foreground: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
 }
 
 @theme inline {
@@ -99,6 +110,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

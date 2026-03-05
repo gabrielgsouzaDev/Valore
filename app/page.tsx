@@ -59,7 +59,7 @@ export default function Dashboard() {
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Sidebar />
 
       <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
@@ -107,10 +107,10 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 overflow-hidden">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
             {/* Main Content */}
-            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+            <div className="xl:col-span-2 space-y-4 sm:space-y-6 min-w-0">
               {/* Historical Net Worth Chart */}
               <HistoryChart />
 
@@ -143,7 +143,7 @@ export default function Dashboard() {
               <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
             </div>
 
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-6">
                 {/* Portfolio Chart */}
                 <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />

@@ -100,13 +100,15 @@ export function OnboardingCopilot() {
     }
 
     const baseClasses = cn(
-        "fixed bottom-6 right-6 z-[60]",
-        "transition-all duration-400 ease-in-out",
+        "fixed z-[60] transition-all duration-400 ease-in-out",
+        // Posição base e tamanho seguro mobile-first
+        isMinimized
+            ? "bottom-24 right-4 sm:bottom-6 sm:right-6 w-14 h-14"
+            : "bottom-24 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 w-[calc(100%-2rem)] sm:w-full max-w-sm",
         // Animação de entrada
         isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
         // Saída
-        isExiting ? "opacity-0 scale-95 translate-y-4" : "",
-        isMinimized ? "w-14 h-14" : "w-full max-w-sm"
+        isExiting ? "opacity-0 scale-95 translate-y-4" : ""
     )
 
     if (allDone) {
