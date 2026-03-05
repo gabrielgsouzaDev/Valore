@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
     CheckCircle2,
-    Circle,
     ArrowRight,
     X,
     Sparkles,
@@ -23,17 +22,25 @@ import Link from "next/link"
 export function OnboardingCopilot() {
     const { settings, updateSettings, banks, creditCards, assets, goals } = useApp()
     const [isMinimized, setIsMinimized] = useState(false)
+    const [isVisible, setIsVisible] = useState(false)
+    const [isExiting, setIsExiting] = useState(false)
+
+    // Anima a entrada ao montar
+    useEffect(() => {
+        const t = setTimeout(() => setIsVisible(true), 100)
+        return () => clearTimeout(t)
+    }, [])
 
     if (!settings.onboardingCompleted || !settings.showGuide) return null
 
     const missions = [
         {
-            title: "Moradia da Renda",
+            title: "Renda Mensal",
             description: "Defina sua renda mensal para o Valore calcular seu potencial.",
             icon: SettingsIcon,
             link: "/configuracoes",
             isDone: settings.rendaMensal > 0,
-            cta: "Ir para Configurações"
+            cta: "Configurar Renda"
         },
         {
             title: "Fluxo de Energia",
@@ -44,9 +51,9 @@ export function OnboardingCopilot() {
             cta: "Vincular Banco"
         },
         {
-            title: settings.userFocus === "finances" ? "Primeiro Passo" : "Sementes do Futuro",
+            title: settings.userFocus === "finances" ? "Primeiro Objetivo" : "Sementes do Futuro",
             description: settings.userFocus === "finances"
-                ? "Crie seu primeiro objetivo financeiro (ex: Reserva)."
+                ? "Crie seu primeiro objetivo financeiro (ex: Reserva de Emergência)."
                 : "Adicione seu primeiro ativo (Ação, Fundo ou FII).",
             icon: settings.userFocus === "finances" ? Target : TrendingUp,
             link: settings.userFocus === "finances" ? "/objetivos" : "/",
@@ -55,10 +62,10 @@ export function OnboardingCopilot() {
         },
         {
             title: "Identidade Visual",
-            description: "Explore os 19 temas e escolha o que melhor combina com você.",
+            description: "Explore os temas e escolha o que melhor combina com você.",
             icon: Sparkles,
             link: "/configuracoes",
-            isDone: settings.themeId !== "midnight" && settings.themeId !== "golden-hour", // Se mudou do padrão
+            isDone: settings.themeId !== "midnight" && settings.themeId !== "golden-hour",
             cta: "Mudar Tema"
         }
     ]
@@ -80,18 +87,36 @@ export function OnboardingCopilot() {
         }
     }
 
+    // Anima saída antes de fechar
     const closeGuide = () => {
-        updateSettings({ showGuide: false })
+        setIsExiting(true)
+        setTimeout(() => {
+            updateSettings({ showGuide: false })
+        }, 400)
     }
+
+    const handleMinimize = () => {
+        setIsMinimized(true)
+    }
+
+    const baseClasses = cn(
+        "fixed bottom-6 right-6 z-[60]",
+        "transition-all duration-400 ease-in-out",
+        // Animação de entrada
+        isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+        // Saída
+        isExiting ? "opacity-0 scale-95 translate-y-4" : "",
+        isMinimized ? "w-14 h-14" : "w-full max-w-sm"
+    )
 
     if (allDone) {
         return (
-            <div className="fixed bottom-6 right-6 z-[60] animate-in fade-in slide-in-from-bottom-10 duration-700">
+            <div className={baseClasses}>
                 <Card className="p-4 bg-primary text-primary-foreground border-none shadow-2xl flex items-center gap-4 rounded-2xl">
                     <div className="bg-white/20 p-2 rounded-full">
                         <CheckCircle2 className="h-6 w-6" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                         <p className="font-bold">Missão Cumprida!</p>
                         <p className="text-xs opacity-90">Você concluiu o guia básico do Valore.</p>
                     </div>
@@ -99,7 +124,7 @@ export function OnboardingCopilot() {
                         size="sm"
                         variant="ghost"
                         onClick={closeGuide}
-                        className="hover:bg-white/10"
+                        className="hover:bg-white/10 shrink-0"
                     >
                         <X className="h-4 w-4" />
                     </Button>
@@ -109,20 +134,18 @@ export function OnboardingCopilot() {
     }
 
     return (
-        <div className={cn(
-            "fixed bottom-6 right-6 z-[60] transition-all duration-500 ease-in-out",
-            isMinimized ? "w-14 h-14" : "w-full max-w-sm"
-        )}>
+        <div className={baseClasses}>
             {isMinimized ? (
                 <Button
                     onClick={() => setIsMinimized(false)}
-                    className="w-14 h-14 rounded-full shadow-2xl p-0 flex items-center justify-center animate-bounce hover:animate-none"
+                    className="w-14 h-14 rounded-full shadow-2xl p-0 flex items-center justify-center"
                     aria-label="Abrir Guia"
                 >
                     <Sparkles className="h-6 w-6" />
                 </Button>
             ) : (
                 <Card className="overflow-hidden border-primary/20 shadow-[0_20px_50px_-12px_rgba(var(--primary),0.3)] bg-card/95 backdrop-blur-md rounded-[2rem]">
+                    {/* Header */}
                     <div className="bg-primary p-4 flex items-center justify-between text-primary-foreground">
                         <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 fill-current" />
@@ -133,31 +156,44 @@ export function OnboardingCopilot() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 hover:bg-white/10 rounded-full"
-                                onClick={() => setIsMinimized(true)}
+                                onClick={handleMinimize}
+                                aria-label="Minimizar"
                             >
                                 <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-white/10 rounded-full"
+                                onClick={closeGuide}
+                                aria-label="Fechar guia"
+                            >
+                                <X className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
 
+                    {/* Body */}
                     <div className="p-6 space-y-4">
+                        {/* Indicadores de progresso */}
                         <div className="flex items-center justify-between">
                             <div className="flex gap-1">
-                                {missions.map((_, i) => (
+                                {missions.map((m, i) => (
                                     <div
                                         key={i}
                                         className={cn(
                                             "h-1.5 rounded-full transition-all duration-300",
-                                            i === activeIndex ? "w-6 bg-primary" : missions[i].isDone ? "w-2 bg-emerald-500" : "w-2 bg-muted"
+                                            i === activeIndex ? "w-6 bg-primary" : m.isDone ? "w-2 bg-emerald-500" : "w-2 bg-muted"
                                         )}
                                     />
                                 ))}
                             </div>
                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                Passo {activeIndex + 1} de {missions.length}
+                                {activeIndex + 1} / {missions.length}
                             </span>
                         </div>
 
+                        {/* Missão atual */}
                         <div className="flex gap-4 items-start">
                             <div className={cn(
                                 "p-3 rounded-2xl flex-shrink-0",
@@ -169,9 +205,9 @@ export function OnboardingCopilot() {
                                 )} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-bold text-foreground flex items-center gap-2">
+                                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
                                     {currentMission.title}
-                                    {currentMission.isDone && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                                    {currentMission.isDone && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
                                 </h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">
                                     {currentMission.description}
@@ -179,9 +215,10 @@ export function OnboardingCopilot() {
                             </div>
                         </div>
 
+                        {/* Ações */}
                         <div className="flex items-center gap-3 pt-2">
                             <Link href={currentMission.link} className="flex-1">
-                                <Button className="w-full rounded-xl font-bold gap-2 group">
+                                <Button className="w-full rounded-xl font-bold gap-2 group text-sm">
                                     {currentMission.cta}
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
@@ -191,7 +228,7 @@ export function OnboardingCopilot() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="rounded-xl border-border hover:bg-muted"
+                                    className="rounded-xl border-border hover:bg-muted h-9 w-9"
                                     onClick={handlePrev}
                                     disabled={activeIndex === 0}
                                 >
@@ -200,7 +237,7 @@ export function OnboardingCopilot() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="rounded-xl border-border hover:bg-muted"
+                                    className="rounded-xl border-border hover:bg-muted h-9 w-9"
                                     onClick={handleNext}
                                     disabled={activeIndex === missions.length - 1}
                                 >
@@ -210,9 +247,10 @@ export function OnboardingCopilot() {
                         </div>
                     </div>
 
+                    {/* Barra de progresso total */}
                     <div className="h-1.5 w-full bg-muted">
                         <div
-                            className="h-full bg-primary transition-all duration-1000 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                            className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(var(--primary),0.5)]"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
