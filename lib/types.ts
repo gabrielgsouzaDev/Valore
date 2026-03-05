@@ -79,6 +79,7 @@ export type Settings = {
     userFocus?: "finances" | "investments" | "both"
     activeGuideStep: number | null
     showGuide: boolean
+    activeModules?: Record<string, boolean>
 }
 
 export type ScheduledTransaction = {

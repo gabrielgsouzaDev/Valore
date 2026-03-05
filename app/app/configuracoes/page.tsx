@@ -95,6 +95,7 @@ export default function ConfiguracoesPage() {
     metaReservaEmergencia: string;
     investmentStrategy: InvestmentStrategy;
     userFocus: string;
+    activeModules: Record<string, boolean>;
   }>({
     nome: settings.nome,
     rendaMensal: settings.rendaMensal.toString(),
@@ -102,6 +103,13 @@ export default function ConfiguracoesPage() {
     metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
     investmentStrategy: settings.investmentStrategy || "rebalance",
     userFocus: settings.userFocus || "both",
+    activeModules: settings.activeModules || {
+      investimentos: true,
+      economia: true,
+      objetivos: true,
+      transacoes: true,
+      cartoes: true,
+    },
   })
 
   const [saveStatus, setSaveStatus] = useState<string | null>(null)
@@ -428,7 +436,56 @@ export default function ConfiguracoesPage() {
                 </CardContent>
               </Card>
 
+              {/* Módulos Ativos */}
+              <Card className="bg-card border-border">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-foreground text-base sm:text-lg">
+                    <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Módulos Ativos
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Ative ou desative módulos do sistema. Dashboard sempre ativo.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-3">
+                  {[
+                    { key: "investimentos", label: "Investimentos", desc: "Portfólio de ativos e estratégias de aporte" },
+                    { key: "economia", label: "Economia", desc: "Orçamento mensal e controle de gastos" },
+                    { key: "objetivos", label: "Objetivos", desc: "Metas financeiras com projeção de prazo" },
+                    { key: "transacoes", label: "Transações", desc: "Fluxo de caixa agendado e histórico" },
+                    { key: "cartoes", label: "Cartões", desc: "Faturas, parcelas e projeções de cartão" },
+                  ].map((mod) => {
+                    const isActive = localSettings.activeModules?.[mod.key] !== false
+                    return (
+                      <div key={mod.key} className="flex items-center justify-between gap-4 py-2 border-b border-border/50 last:border-0">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{mod.label}</p>
+                          <p className="text-xs text-muted-foreground">{mod.desc}</p>
+                        </div>
+                        <Switch
+                          checked={isActive}
+                          onCheckedChange={(checked) => {
+                            const updated = { ...(localSettings.activeModules || {}), [mod.key]: checked }
+                            const newSettings = { ...localSettings, activeModules: updated }
+                            setLocalSettings(newSettings)
+                            updateSettings({ activeModules: updated })
+                          }}
+                        />
+                      </div>
+                    )
+                  })}
+                  <div className="flex items-center justify-between gap-4 py-2 opacity-50 cursor-not-allowed">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">Dashboard</p>
+                      <p className="text-xs text-muted-foreground">Painel principal — sempre ativo</p>
+                    </div>
+                    <Switch checked={true} disabled />
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Temas */}
+
               <Card className="bg-card border-border">
                 <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-foreground text-base sm:text-lg">

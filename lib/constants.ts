@@ -520,6 +520,13 @@ export const defaultSettings: Settings = {
     investmentStrategy: "rebalance",
     activeGuideStep: null,
     showGuide: false,
+    activeModules: {
+        investimentos: true,
+        economia: true,
+        objetivos: true,
+        transacoes: true,
+        cartoes: true,
+    },
 }
 
 export const STORAGE_KEY = "gabriel-sa-app-data"

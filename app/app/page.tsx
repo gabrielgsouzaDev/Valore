@@ -1,199 +1,269 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Settings, ArrowUpRight, CreditCard } from "lucide-react"
-import { AssetCard } from "@/components/asset-card"
-import { ContributionWidget } from "@/components/contribution-widget"
-import { UpdateTable } from "@/components/update-table"
-import { PortfolioChart } from "@/components/portfolio-chart"
-import { HistoryChart } from "@/components/history-chart"
-import { BudgetComparison } from "@/components/budget-comparison"
-import { Sidebar } from "@/components/sidebar"
-import { AssetDialog } from "@/components/asset-dialog"
-import { useApp } from "@/contexts/app-context"
 import Link from "next/link"
-import { Asset } from "@/lib/types"
+import { Sidebar } from "@/components/sidebar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  TrendingUp, Wallet, Target, Receipt, CreditCard, LayoutDashboard,
+  ArrowUpRight, ArrowDownRight, ChevronRight, Zap,
+} from "lucide-react"
+import { useApp } from "@/contexts/app-context"
 
-export default function Dashboard() {
-  const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingAsset, setEditingAsset] = useState<(typeof assets)[0] | null>(null)
+export default function DashboardPage() {
+  const {
+    assets,
+    totalNetWorth,
+    categories,
+    totalBudgeted,
+    totalSpent,
+    goals,
+    transactions,
+    calculateInvoices,
+    getTotalCardDebt,
+    settings,
+  } = useApp()
+
+  const activeModules = settings.activeModules || {}
+  const fmt = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v)
+  const pct = (v: number, total: number) => total > 0 ? Math.round((v / total) * 100) : 0
 
   const totalCardDebt = getTotalCardDebt()
+  const balance = totalBudgeted - totalSpent
 
-  const handleAddAsset = (assetData: Omit<(typeof assets)[0], "id" | "currentValue">) => {
-    addAsset(assetData)
-    setDialogOpen(false)
-  }
+  // Objetivo com maior progresso
+  const topGoal = goals.length > 0
+    ? [...goals].sort((a, b) => (b.current / b.target) - (a.current / a.target))[0]
+    : null
 
-  const handleEditAsset = (assetData: Omit<(typeof assets)[0], "id" | "currentValue">) => {
-    if (!editingAsset) return
-    updateAsset(editingAsset.id, assetData)
-    setEditingAsset(null)
-    setDialogOpen(false)
-  }
+  // Próximas transações pendentes nos próximos 30 dias
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const in30 = new Date(today)
+  in30.setDate(in30.getDate() + 30)
 
-  const handleDeleteAsset = (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este ativo?")) {
-      deleteAsset(id)
-    }
-  }
+  const upcomingTransactions = transactions
+    .filter((t) => {
+      if (t.status !== "pendente") return false
+      const d = new Date(t.dueDate)
+      return d >= today && d <= in30
+    })
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .slice(0, 3)
 
-  const handleUpdateAsset = (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number) => {
-    updateAsset(id, { quantity, price, ceilingPrice, priority })
-  }
-
-  const openEditDialog = (asset: (typeof assets)[0]) => {
-    setEditingAsset(asset)
-    setDialogOpen(true)
-  }
-
-  const openAddDialog = () => {
-    setEditingAsset(null)
-    setDialogOpen(true)
-  }
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
+  // Próxima fatura de cartão (30 dias)
+  const allInvoices = calculateInvoices()
+  const nextInvoice = allInvoices.find((inv) => {
+    const d = new Date(inv.year, inv.monthIndex)
+    return d >= today
+  })
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground">
       <Sidebar />
 
       <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
-        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
-          <div className="px-4 sm:px-8 py-4 sm:py-6">
-            {/* Mobile: stack layout */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 h-full">
-              <div className="flex flex-col justify-center">
-                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                  Investimentos
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                  Mission Control • Portfólio em tempo real
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
-                {totalCardDebt > 0 && (
-                  <Link href="/app/cartoes" className="text-right hover:opacity-80 transition-opacity flex-shrink-0">
-                    <div
-                      className="flex items-center gap-1.5 sm:gap-2 font-medium"
-                      style={{ color: "rgb(248 113 113)" }}
-                    >
-                      <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm">Dívida</span>
-                    </div>
-                    <p className="text-base sm:text-xl font-bold" style={{ color: "rgb(248 113 113)" }}>
-                      {formatCurrency(totalCardDebt)}
-                    </p>
-                  </Link>
-                )}
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">Patrimônio</p>
-                  <p className="text-xl sm:text-3xl font-bold text-primary">{formatCurrency(totalNetWorth)}</p>
-                </div>
-                <Link
-                  href="/app/configuracoes"
-                  className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary hidden sm:flex"
-                  aria-label="Configurações"
-                >
-                  <Settings className="h-5 w-5" />
-                </Link>
-              </div>
+        {/* Header */}
+        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30">
+          <div className="px-4 sm:px-8 py-4 sm:py-6 flex items-center gap-3">
+            <LayoutDashboard className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+            <div>
+              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Dashboard</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Visão consolidada do seu patrimônio</p>
             </div>
           </div>
         </header>
 
-        <div className="p-4 sm:p-6 lg:p-8 overflow-hidden">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-            {/* Main Content */}
-            <div className="xl:col-span-2 space-y-6 sm:space-y-8 min-w-0">
+        <div className="p-4 sm:p-6 lg:p-8">
+          {/* Patrimônio em destaque */}
+          <div className="mb-6 p-4 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Patrimônio Total</p>
+            <p className="text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">{fmt(totalNetWorth)}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">{assets.length} ativo{assets.length !== 1 ? "s" : ""} em carteira</p>
+          </div>
 
-              {/* Asset Cards */}
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base sm:text-xl font-semibold text-foreground">Alocação de Ativos</h2>
-                  <Button
-                    onClick={openAddDialog}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm transition-theme font-medium"
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {assets.map((asset) => (
-                    <AssetCard
-                      key={asset.id}
-                      asset={asset}
-                      totalNetWorth={totalNetWorth}
-                      onEdit={() => openEditDialog(asset)}
-                      onDelete={() => handleDeleteAsset(asset.id)}
-                    />
-                  ))}
-                </div>
-              </div>
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-              {/* Update Table */}
-              <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
-
-              {/* Historical Net Worth Chart (Movido para o final em mobile, para focar nas features essenciais) */}
-              <HistoryChart />
-            </div>
-
-            <div className="space-y-6 sm:space-y-8 min-w-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-6 sm:gap-8">
-                {/* Portfolio Chart */}
-                <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
-
-                {/* Budget Comparison Chart */}
-                <BudgetComparison />
-
-                {/* Contribution Widget */}
-                <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} />
-              </div>
-
-              {/* Quick Stats */}
-              <Card className="bg-card border-border p-4 sm:p-6 transition-theme">
-                <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Performance</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Mês</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+8.3%</span>
+            {/* Investimentos */}
+            {(activeModules.investimentos !== false) && (
+              <Link href="/app/investimentos" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Investimentos</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Ano</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+24.7%</span>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalNetWorth)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{assets.length} ativo{assets.length !== 1 ? "s" : ""}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Economia */}
+            {(activeModules.economia !== false) && (
+              <Link href="/app/economia" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-emerald-400/10">
+                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Economia</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Total</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+42.1%</span>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalSpent)}</p>
+                      <span className="text-xs text-muted-foreground">/ {fmt(totalBudgeted)}</span>
                     </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
+                    <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                      <div
+                        className="bg-emerald-400 h-1.5 rounded-full transition-all"
+                        style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1.5">{pct(totalSpent, totalBudgeted)}% do orçamento usado</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Objetivos */}
+            {(activeModules.objetivos !== false) && (
+              <Link href="/app/objetivos" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Objetivos</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    {topGoal ? (
+                      <>
+                        <p className="text-sm font-semibold text-foreground truncate">{topGoal.name}</p>
+                        <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                          <div
+                            className="bg-primary h-1.5 rounded-full transition-all"
+                            style={{ width: `${Math.min(pct(topGoal.current, topGoal.target), 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {fmt(topGoal.current)} de {fmt(topGoal.target)} • {pct(topGoal.current, topGoal.target)}%
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{goals.length} objetivo{goals.length !== 1 ? "s" : ""} ativo{goals.length !== 1 ? "s" : ""}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Transações */}
+            {(activeModules.transacoes !== false) && (
+              <Link href="/app/transacoes" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-muted">
+                          <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Transações</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    {upcomingTransactions.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {upcomingTransactions.map((t) => (
+                          <div key={t.id} className="flex items-center justify-between gap-2">
+                            <span className="text-xs text-muted-foreground truncate">{t.name}</span>
+                            <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-emerald-400" : "text-foreground"}`}>
+                              {t.type === "ganho" ? "+" : "-"}{fmt(t.amount)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Nenhuma transação nos próximos 30 dias</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Cartões */}
+            {(activeModules.cartoes !== false) && (
+              <Link href="/app/cartoes" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Cartões</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalCardDebt)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">dívida total em cartões</p>
+                    {nextInvoice && (
+                      <p className="text-xs text-muted-foreground mt-1.5">Próx. fatura: {fmt(nextInvoice.total)}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Aporte Recomendado */}
+            {(activeModules.investimentos !== false) && (
+              <Link href="/app/investimentos" className="group">
+                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                  <CardHeader className="pb-2 p-4 sm:p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Próximo Aporte</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-5 pt-0">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">{fmt(Math.max(balance, 0))}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Estratégia: <span className="capitalize text-foreground font-medium">{settings.investmentStrategy}</span>
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
           </div>
         </div>
       </main>
-
-      <AssetDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        asset={editingAsset}
-        onSave={editingAsset ? handleEditAsset : handleAddAsset}
-      />
     </div>
   )
 }
