@@ -1,4 +1,4 @@
-import { InvoiceProjection, CardExpense, CreditCard, ThemePreset } from "./types"
+import { InvoiceProjection, CardExpense, CreditCard, ThemePreset, Asset, InvestmentStrategy } from "./types"
 import { addMonths, format, startOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -94,4 +94,69 @@ export function applyThemeVariables(theme: ThemePreset) {
         const cssVarName = `--theme-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`
         root.style.setProperty(cssVarName, value as string)
     })
+}
+
+/**
+ * Calcula a distribuição de um aporte entre diversos ativos com base em uma estratégia.
+ */
+export function calculateInvestmentDistribution(
+    amount: number,
+    assets: Asset[],
+    totalNetWorth: number,
+    strategy: InvestmentStrategy = "rebalance"
+): { name: string; amount: number }[] {
+    if (isNaN(amount) || amount <= 0) return []
+
+    let recs: { name: string; amount: number }[] = []
+
+    if (strategy === "rebalance") {
+        const futureTotal = totalNetWorth + amount
+        recs = assets.map((asset) => {
+            const targetValue = futureTotal * (asset.targetPercentage / 100)
+            const toBuy = targetValue - asset.currentValue
+            return {
+                name: asset.name,
+                amount: Math.max(0, toBuy),
+            }
+        })
+
+        // Ajuste proporcional se o toBuy total for diferente do aporte (devido ao Math.max)
+        const totalToBuy = recs.reduce((sum, r) => sum + r.amount, 0)
+        if (totalToBuy > 0) {
+            recs = recs.map((r) => ({
+                ...r,
+                amount: (r.amount / totalToBuy) * amount,
+            }))
+        }
+    } else if (strategy === "proportional") {
+        recs = assets.map((asset) => ({
+            name: asset.name,
+            amount: amount * (asset.targetPercentage / 100),
+        }))
+    } else if (strategy === "waterfall") {
+        let remaining = amount
+        const sortedAssets = [...assets].sort((a, b) => b.targetPercentage - a.targetPercentage)
+
+        recs = sortedAssets.map((asset) => {
+            if (remaining <= 0) return { name: asset.name, amount: 0 }
+
+            const targetValue = (totalNetWorth + amount) * (asset.targetPercentage / 100)
+            const needed = Math.max(0, targetValue - asset.currentValue)
+            const toAllocate = Math.min(remaining, needed)
+
+            remaining -= toAllocate
+            return { name: asset.name, amount: toAllocate }
+        })
+
+        // Se sobrar algo após o waterfall, distribui proporcionalmente no final
+        if (remaining > 0) {
+            recs = recs.map((r) => {
+                const asset = assets.find((a) => a.name === r.name)
+                const weight = (asset?.targetPercentage || 0) / 100
+                return { ...r, amount: r.amount + remaining * weight }
+            })
+        }
+    }
+
+    return recs.filter((r) => r.amount > 0.01)
 }
