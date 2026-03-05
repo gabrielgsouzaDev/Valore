@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { RefreshCcw } from "lucide-react"
+import { RefreshCcw, Check, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface Asset {
   id: number
@@ -51,104 +52,130 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
     setTempPriority(asset.priority?.toString() || "")
   }
 
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n)
+
   return (
-    <Card className="bg-card border-border p-6 transition-theme">
-      <h3 className="text-lg font-semibold text-foreground mb-4">Atualização Rápida</h3>
+    <Card className="bg-card border-border p-4 sm:p-6 transition-theme">
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Atualização Rápida</h3>
+
+      {/* Mobile: cards empilhados | Desktop: grid 4 colunas */}
       <div className="space-y-3">
         {assets.map((asset) => (
           <div
             key={asset.id}
-            className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-card border border-border rounded-lg hover:bg-card/80 transition-theme"
+            className="p-4 bg-muted/20 border border-border rounded-xl transition-theme"
           >
-            <div className="flex items-center">
-              <span className="font-semibold text-foreground">{asset.name}</span>
-            </div>
-
-            {editingAsset === asset.id ? (
-              <>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    value={tempQuantity}
-                    onChange={(e) => setTempQuantity(e.target.value)}
-                    placeholder="Qtd"
-                    className="bg-muted border-border text-foreground text-xs"
-                  />
-                  <Input
-                    type="number"
-                    value={tempPrice}
-                    onChange={(e) => setTempPrice(e.target.value)}
-                    placeholder="Preço"
-                    className="bg-muted border-border text-foreground text-xs"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    value={tempCeiling}
-                    onChange={(e) => setTempCeiling(e.target.value)}
-                    placeholder="Teto (R$)"
-                    className="bg-muted border-border text-foreground text-xs"
-                  />
-                  <Input
-                    type="number"
-                    value={tempPriority}
-                    onChange={(e) => setTempPriority(e.target.value)}
-                    placeholder="Prioridade"
-                    className="bg-muted border-border text-foreground text-xs"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleUpdate(asset.id)}
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 transition-colors font-medium text-xs"
-                  >
-                    Salvar
-                  </Button>
-                  <Button
-                    onClick={() => setEditingAsset(null)}
-                    size="sm"
-                    variant="outline"
-                    className="border-border text-foreground hover:bg-muted text-xs"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Patrimônio</div>
-                  <div className="text-sm font-semibold text-foreground">
-                    {asset.quantity} un @ {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(asset.price)}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Regras</div>
-                  <div className="text-sm text-foreground flex gap-3">
-                    <span className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Teto:</span>
-                      {asset.ceilingPrice
-                        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(asset.ceilingPrice)
-                        : "∞"}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Prio:</span>
-                      {asset.priority ?? "—"}
-                    </span>
-                  </div>
-                </div>
+            {/* Header do card: nome + botão atualizar */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-semibold text-foreground text-sm sm:text-base">{asset.name}</span>
+              {editingAsset !== asset.id && (
                 <Button
                   onClick={() => startEditing(asset)}
                   size="sm"
                   variant="outline"
-                  className="border-border text-foreground hover:bg-muted transition-theme font-medium sm:self-center"
+                  className="border-border text-foreground hover:bg-muted transition-theme font-medium min-h-[44px] px-3"
                 >
-                  <RefreshCcw className="h-4 w-4 mr-2" />
-                  Atualizar
+                  <RefreshCcw className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Atualizar</span>
                 </Button>
-              </>
+              )}
+            </div>
+
+            {editingAsset === asset.id ? (
+              /* ── MODO EDIÇÃO ── */
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Quantidade
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempQuantity}
+                      onChange={(e) => setTempQuantity(e.target.value)}
+                      placeholder="Qtd"
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Preço Atual
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempPrice}
+                      onChange={(e) => setTempPrice(e.target.value)}
+                      placeholder="R$"
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Teto (R$)
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempCeiling}
+                      onChange={(e) => setTempCeiling(e.target.value)}
+                      placeholder="Opcional"
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Prioridade
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempPriority}
+                      onChange={(e) => setTempPriority(e.target.value)}
+                      placeholder="1, 2, 3..."
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleUpdate(asset.id)}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium min-h-[44px]"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Salvar
+                  </Button>
+                  <Button
+                    onClick={() => setEditingAsset(null)}
+                    variant="outline"
+                    className="border-border text-foreground hover:bg-muted min-h-[44px] px-4"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* ── MODO VISUALIZAÇÃO: inline no mobile, row no desktop ── */
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Patrimônio</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {asset.quantity}x {fmt(asset.price)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Teto</div>
+                  <div className="text-sm text-foreground">
+                    {asset.ceilingPrice ? fmt(asset.ceilingPrice) : <span className="text-muted-foreground">∞</span>}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Prioridade</div>
+                  <div className="text-sm text-foreground">
+                    {asset.priority ?? <span className="text-muted-foreground">—</span>}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         ))}

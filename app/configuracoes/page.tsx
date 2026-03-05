@@ -243,7 +243,7 @@ export default function ConfiguracoesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Sidebar />
-      <main className="lg:ml-64 transition-all duration-300">
+      <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
         {/* Header */}
         <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
           <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
