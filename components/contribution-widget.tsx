@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sparkles, ArrowRight } from "lucide-react"
 import { calculateInvestmentDistribution } from "@/lib/services"
+import { useApp } from "@/contexts/app-context"
+import { cn } from "@/lib/utils"
 
 interface Asset {
   id: number
@@ -14,7 +16,10 @@ interface Asset {
   currentValue: number
 }
 
-import { useApp } from "@/contexts/app-context"
+interface ContributionWidgetProps {
+  assets: Asset[]
+  totalNetWorth: number
+}
 
 export function ContributionWidget({ assets, totalNetWorth }: ContributionWidgetProps) {
   const { settings } = useApp()
@@ -26,58 +31,9 @@ export function ContributionWidget({ assets, totalNetWorth }: ContributionWidget
     if (isNaN(amount) || amount <= 0) return
 
     const strategy = settings.investmentStrategy || "rebalance"
-    let recs: { name: string; amount: number }[] = []
+    const recs = calculateInvestmentDistribution(amount, assets, totalNetWorth, strategy)
 
-    if (strategy === "rebalance") {
-      const futureTotal = totalNetWorth + amount
-      recs = assets.map((asset) => {
-        const targetValue = futureTotal * (asset.targetPercentage / 100)
-        const toBuy = targetValue - asset.currentValue
-        return {
-          name: asset.name,
-          amount: Math.max(0, toBuy),
-        }
-      })
-
-      // Ajuste proporcional se o toBuy total for diferente do aporte (devido ao Math.max)
-      const totalToBuy = recs.reduce((sum, r) => sum + r.amount, 0)
-      if (totalToBuy > 0) {
-        recs = recs.map(r => ({
-          ...r,
-          amount: (r.amount / totalToBuy) * amount
-        }))
-      }
-    } else if (strategy === "proportional") {
-      recs = assets.map((asset) => ({
-        name: asset.name,
-        amount: amount * (asset.targetPercentage / 100),
-      }))
-    } else if (strategy === "waterfall") {
-      let remaining = amount
-      const sortedAssets = [...assets].sort((a, b) => b.targetPercentage - a.targetPercentage)
-
-      recs = sortedAssets.map((asset) => {
-        if (remaining <= 0) return { name: asset.name, amount: 0 }
-
-        const targetValue = (totalNetWorth + amount) * (asset.targetPercentage / 100)
-        const needed = Math.max(0, targetValue - asset.currentValue)
-        const toAllocate = Math.min(remaining, needed)
-
-        remaining -= toAllocate
-        return { name: asset.name, amount: toAllocate }
-      })
-
-      // Se sobrar algo após o waterfall, distribui proporcionalmente no final
-      if (remaining > 0) {
-        recs = recs.map(r => {
-          const asset = assets.find(a => a.name === r.name)
-          const weight = (asset?.targetPercentage || 0) / 100
-          return { ...r, amount: r.amount + (remaining * weight) }
-        })
-      }
-    }
-
-    setRecommendations(recs.filter(r => r.amount > 0.01))
+    setRecommendations(recs)
   }
 
   return (
@@ -124,8 +80,10 @@ export function ContributionWidget({ assets, totalNetWorth }: ContributionWidget
                 <span className="text-sm font-medium text-foreground">{rec.name}</span>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-sm font-bold ${rec.amount > 0 ? "text-emerald-400 dark:text-emerald-300" : "text-red-400 dark:text-red-300"
-                      }`}
+                    className={cn(
+                      "text-sm font-bold",
+                      rec.amount > 0 ? "text-emerald-400 dark:text-emerald-300" : "text-red-400 dark:text-red-300"
+                    )}
                   >
                     {rec.amount > 0 ? "+" : ""}
                     {new Intl.NumberFormat("pt-BR", {
