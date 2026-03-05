@@ -108,11 +108,9 @@ export default function Dashboard() {
         </header>
 
         <div className="p-4 sm:p-6 lg:p-8 overflow-hidden">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
             {/* Main Content */}
-            <div className="xl:col-span-2 space-y-4 sm:space-y-6 min-w-0">
-              {/* Historical Net Worth Chart */}
-              <HistoryChart />
+            <div className="xl:col-span-2 space-y-6 sm:space-y-8 min-w-0">
 
               {/* Asset Cards */}
               <div className="space-y-3 sm:space-y-4">
@@ -141,10 +139,13 @@ export default function Dashboard() {
 
               {/* Update Table */}
               <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
+
+              {/* Historical Net Worth Chart (Movido para o final em mobile, para focar nas features essenciais) */}
+              <HistoryChart />
             </div>
 
-            <div className="space-y-4 sm:space-y-6 min-w-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-6">
+            <div className="space-y-6 sm:space-y-8 min-w-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-6 sm:gap-8">
                 {/* Portfolio Chart */}
                 <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
 

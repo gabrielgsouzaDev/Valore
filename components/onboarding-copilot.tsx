@@ -176,7 +176,7 @@ export function OnboardingCopilot() {
                     </div>
 
                     {/* Body */}
-                    <div className="p-6 space-y-4">
+                    <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
                         {/* Indicadores de progresso */}
                         <div className="flex items-center justify-between">
                             <div className="flex gap-1">
@@ -196,22 +196,22 @@ export function OnboardingCopilot() {
                         </div>
 
                         {/* Missão atual */}
-                        <div className="flex gap-4 items-start">
+                        <div className="flex gap-3 sm:gap-4 items-start">
                             <div className={cn(
-                                "p-3 rounded-2xl flex-shrink-0",
+                                "p-2 sm:p-3 rounded-xl sm:rounded-2xl flex-shrink-0",
                                 currentMission.isDone ? "bg-emerald-500/10" : "bg-primary/10"
                             )}>
                                 <currentMission.icon className={cn(
-                                    "h-6 w-6",
+                                    "h-5 w-5 sm:h-6 sm:w-6",
                                     currentMission.isDone ? "text-emerald-500" : "text-primary"
                                 )} />
                             </div>
-                            <div className="space-y-1">
-                                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <h3 className="font-bold text-foreground flex items-center gap-1.5 text-xs sm:text-sm">
                                     {currentMission.title}
-                                    {currentMission.isDone && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
+                                    {currentMission.isDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
                                 </h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                     {currentMission.description}
                                 </p>
                             </div>
@@ -220,7 +220,7 @@ export function OnboardingCopilot() {
                         {/* Ações */}
                         <div className="flex items-center gap-3 pt-2">
                             <Link href={currentMission.link} className="flex-1">
-                                <Button className="w-full rounded-xl font-bold gap-2 group text-sm">
+                                <Button className="w-full rounded-xl font-bold gap-2 group text-xs sm:text-sm h-10 sm:h-11">
                                     {currentMission.cta}
                                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
@@ -230,7 +230,7 @@ export function OnboardingCopilot() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="rounded-xl border-border hover:bg-muted h-9 w-9"
+                                    className="rounded-xl border-border hover:bg-muted h-10 w-10 sm:h-11 sm:w-11"
                                     onClick={handlePrev}
                                     disabled={activeIndex === 0}
                                 >
@@ -239,7 +239,7 @@ export function OnboardingCopilot() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="rounded-xl border-border hover:bg-muted h-9 w-9"
+                                    className="rounded-xl border-border hover:bg-muted h-10 w-10 sm:h-11 sm:w-11"
                                     onClick={handleNext}
                                     disabled={activeIndex === missions.length - 1}
                                 >
