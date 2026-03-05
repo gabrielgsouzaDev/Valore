@@ -2,70 +2,89 @@
 
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useRef } from "react"
+import { Check, Moon, Sun } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export function ThemeSelector() {
   const { settings, setTheme } = useApp()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      })
-    }
+  const darkThemes = themePresets.filter((t) => t.mode !== "light")
+  const lightThemes = themePresets.filter((t) => t.mode === "light")
+
+  const ThemeCard = ({ theme }: { theme: typeof themePresets[0] }) => {
+    const isActive = settings.themeId === theme.id
+    return (
+      <button
+        key={theme.id}
+        onClick={() => setTheme(theme.id)}
+        title={theme.description}
+        className={cn(
+          "relative flex flex-col gap-2 p-3 rounded-2xl border-2 transition-all text-left hover:scale-[1.02] active:scale-[0.98]",
+          isActive
+            ? "border-primary ring-2 ring-primary/30 bg-primary/5"
+            : "border-border bg-card hover:border-primary/40"
+        )}
+      >
+        {/* Preview de Cores */}
+        <div
+          className="w-full h-12 rounded-xl overflow-hidden flex"
+          style={{ backgroundColor: `rgb(${theme.colors.background})` }}
+        >
+          <div className="flex-1 h-full" style={{ backgroundColor: `rgb(${theme.colors.card})` }} />
+          <div className="w-1/3 h-full flex flex-col">
+            <div className="flex-1" style={{ backgroundColor: `rgb(${theme.colors.primary})` }} />
+            <div className="flex-1" style={{ backgroundColor: `rgb(${theme.colors.accent})` }} />
+          </div>
+        </div>
+
+        {/* Nome */}
+        <p className={cn(
+          "text-xs font-semibold truncate",
+          isActive ? "text-primary" : "text-foreground"
+        )}>
+          {theme.name}
+        </p>
+
+        {/* Check ativo */}
+        {isActive && (
+          <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-0.5">
+            <Check className="h-3 w-3" />
+          </span>
+        )}
+      </button>
+    )
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground">Temas Disponíveis</h3>
-      <div className="relative">
-        <Button
-          onClick={() => scroll("left")}
-          variant="ghost"
-          size="icon"
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-3 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
-          style={{ scrollBehavior: "smooth" }}
-        >
-          {themePresets.map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => setTheme(theme.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium whitespace-nowrap ${settings.themeId === theme.id
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.primary})` }} />
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.accent})` }} />
-                </div>
-                {theme.name}
-              </div>
-            </button>
+    <div className="space-y-5">
+      {/* Temas Escuros */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Moon className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Escuros ({darkThemes.length})
+          </span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {darkThemes.map((theme) => (
+            <ThemeCard key={theme.id} theme={theme} />
           ))}
         </div>
+      </div>
 
-        <Button
-          onClick={() => scroll("right")}
-          variant="ghost"
-          size="icon"
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 text-muted-foreground hover:text-foreground"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+      {/* Temas Claros */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Sun className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Claros ({lightThemes.length})
+          </span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {lightThemes.map((theme) => (
+            <ThemeCard key={theme.id} theme={theme} />
+          ))}
+        </div>
       </div>
     </div>
   )

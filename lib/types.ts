@@ -3,6 +3,7 @@ export type ThemePreset = {
     id: string
     name: string
     description: string
+    mode?: "light" | "dark"
     colors: {
         background: string
         card: string

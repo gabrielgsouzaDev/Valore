@@ -83,7 +83,7 @@ export function formatCurrency(value: number): string {
 
 /**
  * Aplica o tema visual ao documento via variáveis CSS.
- * Usa um mapeamento direto das cores do tema para as propriedades CSS.
+ * Também alterna a classe `dark` no <html> para temas claros.
  */
 export function applyThemeVariables(theme: ThemePreset) {
     if (typeof document === "undefined") return
@@ -94,6 +94,13 @@ export function applyThemeVariables(theme: ThemePreset) {
         const cssVarName = `--theme-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`
         root.style.setProperty(cssVarName, value as string)
     })
+
+    // Alterna o modo claro/escuro no elemento raiz
+    if (theme.mode === "light") {
+        root.classList.remove("dark")
+    } else {
+        root.classList.add("dark")
+    }
 }
 
 /**
