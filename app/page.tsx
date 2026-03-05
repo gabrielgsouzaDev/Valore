@@ -1,199 +1,300 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Settings, ArrowUpRight, CreditCard } from "lucide-react"
-import { AssetCard } from "@/components/asset-card"
-import { ContributionWidget } from "@/components/contribution-widget"
-import { UpdateTable } from "@/components/update-table"
-import { PortfolioChart } from "@/components/portfolio-chart"
-import { HistoryChart } from "@/components/history-chart"
-import { BudgetComparison } from "@/components/budget-comparison"
-import { Sidebar } from "@/components/sidebar"
-import { AssetDialog } from "@/components/asset-dialog"
-import { useApp } from "@/contexts/app-context"
+import { useState, useEffect, FormEvent } from "react"
 import Link from "next/link"
-import { Asset } from "@/lib/types"
+import { ArrowRight, CheckCircle2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-export default function Dashboard() {
-  const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingAsset, setEditingAsset] = useState<(typeof assets)[0] | null>(null)
+// --- Hooks Auxiliares ---
 
-  const totalCardDebt = getTotalCardDebt()
+function useInView(options = { threshold: 0.1 }) {
+  const [ref, setRef] = useState<HTMLElement | null>(null)
+  const [isInView, setIsInView] = useState(false)
 
-  const handleAddAsset = (assetData: Omit<(typeof assets)[0], "id" | "currentValue">) => {
-    addAsset(assetData)
-    setDialogOpen(false)
-  }
+  useEffect(() => {
+    if (!ref) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true)
+        observer.disconnect()
+      }
+    }, options)
+    observer.observe(ref)
+    return () => observer.disconnect()
+  }, [ref, options.threshold])
 
-  const handleEditAsset = (assetData: Omit<(typeof assets)[0], "id" | "currentValue">) => {
-    if (!editingAsset) return
-    updateAsset(editingAsset.id, assetData)
-    setEditingAsset(null)
-    setDialogOpen(false)
-  }
+  return { setRef, isInView }
+}
 
-  const handleDeleteAsset = (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este ativo?")) {
-      deleteAsset(id)
+function CountUp({ end, duration = 1500 }: { end: number, duration?: number }) {
+  const [count, setCount] = useState(0)
+  const { setRef, isInView } = useInView({ threshold: 0.5 })
+
+  useEffect(() => {
+    if (!isInView) return
+    let startTime: number | null = null
+    let animationFrame: number
+
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / duration, 1)
+      // easeOutExpo
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+      setCount(Math.floor(ease * end))
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(step)
+      }
+    }
+    animationFrame = window.requestAnimationFrame(step)
+    return () => window.cancelAnimationFrame(animationFrame)
+  }, [isInView, end, duration])
+
+  return <span ref={setRef as any}>{count}</span>
+}
+
+// --- Componentes da Landing Page ---
+
+export default function LandingPage() {
+  const [email, setEmail] = useState("")
+  const [subscribed, setSubscribed] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleSubscribe = (e: FormEvent) => {
+    e.preventDefault()
+    if (email && email.includes("@")) {
+      setSubscribed(true)
+      setEmail("")
     }
   }
 
-  const handleUpdateAsset = (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number) => {
-    updateAsset(id, { quantity, price, ceilingPrice, priority })
-  }
-
-  const openEditDialog = (asset: (typeof assets)[0]) => {
-    setEditingAsset(asset)
-    setDialogOpen(true)
-  }
-
-  const openAddDialog = () => {
-    setEditingAsset(null)
-    setDialogOpen(true)
-  }
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
+  if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Sidebar />
-
-      <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
-        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
-          <div className="px-4 sm:px-8 py-4 sm:py-6">
-            {/* Mobile: stack layout */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 h-full">
-              <div className="flex flex-col justify-center">
-                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                  Investimentos
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                  Mission Control • Portfólio em tempo real
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
-                {totalCardDebt > 0 && (
-                  <Link href="/cartoes" className="text-right hover:opacity-80 transition-opacity flex-shrink-0">
-                    <div
-                      className="flex items-center gap-1.5 sm:gap-2 font-medium"
-                      style={{ color: "rgb(248 113 113)" }}
-                    >
-                      <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm">Dívida</span>
-                    </div>
-                    <p className="text-base sm:text-xl font-bold" style={{ color: "rgb(248 113 113)" }}>
-                      {formatCurrency(totalCardDebt)}
-                    </p>
-                  </Link>
-                )}
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">Patrimônio</p>
-                  <p className="text-xl sm:text-3xl font-bold text-primary">{formatCurrency(totalNetWorth)}</p>
-                </div>
-                <Link
-                  href="/configuracoes"
-                  className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary hidden sm:flex"
-                  aria-label="Configurações"
-                >
-                  <Settings className="h-5 w-5" />
-                </Link>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans overflow-x-hidden selection:bg-emerald-500/30">
+      {/* Header Mini */}
+      <header className="fixed top-0 w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-md z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-emerald-400 rotate-45" />
+            <span className="font-bold text-xl tracking-tight">Valore</span>
           </div>
-        </header>
-
-        <div className="p-4 sm:p-6 lg:p-8 overflow-hidden">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-            {/* Main Content */}
-            <div className="xl:col-span-2 space-y-6 sm:space-y-8 min-w-0">
-
-              {/* Asset Cards */}
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base sm:text-xl font-semibold text-foreground">Alocação de Ativos</h2>
-                  <Button
-                    onClick={openAddDialog}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm transition-theme font-medium"
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {assets.map((asset) => (
-                    <AssetCard
-                      key={asset.id}
-                      asset={asset}
-                      totalNetWorth={totalNetWorth}
-                      onEdit={() => openEditDialog(asset)}
-                      onDelete={() => handleDeleteAsset(asset.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Update Table */}
-              <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
-
-              {/* Historical Net Worth Chart (Movido para o final em mobile, para focar nas features essenciais) */}
-              <HistoryChart />
-            </div>
-
-            <div className="space-y-6 sm:space-y-8 min-w-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-6 sm:gap-8">
-                {/* Portfolio Chart */}
-                <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
-
-                {/* Budget Comparison Chart */}
-                <BudgetComparison />
-
-                {/* Contribution Widget */}
-                <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} />
-              </div>
-
-              {/* Quick Stats */}
-              <Card className="bg-card border-border p-4 sm:p-6 transition-theme">
-                <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Performance</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Mês</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+8.3%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Ano</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+24.7%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-foreground/80">Total</span>
-                    <div className="flex items-center gap-1 font-medium" style={{ color: "rgb(52 211 153)" }}>
-                      <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="font-semibold text-sm sm:text-base">+42.1%</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
+          <Link href="/app">
+            <button className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Entrar
+            </button>
+          </Link>
         </div>
+      </header>
+
+      <main className="pt-24 sm:pt-32 pb-20">
+        {/* 1. Hero Section */}
+        <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
+          <div className="space-y-8 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-semibold text-zinc-300 animate-in fade-in slide-in-from-bottom-4 duration-300 fill-mode-both delay-75">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Gratuito durante o beta
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-300 fill-mode-both delay-150 text-white">
+                Inteligência institucional para seu <span className="text-emerald-400">patrimônio.</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-zinc-400 max-w-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-300 fill-mode-both delay-200 font-medium">
+                Seu painel financeiro completo: acompanhe investimentos, controle gastos, planeje objetivos e entenda seu net worth em tempo real.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 animate-in fade-in slide-in-from-bottom-6 duration-300 fill-mode-both delay-300">
+              <a href="#waitlist" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-zinc-100 hover:bg-white text-zinc-900 font-bold tracking-wide transition-all hover:scale-[1.02] active:scale-95 text-center flex items-center justify-center gap-2">
+                Entrar na Lista de Espera
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link href="/app" className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide transition-all text-center">
+                Ver Demo
+              </Link>
+            </div>
+          </div>
+
+          <div className="hidden sm:block relative w-full aspect-square md:aspect-[4/3] lg:aspect-square animate-in fade-in zoom-in-95 duration-500 fill-mode-both delay-300">
+            {/* Abstract Dashboard Mock */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent rounded-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[80%] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl flex flex-col p-4 gap-4 rotate-[-2deg] skew-y-1 hover:rotate-0 hover:skew-y-0 transition-transform duration-500">
+              <div className="h-4 w-1/3 bg-white/5 rounded-md" />
+              <div className="flex-1 grid grid-cols-3 gap-4">
+                <div className="col-span-2 bg-white/5 xl:rounded-xl border border-white/5 relative overflow-hidden">
+                  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-emerald-500/20 to-transparent" />
+                </div>
+                <div className="col-span-1 flex flex-col gap-4">
+                  <div className="h-1/2 bg-white/5 xl:rounded-xl border border-white/5" />
+                  <div className="h-1/2 bg-white/5 xl:rounded-xl border border-white/5 flex items-center justify-center p-4">
+                    <div className="w-full h-full rounded-full border-4 border-emerald-400/50 border-t-emerald-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 2. Problema Section */}
+        <section className="max-w-7xl mx-auto px-6 mt-32">
+          <div className="mb-12">
+            <h2 className="text-3xl font-extrabold tracking-tight">Onde os métodos tradicionais falham</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { step: "01", title: "Falta de Escala", desc: "Planilhas quebram, ficam lentas e exigem manutenção manual constante. O Valore escala com o seu capital." },
+              { step: "02", title: "Decisões no Escuro", desc: "Decidir onde aportar para rebalancear a carteira exige tempo. Nossa distribuição inteligente resolve numa fração de segundo." },
+              { step: "03", title: "Visão Fragmentada", desc: "Bancos e corretoras não conversam. Centralize ativos e projete faturas em um ecossistema único offline-first." }
+            ].map((pain, i) => {
+              const { setRef, isInView } = useInView()
+              return (
+                <div
+                  key={i}
+                  ref={setRef as any}
+                  className={cn(
+                    "p-8 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors",
+                    "opacity-0 translate-y-4 duration-400 transition-all",
+                    isInView && "opacity-100 translate-y-0"
+                  )}
+                  style={{ transitionDelay: `${i * 100}ms` }}
+                >
+                  <div className="text-4xl font-extrabold text-white/10 mb-6 font-mono tracking-tighter">{pain.step}</div>
+                  <h3 className="text-xl font-bold mb-3">{pain.title}</h3>
+                  <p className="text-zinc-400 leading-relaxed font-medium">{pain.desc}</p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* 3. Features Section (Asymmetric) */}
+        <section className="max-w-7xl mx-auto px-6 mt-40">
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Arquitetura paramétrica.</h2>
+            <p className="text-xl text-zinc-400 font-medium">Funcionalidades modeladas para investidores que demandam mais que um simples agregador.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Feature 1 (Large) */}
+            <div className="md:col-span-8 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-emerald-400/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+              <div className="relative z-10 max-w-md">
+                <h3 className="text-2xl font-bold mb-3">Distribuição Inteligente</h3>
+                <p className="text-zinc-400 font-medium leading-relaxed">Algoritmo de rebalanceamento preditivo. Escolha entre método Proporcional ou em Cascata para otimizar seus aportes automaticamente.</p>
+              </div>
+              <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-30 group-hover:opacity-100 transition-opacity duration-400 flex items-end justify-end p-6">
+                <div className="w-full border-b border-r border-emerald-400/30 flex items-end gap-2 p-4">
+                  <div className="w-1/4 bg-emerald-400/20 h-1/3" />
+                  <div className="w-1/4 bg-emerald-400/40 h-2/3" />
+                  <div className="w-1/4 bg-emerald-400/60 h-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 2 (Small) */}
+            <div className="md:col-span-4 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-emerald-400/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[300px]">
+              <div>
+                <h3 className="text-xl font-bold mb-3">Preço-Teto Automático</h3>
+                <p className="text-zinc-400 font-medium leading-relaxed">Defina tetos de compra e deixe o sistema barrar ordens caras.</p>
+              </div>
+              <div className="mt-8 pt-4 border-t border-dashed border-white/20 text-emerald-400 font-mono text-sm group-hover:text-emerald-300 transition-colors">
+                LIMIT_REACHED: TRUE
+              </div>
+            </div>
+
+            {/* Feature 3 (Small) */}
+            <div className="md:col-span-5 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-emerald-400/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[250px]">
+              <div>
+                <h3 className="text-xl font-bold mb-3">Projeção de Faturas</h3>
+                <p className="text-zinc-400 font-medium leading-relaxed">Avalie o impacto futuro dos cartões no seu fluxo de caixa.</p>
+              </div>
+            </div>
+
+            {/* Feature 4 (Medium) */}
+            <div className="md:col-span-7 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-emerald-400/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-3">19 Temas Premium</h3>
+                <p className="text-zinc-400 font-medium leading-relaxed max-w-sm">Do Midnight ao AMOLED. PWA Instalável adaptado à sua identidade, preservado em cache offline.</p>
+              </div>
+              <div className="absolute right-[-20%] bottom-[-20%] w-64 h-64 bg-emerald-500/10 blur-[100px] group-hover:bg-emerald-400/20 transition-colors duration-400" />
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Social Proof */}
+        <section className="max-w-5xl mx-auto px-6 mt-40 text-center">
+          <div className="py-16 border-y border-white/5">
+            <div className="text-6xl sm:text-8xl font-black text-white/50 mb-4 font-mono">
+              <CountUp end={50} />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-8">Primeiros usuários no acesso antecipado</h2>
+
+            {/* Logos Placeholder */}
+            <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-50 grayscale">
+              <div className="text-xl font-black tracking-widest uppercase">FintechBR</div>
+              <div className="text-xl font-black tracking-tighter">InvestNews</div>
+              <div className="text-xl font-bold italic">TechFinance</div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Pricing Teaser */}
+        <section id="waitlist" className="max-w-3xl mx-auto px-6 mt-40 mb-20 text-center">
+          <div className="p-8 sm:p-12 rounded-[2rem] bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 relative overflow-hidden">
+            <div className="relative z-10">
+              <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Acesso antecipado gratuito</h2>
+              <p className="text-zinc-400 text-lg mb-8 font-medium">
+                Preço especial para o plano vitalício garantido apenas para a primeira leva de investidores.
+              </p>
+
+              {!subscribed ? (
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="seu.melhor@email.com"
+                    required
+                    className="flex-1 h-12 px-4 rounded-xl bg-black border border-white/10 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 outline-none text-zinc-100 placeholder:text-zinc-600 transition-all font-medium"
+                  />
+                  <button
+                    type="submit"
+                    className="h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition-all focus:scale-95 whitespace-nowrap"
+                  >
+                    Garantir Vaga
+                  </button>
+                </form>
+              ) : (
+                <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold animate-in fade-in zoom-in duration-300">
+                  <CheckCircle2 className="h-6 w-6" />
+                  <span>Vaga reservada com sucesso. Fique de olho na caixa de entrada.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
       </main>
 
-      <AssetDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        asset={editingAsset}
-        onSave={editingAsset ? handleEditAsset : handleAddAsset}
-      />
+      {/* 6. Footer */}
+      <footer className="border-t border-white/5 bg-[#030303]">
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded bg-zinc-800 rotate-45" />
+            <span className="font-bold text-lg tracking-tight text-zinc-300">Valore</span>
+          </div>
+          <div className="text-zinc-500 font-medium text-sm text-center">
+            Feito no Brasil para investidores brasileiros.
+          </div>
+          <div className="flex gap-6 text-sm font-medium text-zinc-500">
+            <a href="#" className="hover:text-zinc-300 transition-colors">Termos</a>
+            <a href="#" className="hover:text-zinc-300 transition-colors">Privacidade</a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
