@@ -388,7 +388,7 @@ export const defaultSettings: Settings = {
     rendaMensal: 0,
     capitalInvestido: 0,
     metaReservaEmergencia: 6,
-    themeId: "midnight",
+    themeId: "golden-hour",
     onboardingCompleted: false,
     investmentStrategy: "rebalance",
 }

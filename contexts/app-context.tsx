@@ -8,7 +8,7 @@ import {
 import {
   themePresets, defaultSettings, defaultAssets, defaultCategories,
   defaultGoals, defaultTransactions, defaultCreditCards, defaultCardExpenses,
-  defaultBanks, STORAGE_KEY
+  defaultBanks, STORAGE_KEY, exampleData
 } from "@/lib/constants"
 import { calculateInvoices as calculateInvoicesUtil, applyThemeVariables } from "@/lib/services"
 import "jspdf-autotable"
@@ -130,11 +130,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [patrimonialHistory, setPatrimonialHistory] = useState<PatrimonialSnapshot[]>([])
 
   // --- Temas ---
-  const currentTheme = themePresets.find((t: ThemePreset) => t.id === settings.themeId) || themePresets[0]
+  const initialTheme = themePresets.find((t: ThemePreset) => t.id === defaultSettings.themeId) || themePresets[0]
+  const currentTheme = themePresets.find((t: ThemePreset) => t.id === settings.themeId) || initialTheme
 
   const setTheme = (themeId: string) => {
     setSettingsState((prev: Settings) => ({ ...prev, themeId }))
-    const theme = themePresets.find((t: ThemePreset) => t.id === themeId) || themePresets[0]
+    const theme = themePresets.find((t: ThemePreset) => t.id === themeId) || initialTheme
     applyThemeVariables(theme)
   }
 
@@ -171,7 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (parsed.settings) {
           setSettingsState(parsed.settings)
           setTimeout(() => {
-            const theme = themePresets.find((t: ThemePreset) => t.id === parsed.settings.themeId) || themePresets[0]
+            const theme = themePresets.find((t: ThemePreset) => t.id === parsed.settings.themeId) || initialTheme
             applyThemeVariables(theme)
           }, 0)
         }
@@ -181,14 +182,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (parsed.banks) setBanksState(parsed.banks)
         if (parsed.patrimonialHistory) setPatrimonialHistory(parsed.patrimonialHistory)
       } else {
-        applyThemeVariables(themePresets[0])
+        // Carregar dados de exemplo por padrão no primeiro acesso
+        setAssetsState(exampleData.assets)
+        setCategoriesState(exampleData.categories)
+        setGoalsState(exampleData.goals)
+        setTransactionsState(exampleData.transactions)
+        setCreditCardsState(exampleData.creditCards)
+        setCardExpensesState(exampleData.cardExpenses)
+        setBanksState(exampleData.banks)
+
+        // Aplicar o tema padrão (Golden Hour)
+        applyThemeVariables(initialTheme)
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
-      applyThemeVariables(themePresets[0])
+      applyThemeVariables(initialTheme)
     }
     setIsLoaded(true)
-  }, [])
+  }, [initialTheme])
 
   useEffect(() => {
     if (!isLoaded) return
