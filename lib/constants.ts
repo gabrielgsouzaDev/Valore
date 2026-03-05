@@ -384,7 +384,7 @@ export const themePresets: ThemePreset[] = [
 ]
 
 export const defaultSettings: Settings = {
-    nome: "Seu Nome",
+    nome: "Valore",
     rendaMensal: 0,
     capitalInvestido: 0,
     metaReservaEmergencia: 6,

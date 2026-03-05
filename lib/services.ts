@@ -142,14 +142,23 @@ export function calculateInvestmentDistribution(
     } else if (strategy === "waterfall") {
         let remaining = amount
 
-        // Ordenação: Prioridade manual (se houver) -> Peso da meta
+        // Ordenação: Prioridade manual (se houver) -> Peso da meta -> ID (desempate final)
         const sortedAssets = [...assets].sort((a, b) => {
             if (a.priority !== undefined && b.priority !== undefined) {
-                return a.priority - b.priority
+                if (a.priority !== b.priority) return a.priority - b.priority
+            } else if (a.priority !== undefined) {
+                return -1
+            } else if (b.priority !== undefined) {
+                return 1
             }
-            if (a.priority !== undefined) return -1
-            if (b.priority !== undefined) return 1
-            return b.targetPercentage - a.targetPercentage
+
+            // Primeiro desempate: Peso da meta (maior primeiro)
+            if (b.targetPercentage !== a.targetPercentage) {
+                return b.targetPercentage - a.targetPercentage
+            }
+
+            // Segundo desempate: ID (menor primeiro - ordem de criação)
+            return a.id - b.id
         })
 
         recs = sortedAssets.map((asset) => {

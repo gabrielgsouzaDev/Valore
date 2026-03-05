@@ -11,8 +11,8 @@ interface Asset {
   name: string
   targetPercentage: number
   currentValue: number
-  quantity: number
-  price: number
+  priority?: number
+  lastUpdated?: string
 }
 
 interface AssetCardProps {
@@ -27,14 +27,19 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
   const difference = currentPercentage - asset.targetPercentage
   const progressValue = (currentPercentage / asset.targetPercentage) * 100
 
-  // Alert logic for Bitcoin
+  // Alert logic for stale prices and Bitcoin
   const isBitcoin = asset.name === "Bitcoin"
   const showSellAlert = isBitcoin && currentPercentage > 25
   const showBuyAlert = isBitcoin && currentPercentage < 15
 
+  const isStale = asset.lastUpdated
+    ? (new Date().getTime() - new Date(asset.lastUpdated).getTime()) > 7 * 24 * 60 * 60 * 1000
+    : true
+
   const getBorderColor = () => {
     if (showSellAlert) return "border-destructive"
     if (showBuyAlert) return "border-accent"
+    if (isStale) return "border-amber-500/50"
     if (Math.abs(difference) < 2) return "border-emerald-500"
     return "border-border"
   }
@@ -49,9 +54,8 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
     <Card className={`bg-card ${getBorderColor()} border-2 p-6 relative overflow-hidden transition-theme`}>
       {/* Background glow effect */}
       <div
-        className={`absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none ${
-          showSellAlert ? "from-red-500" : showBuyAlert ? "from-cyan-500" : "from-emerald-500"
-        } to-transparent`}
+        className={`absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none ${showSellAlert ? "from-red-500" : showBuyAlert ? "from-cyan-500" : isStale ? "from-amber-500" : "from-emerald-500"
+          } to-transparent`}
       />
 
       <div className="relative z-10">
@@ -95,7 +99,13 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
                 COMPRAR
               </Badge>
             )}
-            {Math.abs(difference) < 2 && !showSellAlert && !showBuyAlert && (
+            {isStale && !showSellAlert && !showBuyAlert && (
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/50">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Preço Antigo
+              </Badge>
+            )}
+            {Math.abs(difference) < 2 && !showSellAlert && !showBuyAlert && !isStale && (
               <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50">✓ Balanceado</Badge>
             )}
           </div>

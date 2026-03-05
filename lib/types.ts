@@ -30,6 +30,7 @@ export type Asset = {
     bankId?: number
     ceilingPrice?: number
     priority?: number
+    lastUpdated?: string
 }
 
 export type Subcategory = {

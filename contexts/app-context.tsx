@@ -238,6 +238,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...assetData,
       id: Math.max(...assets.map((a: Asset) => a.id), 0) + 1,
       currentValue: assetData.quantity * assetData.price,
+      lastUpdated: new Date().toISOString(),
     }
     setAssetsState((prev: Asset[]) => [...prev, newAsset])
   }
@@ -249,6 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const updated = { ...asset, ...data }
           if (data.quantity !== undefined || data.price !== undefined) {
             updated.currentValue = (data.quantity ?? asset.quantity) * (data.price ?? asset.price)
+            updated.lastUpdated = new Date().toISOString()
           }
           return updated
         }
