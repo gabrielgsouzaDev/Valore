@@ -384,13 +384,15 @@ export const themePresets: ThemePreset[] = [
 ]
 
 export const defaultSettings: Settings = {
-    nome: "Valore",
+    nome: "Valore Gray",
     rendaMensal: 0,
     capitalInvestido: 0,
     metaReservaEmergencia: 6,
     themeId: "golden-hour",
     onboardingCompleted: false,
     investmentStrategy: "rebalance",
+    activeGuideStep: null,
+    showGuide: false,
 }
 
 export const STORAGE_KEY = "gabriel-sa-app-data"

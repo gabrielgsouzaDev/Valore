@@ -14,20 +14,11 @@ import { Sidebar } from "@/components/sidebar"
 import { AssetDialog } from "@/components/asset-dialog"
 import { useApp } from "@/contexts/app-context"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { OnboardingWizard } from "@/components/onboarding-wizard"
-import { OnboardingChecklist } from "@/components/onboarding-checklist"
+import { Asset } from "@/lib/types"
 
 export default function Dashboard() {
   const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
   const router = useRouter()
-
-  useEffect(() => {
-    if (settings.onboardingCompleted && settings.userFocus === "finances") {
-      router.push("/economia")
-    }
-  }, [settings.onboardingCompleted, settings.userFocus, router])
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAsset, setEditingAsset] = useState<(typeof assets)[0] | null>(null)
@@ -122,9 +113,6 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
             {/* Main Content */}
             <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-              {/* Onboarding Checklist */}
-              <OnboardingChecklist />
-
               {/* Historical Net Worth Chart */}
               <HistoryChart />
 
@@ -207,8 +195,6 @@ export default function Dashboard() {
         asset={editingAsset}
         onSave={editingAsset ? handleEditAsset : handleAddAsset}
       />
-
-      {!settings.onboardingCompleted && <OnboardingWizard />}
     </div>
   )
 }

@@ -146,7 +146,11 @@ export default function ConfiguracoesPage() {
 
   const handleResetOnboarding = () => {
     if (confirm("Deseja reiniciar o tour de boas-vindas?")) {
-      updateSettings({ onboardingCompleted: false })
+      updateSettings({
+        onboardingCompleted: false,
+        activeGuideStep: null,
+        showGuide: false
+      })
       window.location.href = "/"
     }
   }

@@ -76,6 +76,8 @@ export type Settings = {
     investmentStrategy: InvestmentStrategy
     onboardingCompleted: boolean
     userFocus?: "finances" | "investments" | "both"
+    activeGuideStep: number | null
+    showGuide: boolean
 }
 
 export type ScheduledTransaction = {

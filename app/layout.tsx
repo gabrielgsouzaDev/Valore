@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 })
 
+import { OnboardingWizard } from "@/components/onboarding-wizard"
+import { OnboardingCopilot } from "@/components/onboarding-copilot"
+import { OnboardingWrapper } from "@/components/onboarding-wrapper"
+
 export const metadata: Metadata = {
-  title: "Gabriel S.A. - Dashboard de Investimentos",
+  title: "Valore Gray v1",
   description: "Mission Control para seu portfólio de investimentos",
   generator: "v0.app",
   icons: {
@@ -46,7 +50,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          {children}
+          <OnboardingWrapper />
+        </AppProvider>
         <Analytics />
       </body>
     </html>
