@@ -183,11 +183,14 @@ export default function CartoesPage() {
         {/* Header */}
         <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
           <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col justify-center">
-              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Cartões</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                Gestão de crédito • Projeção de parcelas
-              </p>
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+              <div className="flex flex-col justify-center">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Cartões</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                  Gestão de crédito • Projeção de parcelas
+                </p>
+              </div>
             </div>
             <div className="text-left sm:text-right flex flex-col justify-center">
               <p className="text-xs sm:text-sm text-muted-foreground font-medium">Dívida Total</p>

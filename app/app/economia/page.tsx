@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Sidebar } from "@/components/sidebar"
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil } from "lucide-react"
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
 import { useApp } from "@/contexts/app-context"
@@ -100,11 +100,14 @@ export default function EconomiaPage() {
       <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
         <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
           <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col justify-center">
-              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                Orçamento • Alocação de capital
-              </p>
+            <div className="flex items-center gap-3">
+              <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-400" />
+              <div className="flex flex-col justify-center">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                  Orçamento • Alocação de capital
+                </p>
+              </div>
             </div>
           </div>
         </header>

@@ -33,6 +33,7 @@ import {
     Filter,
     History,
     ListTodo,
+    Receipt,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import type { ScheduledTransaction } from "@/lib/types"
@@ -278,9 +279,12 @@ export default function TransacoesPage() {
                 {/* Header */}
                 <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30">
                     <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Transações</h2>
-                            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Fluxo de caixa • Histórico</p>
+                        <div className="flex items-center gap-3">
+                            <Receipt className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                            <div className="flex flex-col justify-center">
+                                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Transações</h2>
+                                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Fluxo de caixa • Histórico</p>
+                            </div>
                         </div>
 
                         <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>

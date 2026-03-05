@@ -94,12 +94,12 @@ export default function LandingPage() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans overflow-x-hidden selection:bg-amber-500/30">
+    <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans overflow-x-hidden selection:bg-orange-600/30">
       {/* Header Mini */}
       <header className="fixed top-0 w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-md z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-amber-400 rotate-45" />
+            <div className="h-6 w-6 rounded bg-orange-500 rotate-45" />
             <span className="font-bold text-xl tracking-tight">Valore</span>
           </div>
         </div>
@@ -110,13 +110,13 @@ export default function LandingPage() {
         <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
           <div className="space-y-8 relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-semibold text-zinc-300 animate-in fade-in slide-in-from-bottom-4 duration-300 fill-mode-both delay-75">
-              <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
               Gratuito durante o beta
             </div>
 
             <div className="space-y-4">
               <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-300 fill-mode-both delay-150 text-white">
-                Inteligência institucional para seu <span className="text-amber-400">patrimônio.</span>
+                Inteligência institucional para seu <span className="text-orange-500">patrimônio.</span>
               </h1>
               <p className="text-lg sm:text-xl text-zinc-400 max-w-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-300 fill-mode-both delay-200 font-medium">
                 Seu painel financeiro completo: acompanhe investimentos, controle gastos, planeje objetivos e entenda seu net worth em tempo real.
@@ -136,17 +136,17 @@ export default function LandingPage() {
 
           <div className="hidden sm:block relative w-full aspect-square md:aspect-[4/3] lg:aspect-square animate-in fade-in zoom-in-95 duration-500 fill-mode-both delay-300">
             {/* Abstract Dashboard Mock */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent rounded-3xl" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-orange-600/10 to-transparent rounded-3xl" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[80%] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl flex flex-col p-4 gap-4 rotate-[-2deg] skew-y-1 hover:rotate-0 hover:skew-y-0 transition-transform duration-500">
               <div className="h-4 w-1/3 bg-white/5 rounded-md" />
               <div className="flex-1 grid grid-cols-3 gap-4">
                 <div className="col-span-2 bg-white/5 xl:rounded-xl border border-white/5 relative overflow-hidden">
-                  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-amber-500/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-orange-600/20 to-transparent" />
                 </div>
                 <div className="col-span-1 flex flex-col gap-4">
                   <div className="h-1/2 bg-white/5 xl:rounded-xl border border-white/5" />
                   <div className="h-1/2 bg-white/5 xl:rounded-xl border border-white/5 flex items-center justify-center p-4">
-                    <div className="w-full h-full rounded-full border-4 border-amber-400/50 border-t-amber-400" />
+                    <div className="w-full h-full rounded-full border-4 border-orange-500/50 border-t-orange-500" />
                   </div>
                 </div>
               </div>
@@ -180,34 +180,34 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Feature 1 (Large) */}
-            <div className="md:col-span-8 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-amber-400/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+            <div className="md:col-span-8 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-orange-500/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden flex flex-col justify-between min-h-[300px]">
               <div className="relative z-10 max-w-md">
                 <h3 className="text-2xl font-bold mb-3">Distribuição Inteligente</h3>
                 <p className="text-zinc-400 font-medium leading-relaxed">Algoritmo de rebalanceamento preditivo. Escolha entre método Proporcional ou em Cascata para otimizar seus aportes automaticamente.</p>
               </div>
               <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-30 group-hover:opacity-100 transition-opacity duration-400 flex items-end justify-end p-6">
-                <div className="w-full border-b border-r border-amber-400/30 flex items-end gap-2 p-4">
-                  <div className="w-1/4 bg-amber-400/20 h-1/3" />
-                  <div className="w-1/4 bg-amber-400/40 h-2/3" />
-                  <div className="w-1/4 bg-amber-400/60 h-full" />
+                <div className="w-full border-b border-r border-orange-500/30 flex items-end gap-2 p-4">
+                  <div className="w-1/4 bg-orange-500/20 h-1/3" />
+                  <div className="w-1/4 bg-orange-500/40 h-2/3" />
+                  <div className="w-1/4 bg-orange-500/60 h-full" />
                 </div>
               </div>
             </div>
 
             {/* Feature 2 (Small) */}
-            <div className="md:col-span-4 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-amber-400/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[300px]">
+            <div className="md:col-span-4 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-orange-500/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[300px]">
               <div>
                 <h3 className="text-xl font-bold mb-3">Preço-Teto Automático</h3>
                 <p className="text-zinc-400 font-medium leading-relaxed">Defina tetos de compra e deixe o sistema barrar ordens caras.</p>
               </div>
               <div className="mt-8 flex items-center justify-between p-3 rounded-lg bg-black/50 border border-white/5">
                 <span className="text-zinc-500 font-mono text-xs">STATUS DA COMPRA</span>
-                <span className="text-amber-400 font-mono text-xs bg-amber-400/10 px-2 py-1 rounded inline-flex items-center gap-1.5 whitespace-nowrap"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> BLOQUEADA</span>
+                <span className="text-orange-500 font-mono text-xs bg-orange-500/10 px-2 py-1 rounded inline-flex items-center gap-1.5 whitespace-nowrap"><span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> BLOQUEADA</span>
               </div>
             </div>
 
             {/* Feature 3 (Small) */}
-            <div className="md:col-span-5 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-amber-400/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[250px]">
+            <div className="md:col-span-5 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-orange-500/50 hover:bg-white/[0.04] transition-all duration-300 group flex flex-col justify-between min-h-[250px]">
               <div>
                 <h3 className="text-xl font-bold mb-3">Projeção de Faturas</h3>
                 <p className="text-zinc-400 font-medium leading-relaxed">Avalie o impacto futuro dos cartões no seu fluxo de caixa.</p>
@@ -215,12 +215,12 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 4 (Medium) */}
-            <div className="md:col-span-7 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-amber-400/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden">
+            <div className="md:col-span-7 p-8 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-orange-500/50 hover:bg-white/[0.04] transition-all duration-300 group relative overflow-hidden">
               <div className="relative z-10">
                 <h3 className="text-xl font-bold mb-3">19 Temas Premium</h3>
                 <p className="text-zinc-400 font-medium leading-relaxed max-w-sm">Do Midnight ao AMOLED. PWA Instalável adaptado à sua identidade, preservado em cache offline.</p>
               </div>
-              <div className="absolute right-[-20%] bottom-[-20%] w-64 h-64 bg-amber-500/10 blur-[100px] group-hover:bg-amber-400/20 transition-colors duration-400" />
+              <div className="absolute right-[-20%] bottom-[-20%] w-64 h-64 bg-orange-600/10 blur-[100px] group-hover:bg-orange-500/20 transition-colors duration-400" />
             </div>
           </div>
         </section>
@@ -253,11 +253,11 @@ export default function LandingPage() {
                       onChange={e => setEmail(e.target.value)}
                       placeholder="seu.melhor@email.com"
                       required
-                      className="flex-1 h-12 px-4 rounded-xl bg-black border border-white/10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-zinc-100 placeholder:text-zinc-600 transition-all font-medium"
+                      className="flex-1 h-12 px-4 rounded-xl bg-black border border-white/10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-zinc-100 placeholder:text-zinc-600 transition-all font-medium"
                     />
                     <button
                       type="submit"
-                      className="h-12 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-all focus:scale-95 whitespace-nowrap"
+                      className="h-12 px-6 rounded-xl bg-orange-600 hover:bg-orange-500 text-black font-bold transition-all focus:scale-95 whitespace-nowrap"
                     >
                       Garantir Vaga
                     </button>
@@ -267,7 +267,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2 text-amber-400 font-bold animate-in fade-in zoom-in duration-300">
+                <div className="flex items-center justify-center gap-2 text-orange-500 font-bold animate-in fade-in zoom-in duration-300">
                   <CheckCircle2 className="h-6 w-6" />
                   <span>Vaga reservada com sucesso. Fique de olho na caixa de entrada.</span>
                 </div>

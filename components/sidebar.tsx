@@ -34,11 +34,20 @@ export function Sidebar() {
     (m) => m.alwaysOn || activeModules[m.key] !== false
   )
 
-  // Slots fixos do bottom nav filtrados por ativação
-  const bottomFixed = visibleModules.filter((m) => BOTTOM_NAV_FIXED_KEYS.includes(m.key))
+  // Se temos 5 ou menos módulos no total (incluindo dashboard e config), cabe tudo no bottom nav
+  // Porém, adicionamos Configurações no drawer no código anterior, mas não estava no visibleModules.
+  // visibleModules tem até 6 itens (dasboard + 5). 
+  const hasDrawer = visibleModules.length > 5
+
+  // Slots fixos do bottom nav
+  const bottomFixed = hasDrawer
+    ? visibleModules.filter((m) => BOTTOM_NAV_FIXED_KEYS.includes(m.key))
+    : visibleModules
 
   // Módulos no drawer "Mais"
-  const drawerModules = visibleModules.filter((m) => !BOTTOM_NAV_FIXED_KEYS.includes(m.key))
+  const drawerModules = hasDrawer
+    ? visibleModules.filter((m) => !BOTTOM_NAV_FIXED_KEYS.includes(m.key))
+    : []
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname === href || pathname.startsWith(href + "/")
@@ -117,21 +126,47 @@ export function Sidebar() {
             )
           })}
 
-          {/* Botão "Mais" */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className={cn(
-              "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-[44px] min-h-[56px] flex-1",
-              drawerHasActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className={cn("p-1.5 rounded-lg transition-all", drawerHasActive ? "bg-primary/15" : "bg-transparent")}>
-              <MoreHorizontal className="h-5 w-5" />
-            </div>
-            <span className={cn("text-[10px] font-semibold tracking-tight", drawerHasActive ? "text-primary" : "text-muted-foreground")}>
-              Mais
-            </span>
-          </button>
+          {/* Botão "Mais" - só renderiza se hasDrawer for true */}
+          {hasDrawer && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-[44px] min-h-[56px] flex-1",
+                drawerHasActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className={cn("p-1.5 rounded-lg transition-all", drawerHasActive ? "bg-primary/15" : "bg-transparent")}>
+                <MoreHorizontal className="h-5 w-5" />
+              </div>
+              <span className={cn("text-[10px] font-semibold tracking-tight", drawerHasActive ? "text-primary" : "text-muted-foreground")}>
+                Mais
+              </span>
+            </button>
+          )}
+
+          {/* Configurações fica no navbar ou apenas no drawer?
+              Originalmente config nao tava no menu inline. Se hasDrawer=false, config nao aparece unless added.
+              Vamos adicionar Configurações no bottomFixed se !hasDrawer.
+              Visão mobile max 5 items: Se hasDrawer for false, significa q visibleModules <= 5.
+              Visiveis <= 5 => max 5 ícones na bottom bar (ex: inicio, invest, econ, cartoes, config? Nao, visibleModules nao inclui config).
+              Vamos incluir config caso não haja drawer.
+          */}
+          {!hasDrawer && (
+            <Link
+              href="/app/configuracoes"
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-[44px] min-h-[56px] flex-1",
+                pathname === "/app/configuracoes" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className={cn("p-1.5 rounded-lg transition-all", pathname === "/app/configuracoes" ? "bg-primary/15" : "bg-transparent")}>
+                <Settings className="h-5 w-5" />
+              </div>
+              <span className={cn("text-[10px] font-semibold tracking-tight", pathname === "/app/configuracoes" ? "text-primary" : "text-muted-foreground")}>
+                Ajustes
+              </span>
+            </Link>
+          )}
         </div>
       </nav>
 

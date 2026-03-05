@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Settings, ArrowUpRight, CreditCard } from "lucide-react"
+import { Settings, ArrowUpRight, CreditCard, TrendingUp } from "lucide-react"
 import { AssetCard } from "@/components/asset-card"
 import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
@@ -66,9 +66,12 @@ export default function InvestimentosPage() {
                 <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
                     <div className="px-4 sm:px-8 py-4 sm:py-6">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 h-full">
-                            <div className="flex flex-col justify-center">
-                                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Investimentos</h2>
-                                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Mission Control • Portfólio em tempo real</p>
+                            <div className="flex items-center gap-3">
+                                <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                                <div className="flex flex-col justify-center">
+                                    <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Investimentos</h2>
+                                    <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Mission Control • Portfólio em tempo real</p>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
