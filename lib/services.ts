@@ -101,6 +101,14 @@ export function applyThemeVariables(theme: ThemePreset) {
     } else {
         root.classList.add("dark")
     }
+
+    // Atualiza a meta tag theme-color para a barra de status mobile acompanhar o tema
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+        // Converte a string "R G B" em "rgb(R, G, B)"
+        const bgColor = `rgb(${theme.colors.background.split(" ").join(", ")})`
+        metaThemeColor.setAttribute("content", bgColor)
+    }
 }
 
 /**
