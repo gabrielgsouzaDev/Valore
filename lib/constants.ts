@@ -407,9 +407,9 @@ export const exampleData = {
         { id: 2, name: "Itaú", type: "banco_tradicional", color: "orange", balance: 12850.20, isMain: false, notes: "Reserva e investimentos" }
     ] as Bank[],
     assets: [
-        { id: 1, name: "IVVB11", targetPercentage: 35, currentValue: 12500, quantity: 45, price: 277.70, bankId: 2 },
-        { id: 2, name: "Bitcoin", targetPercentage: 10, currentValue: 8500, quantity: 0.025, price: 340000, bankId: 2 },
-        { id: 3, name: "CDB Pós-Fixado", targetPercentage: 55, currentValue: 25000, quantity: 1, price: 25000, bankId: 2 }
+        { id: 1, name: "IVVB11", targetPercentage: 35, currentValue: 12500, quantity: 45, price: 277.70, bankId: 2, ceilingPrice: 300, priority: 2 },
+        { id: 2, name: "Bitcoin", targetPercentage: 10, currentValue: 8500, quantity: 0.025, price: 340000, bankId: 2, ceilingPrice: 400000, priority: 3 },
+        { id: 3, name: "CDB Pós-Fixado", targetPercentage: 55, currentValue: 25000, quantity: 1, price: 25000, bankId: 2, priority: 1 }
     ] as Asset[],
     categories: [
         {

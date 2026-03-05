@@ -86,11 +86,18 @@ export default function ConfiguracoesPage() {
     loadExampleData,
   } = useApp()
 
-  const [localSettings, setLocalSettings] = useState({
+  const [localSettings, setLocalSettings] = useState<{
+    nome: string;
+    rendaMensal: string;
+    capitalInvestido: string;
+    metaReservaEmergencia: string;
+    investmentStrategy: InvestmentStrategy;
+  }>({
     nome: settings.nome,
     rendaMensal: settings.rendaMensal.toString(),
     capitalInvestido: settings.capitalInvestido.toString(),
     metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
+    investmentStrategy: settings.investmentStrategy || "rebalance",
   })
 
   const [saveStatus, setSaveStatus] = useState<string | null>(null)
@@ -364,7 +371,18 @@ export default function ConfiguracoesPage() {
                       >
                         <div className="text-left">
                           <p className="font-bold">Cascata (Waterfall)</p>
-                          <p className="text-[10px] opacity-70">Preenche metas 100% sequencialmente</p>
+                          <p className="text-[10px] opacity-70">Preenche metas 100% por prioridade</p>
+                        </div>
+                      </Button>
+                      <Button
+                        variant={localSettings.investmentStrategy === "ceiling" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLocalSettings({ ...localSettings, investmentStrategy: "ceiling" })}
+                        className="justify-start text-xs sm:text-sm h-auto py-2 px-3"
+                      >
+                        <div className="text-left">
+                          <p className="font-bold">Aporte por Preço-Teto</p>
+                          <p className="text-[10px] opacity-70">Ignora ativos acima do preço-teto</p>
                         </div>
                       </Button>
                     </div>

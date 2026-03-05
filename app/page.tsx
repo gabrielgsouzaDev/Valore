@@ -41,8 +41,8 @@ export default function Dashboard() {
     }
   }
 
-  const handleUpdateAsset = (id: number, quantity: number, price: number) => {
-    updateAsset(id, { quantity, price })
+  const handleUpdateAsset = (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number) => {
+    updateAsset(id, { quantity, price, ceilingPrice, priority })
   }
 
   const openEditDialog = (asset: (typeof assets)[0]) => {

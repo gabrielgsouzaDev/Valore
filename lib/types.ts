@@ -28,6 +28,8 @@ export type Asset = {
     quantity: number
     price: number
     bankId?: number
+    ceilingPrice?: number
+    priority?: number
 }
 
 export type Subcategory = {
@@ -60,7 +62,7 @@ export type Goal = {
     bankId?: number
 }
 
-export type InvestmentStrategy = "rebalance" | "proportional" | "waterfall"
+export type InvestmentStrategy = "rebalance" | "proportional" | "waterfall" | "ceiling"
 
 export type Settings = {
     nome: string

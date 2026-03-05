@@ -109,9 +109,15 @@ export function calculateInvestmentDistribution(
 
     let recs: { name: string; amount: number }[] = []
 
-    if (strategy === "rebalance") {
+    if (strategy === "rebalance" || strategy === "ceiling") {
         const futureTotal = totalNetWorth + amount
-        recs = assets.map((asset) => {
+
+        // Se for teto, filtramos ativos que estão acima do preço-teto
+        const activeAssets = strategy === "ceiling"
+            ? assets.filter(a => !a.ceilingPrice || a.price <= a.ceilingPrice)
+            : assets
+
+        recs = activeAssets.map((asset) => {
             const targetValue = futureTotal * (asset.targetPercentage / 100)
             const toBuy = targetValue - asset.currentValue
             return {
@@ -120,7 +126,7 @@ export function calculateInvestmentDistribution(
             }
         })
 
-        // Ajuste proporcional se o toBuy total for diferente do aporte (devido ao Math.max)
+        // Ajuste proporcional se o toBuy total for diferente do aporte (devido ao Math.max ou filtro)
         const totalToBuy = recs.reduce((sum, r) => sum + r.amount, 0)
         if (totalToBuy > 0) {
             recs = recs.map((r) => ({
@@ -135,7 +141,16 @@ export function calculateInvestmentDistribution(
         }))
     } else if (strategy === "waterfall") {
         let remaining = amount
-        const sortedAssets = [...assets].sort((a, b) => b.targetPercentage - a.targetPercentage)
+
+        // Ordenação: Prioridade manual (se houver) -> Peso da meta
+        const sortedAssets = [...assets].sort((a, b) => {
+            if (a.priority !== undefined && b.priority !== undefined) {
+                return a.priority - b.priority
+            }
+            if (a.priority !== undefined) return -1
+            if (b.priority !== undefined) return 1
+            return b.targetPercentage - a.targetPercentage
+        })
 
         recs = sortedAssets.map((asset) => {
             if (remaining <= 0) return { name: asset.name, amount: 0 }
