@@ -92,10 +92,10 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-50 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{goal ? "Editar Objetivo" : "Adicionar Objetivo"}</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-muted-foreground">
             {goal ? "Atualize as informações do objetivo" : "Crie um novo objetivo financeiro"}
           </DialogDescription>
         </DialogHeader>
@@ -108,7 +108,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: Reserva de Emergência"
-                className="bg-slate-800 border-slate-700"
+                className="bg-muted border-border text-foreground"
                 required
               />
             </div>
@@ -122,7 +122,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   value={formData.target}
                   onChange={(e) => setFormData({ ...formData, target: e.target.value })}
                   placeholder="Ex: 60000"
-                  className="bg-slate-800 border-slate-700"
+                  className="bg-muted border-border text-foreground"
                   required
                 />
               </div>
@@ -135,7 +135,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   value={formData.current}
                   onChange={(e) => setFormData({ ...formData, current: e.target.value })}
                   placeholder="Ex: 35000"
-                  className="bg-slate-800 border-slate-700"
+                  className="bg-muted border-border text-foreground"
                   required
                 />
               </div>
@@ -148,7 +148,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   type="date"
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="bg-slate-800 border-slate-700"
+                  className="bg-muted border-border text-foreground"
                   required
                 />
               </div>
@@ -161,7 +161,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   value={formData.monthlyContribution}
                   onChange={(e) => setFormData({ ...formData, monthlyContribution: e.target.value })}
                   placeholder="Ex: 2500"
-                  className="bg-slate-800 border-slate-700"
+                  className="bg-muted border-border text-foreground"
                   required
                 />
               </div>
@@ -173,7 +173,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   id="priority"
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value as "alta" | "média" | "baixa" })}
-                  className="bg-slate-800 border-slate-700 rounded-md px-3 py-2 text-slate-50"
+                  className="bg-muted border border-border rounded-md px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="alta">Alta</option>
                   <option value="média">Média</option>
@@ -187,7 +187,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   placeholder="Ex: Segurança, Lazer"
-                  className="bg-slate-800 border-slate-700"
+                  className="bg-muted border-border text-foreground"
                   required
                 />
               </div>
@@ -197,7 +197,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950">
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               {goal ? "Salvar" : "Adicionar"}
             </Button>
           </DialogFooter>

@@ -64,28 +64,28 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-50">
+      <DialogContent className="bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle>{subcategory ? "Editar Subcategoria" : "Adicionar Subcategoria"}</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-muted-foreground">
             {subcategory ? "Atualize as informações da subcategoria" : "Crie uma nova subcategoria"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nome da Subcategoria</Label>
+              <Label htmlFor="name" className="text-foreground/80">Nome da Subcategoria</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: Aluguel, Mercado"
-                className="bg-slate-800 border-slate-700"
+                className="bg-muted border-border text-foreground"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="budgeted">Orçamento (R$)</Label>
+              <Label htmlFor="budgeted" className="text-foreground/80">Orçamento (R$)</Label>
               <Input
                 id="budgeted"
                 type="number"
@@ -93,12 +93,12 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
                 value={formData.budgeted}
                 onChange={(e) => setFormData({ ...formData, budgeted: e.target.value })}
                 placeholder="Ex: 2000"
-                className="bg-slate-800 border-slate-700"
+                className="bg-muted border-border text-foreground"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="spent">Gasto (R$)</Label>
+              <Label htmlFor="spent" className="text-foreground/80">Gasto (R$)</Label>
               <Input
                 id="spent"
                 type="number"
@@ -106,7 +106,7 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
                 value={formData.spent}
                 onChange={(e) => setFormData({ ...formData, spent: e.target.value })}
                 placeholder="Ex: 1500"
-                className="bg-slate-800 border-slate-700"
+                className="bg-muted border-border text-foreground"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950">
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               {subcategory ? "Salvar" : "Adicionar"}
             </Button>
           </DialogFooter>

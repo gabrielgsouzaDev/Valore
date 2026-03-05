@@ -572,18 +572,20 @@ export default function ConfiguracoesPage() {
                   />
 
                   <div className="border-t border-border pt-3 sm:pt-4">
-                    <Label className="text-foreground/80 text-xs sm:text-sm">Zona de Perigo</Label>
-                    <Button
-                      onClick={handleLimparDados}
-                      variant="outline"
-                      className="border-danger text-danger hover:bg-danger/10 hover:text-danger bg-transparent text-xs sm:text-sm w-full sm:w-auto mt-2"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                      {saveStatus === "limpo" ? "Dados Apagados!" : "Limpar Todos os Dados"}
-                    </Button>
-                    <p className="text-[10px] sm:text-xs text-danger/70 mt-2">
-                      Atenção: Isto apagará permanentemente TODOS os seus dados locais.
-                    </p>
+                    <p className="text-foreground/80 text-xs sm:text-sm font-semibold mb-2">Zona de Perigo</p>
+                    <div className="bg-muted/60 border border-border rounded-xl p-3 sm:p-4 space-y-3">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Atenção: esta ação apagará permanentemente <strong className="text-foreground">todos</strong> os seus dados locais. Não é reversível.
+                      </p>
+                      <Button
+                        onClick={handleLimparDados}
+                        variant="outline"
+                        className="border-border text-muted-foreground hover:bg-background hover:text-foreground hover:border-foreground/40 bg-transparent text-xs sm:text-sm w-full sm:w-auto transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                        {saveStatus === "limpo" ? "Dados Apagados!" : "Limpar Todos os Dados"}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-2 sm:p-3">
