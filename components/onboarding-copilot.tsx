@@ -65,7 +65,7 @@ export function OnboardingCopilot() {
             description: "Explore os temas e escolha o que melhor combina com você.",
             icon: Sparkles,
             link: "/app/configuracoes",
-            isDone: settings.themeId !== "midnight" && settings.themeId !== "golden-hour",
+            isDone: settings.themeId !== "paper",
             cta: "Mudar Tema"
         }
     ]

@@ -572,7 +572,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (parsed.goals) setGoalsState(parsed.goals)
       if (parsed.settings) {
         setSettingsState(parsed.settings)
-        setTheme(parsed.settings.themeId || "midnight")
+        // Se houver tema salvo, aplica. Senão, 'paper'
+        setTheme(parsed.settings.themeId || "paper")
       }
       if (parsed.transactions) setTransactionsState(parsed.transactions)
       if (parsed.creditCards) setCreditCardsState(parsed.creditCards)
@@ -601,7 +602,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCardExpensesState([])
       setBanksState([])
       setPatrimonialHistory([])
-      setTheme("midnight")
+      setSettingsState(defaultSettings)
+      setTheme("paper")
     }
   }
 

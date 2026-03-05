@@ -101,7 +101,7 @@ export default function EconomiaPage() {
         <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
           <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-400" />
+              <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
               <div className="flex flex-col justify-center">
                 <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
