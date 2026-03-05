@@ -1,0 +1,47 @@
+# Estudo de Viabilidade: Investment Dashboard para SaaS
+
+Este documento analisa a transição estratégica do sistema atual (local/single-user) para uma plataforma de software como serviço (SaaS) escalável e monetizável.
+
+## 1. Viabilidade Técnica: O Caminho para a Nuvem
+
+O sistema atual possui uma base sólida em arquitetura limpa, o que facilita a migração. No entanto, mudanças fundamentais são necessárias:
+
+### ⚠️ Desafios de Migração
+- **Persistência**: Migrar de `LocalStorage` para um Banco de Dados Relacional (PostgreSQL via Prisma/Supabase).
+- **Identidade**: Implementar Auth (NextAuth/Clerk) com suporte a sessões persistentes.
+- **Tenancy**: Implementar isolamento a nível de linha (RLS) para garantir que usuários não vejam dados de outros (Arquitetura Multi-Tenant).
+
+### 🚀 Escalabilidade
+- **Infraestrutura**: Migração para Edge Functions para redução de latência.
+- **Cache**: Implementação de Redis para cálculos pesados de patrimônio histórico e indicadores de mercado.
+- **API**: Criação de uma camada de API robusta (REST ou GraphQL) separada do Frontend para permitir integrações futuras.
+
+---
+
+## 2. Estratégia de Produto e "Ticket" (Faturamento)
+
+Para aumentar o valor da assinatura e o potencial de receita, o sistema deve evoluir de uma "ferramenta de registro" para um "gestor de inteligência".
+
+### 💎 Features de Alto Ticket (High-Value)
+
+#### A. Central de Imposto de Renda (IR) Automático
+> **Impacto**: Reduz uma dor crítica do investidor brasileiro.
+> **Funcionalidade**: Cálculo automático de custo médio e geração de relatórios anuais de ativos e DARF para vendas.
+
+#### B. Integração Direta (Open Finance / B3)
+> **Impacto**: Automatização completa.
+> **Funcionalidade**: Integração com APIs da B3 (CEI) e bancos nacionais para sincronização automática de ativos, dividendos e faturas, eliminando o preenchimento manual.
+
+#### C. Ambra IQ: Advisor de Rebalanceamento com IA
+> **Impacto**: Consultoria personalizada em escala.
+> **Funcionalidade**: Uso da **Gemini API** para analisar o perfil de risco do usuário e sugerir rebalanceamentos dinâmicos com base em metas e condições de mercado em tempo real.
+
+#### D. Portal de Gestão Familiar
+> **Impacto**: Expansão do LTV (Life Time Value).
+> **Funcionalidade**: Permite que o titular gerencie contas de dependentes (filhos/cônjuge) com visões individuais e consolidada.
+
+---
+
+## 3. Conclusão da Avaliação
+
+O projeto é **altamente pertinente** para o mercado de Wealth Management. A base técnica atual é "SaaS-Ready" no sentido de modularização. O foco imediato para pivotar deve ser a **Automação de Dados** (Open Banking) e a **Inteligência de Rebalanceamento**, que são as features que justificam um ticket mensal elevado versus ferramentas gratuitas simples.

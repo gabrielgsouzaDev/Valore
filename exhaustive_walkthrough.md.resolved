@@ -1,0 +1,78 @@
+# Walkthrough Exaustivo: Engenharia do Investment Dashboard
+
+Este documento detalha cada componente, lógica e decisão arquitetural do sistema, servendo como o guia definitivo para a implementação atual.
+
+## 1. Arquitetura de Pastas e Responsabilidades
+
+O sistema segue uma estrutura Next.js (App Router) otimizada para modularização:
+
+- **/app**: Rotas e definições de página (Dashboard, Cartões, Planejamento, etc.).
+- **/components**: Componentes de UI reusáveis (+ subpasta **/ui** com primitivos radicais/shadcn).
+- **/contexts**: O coração do estado da aplicação ([AppContext](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx#19-112)).
+- **/lib**: Camada de lógica pura (tipos, constantes, serviços de cálculo e esquemas de validação).
+
+---
+
+## 2. A Camada de Dados (The Core)
+
+### 2.1 Contexto e Estado ([contexts/app-context.tsx](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx))
+O [AppContext](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx#19-112) gerencia todo o ciclo de vida dos dados. Ele utiliza `useState` para reatividade e `useEffect` para:
+- **Hidratação**: Carregar dados do `LocalStorage` no boot inicial.
+- **Persistência**: Salvar automaticamente qualquer mudança (assets, categorias, gastos) no storage local.
+- **Snapshots**: Capturar o patrimônio total diário para gerar o gráfico de evolução histórica.
+
+### 2.2 Tipagem Estrita ([lib/types.ts](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts))
+Toda a aplicação é fortemente tipada. Interfaces como [Asset](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/components/portfolio-chart.tsx#7-12), [ScheduledTransaction](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts#71-83), [PatrimonialSnapshot](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts#125-129) e [Category](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts#40-50) garantem que não ocorram erros de desestruturação ou tipos nulos inesperados.
+
+### 2.3 Validação ([lib/schemas.ts](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/schemas.ts))
+Utilizamos **Zod** para definir o "contrato" de cada entidade física. Isso permite validar inputs de formulários antes que eles contaminem o estado global da aplicação.
+
+---
+
+## 3. Lógica Financeira e Serviços
+
+A lógica de negócio foi extraída para [lib/services.ts](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/services.ts), garantindo que seja testável isoladamente:
+
+- **Cálculo de Faturas**: Agrupa despesas de cartão por mês de fechamento, considerando o dia de fechamento vs vencimento.
+- **Formatação**: Centralização de formatação de moedas e porcentagens (Padrão PT-BR).
+
+---
+
+## 4. Engine de Temas Dinâmicos
+
+Diferente de sistemas de temas estáticos, implementamos uma injeção dinâmica de variáveis CSS:
+
+1. **Definição**: Os temas são tokens de cores HSL em [lib/constants.ts](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/constants.ts).
+2. **Aplicação**: A função [applyThemeVariables](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/services.ts#84-98) percorre as cores do tema selecionado e atualiza as propriedades `--primary`, `--background`, `--accent`, etc., no elemento raiz (`document.documentElement`).
+3. **Efeito**: Isso permite mudar toda a identidade visual do app instantaneamente sem precisar recarregar o CSS ou as páginas.
+
+---
+
+## 5. Visualizações e Gráficos
+
+Utilizamos o **Recharts** para representar dados complexos:
+
+- **PortfolioChart (Donut)**: Distribuição percentual de ativos.
+- **HistoryChart (Linha)**: Evolução do patrimônio total baseada nos snapshots automáticos.
+- **BudgetComparison (Barras)**: Visão imediata de saúde financeira comparando o planejado com os gastos logados por categoria.
+
+---
+
+## 6. Fluxo de Trabalho (Data Flow)
+
+1. Usuário realiza uma ação em um componente (ex: Adicionar Ativo).
+2. O componente chama uma função do [useApp()](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx#622-632).
+3. A função valida os dados via Zod.
+4. O estado no [AppContext](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx#19-112) é atualizado.
+5. O `useEffect` de persistência detecta a mudança e sincroniza com o `LocalStorage`.
+6. Os componentes de gráfico e cards são re-renderizados automaticamente devido à reatividade do React.
+
+---
+## 7. Demonstração Visual (Live System)
+
+Para ver a arquitetura em ação, com a aplicação de temas dinâmicos e carregamento de componentes de gráfico, assista ao registro da última sessão de verificação:
+
+![Demonstração do Sistema em Execução](file:///C:/Users/Usuário/.gemini/antigravity/brain/45599cf5-1e24-465f-8f56-0d95d657452a/verify_local_run_1772671883262.webp)
+
+---
+*Este walkthrough reflete o estado v1.1.0 (Refatoração Clean Architecture concluída).*
