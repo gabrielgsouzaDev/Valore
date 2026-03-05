@@ -38,7 +38,7 @@ export function OnboardingCopilot() {
             title: "Renda Mensal",
             description: "Defina sua renda mensal para o Valore calcular seu potencial.",
             icon: SettingsIcon,
-            link: "/configuracoes",
+            link: "/app/configuracoes",
             isDone: settings.rendaMensal > 0,
             cta: "Configurar Renda"
         },
@@ -46,7 +46,7 @@ export function OnboardingCopilot() {
             title: "Fluxo de Energia",
             description: "Cadastre seu primeiro banco ou cartão para monitorar o saldo.",
             icon: Wallet,
-            link: "/configuracoes",
+            link: "/app/configuracoes",
             isDone: banks.length > 0 || creditCards.length > 0,
             cta: "Vincular Banco"
         },
@@ -56,7 +56,7 @@ export function OnboardingCopilot() {
                 ? "Crie seu primeiro objetivo financeiro (ex: Reserva de Emergência)."
                 : "Adicione seu primeiro ativo (Ação, Fundo ou FII).",
             icon: settings.userFocus === "finances" ? Target : TrendingUp,
-            link: settings.userFocus === "finances" ? "/objetivos" : "/",
+            link: settings.userFocus === "finances" ? "/app/objetivos" : "/app",
             isDone: settings.userFocus === "finances" ? goals.length > 0 : assets.length > 0,
             cta: settings.userFocus === "finances" ? "Criar Objetivo" : "Adicionar Ativo"
         },
@@ -64,7 +64,7 @@ export function OnboardingCopilot() {
             title: "Identidade Visual",
             description: "Explore os temas e escolha o que melhor combina com você.",
             icon: Sparkles,
-            link: "/configuracoes",
+            link: "/app/configuracoes",
             isDone: settings.themeId !== "midnight" && settings.themeId !== "golden-hour",
             cta: "Mudar Tema"
         }

@@ -130,8 +130,17 @@ export default function PlanejamentoPage() {
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T00:00:00")
-    return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })
+    if (!dateString) return ""
+    try {
+      const parts = dateString.split("T")[0].split("-")
+      if (parts.length !== 3) return dateString
+      // Cria a data no fuso local meia-noite
+      const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+      if (isNaN(date.getTime())) return "Data Inválida"
+      return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })
+    } catch {
+      return "Data Inválida"
+    }
   }
 
   const getStatusColor = (status: string) => {

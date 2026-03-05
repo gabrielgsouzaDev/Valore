@@ -102,11 +102,6 @@ export default function LandingPage() {
             <div className="h-6 w-6 rounded bg-amber-400 rotate-45" />
             <span className="font-bold text-xl tracking-tight">Valore</span>
           </div>
-          <Link href="/app">
-            <button className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-              Entrar
-            </button>
-          </Link>
         </div>
       </header>
 
@@ -205,8 +200,9 @@ export default function LandingPage() {
                 <h3 className="text-xl font-bold mb-3">Preço-Teto Automático</h3>
                 <p className="text-zinc-400 font-medium leading-relaxed">Defina tetos de compra e deixe o sistema barrar ordens caras.</p>
               </div>
-              <div className="mt-8 pt-4 border-t border-dashed border-white/20 text-amber-400 font-mono text-sm group-hover:text-amber-300 transition-colors">
-                LIMIT_REACHED: TRUE
+              <div className="mt-8 flex items-center justify-between p-3 rounded-lg bg-black/50 border border-white/5">
+                <span className="text-zinc-500 font-mono text-xs">STATUS DA COMPRA</span>
+                <span className="text-amber-400 font-mono text-xs bg-amber-400/10 px-2 py-1 rounded inline-flex items-center gap-1.5 whitespace-nowrap"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> BLOQUEADA</span>
               </div>
             </div>
 
@@ -235,14 +231,7 @@ export default function LandingPage() {
             <div className="text-6xl sm:text-8xl font-black text-white/50 mb-4 font-mono">
               <CountUp end={50} />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-8">Primeiros usuários no acesso antecipado</h2>
-
-            {/* Logos Placeholder */}
-            <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-50 grayscale">
-              <div className="text-xl font-black tracking-widest uppercase">FintechBR</div>
-              <div className="text-xl font-black tracking-tighter">InvestNews</div>
-              <div className="text-xl font-bold italic">TechFinance</div>
-            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold">Primeiros usuários no acesso antecipado</h2>
           </div>
         </section>
 
@@ -252,26 +241,31 @@ export default function LandingPage() {
             <div className="relative z-10">
               <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Acesso antecipado gratuito</h2>
               <p className="text-zinc-400 text-lg mb-8 font-medium">
-                Preço especial para o plano vitalício garantido apenas para a primeira leva de investidores.
+                Garanta seu lugar no lançamento e participe da construção do melhor painel financeiro.
               </p>
 
               {!subscribed ? (
-                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="seu.melhor@email.com"
-                    required
-                    className="flex-1 h-12 px-4 rounded-xl bg-black border border-white/10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-zinc-100 placeholder:text-zinc-600 transition-all font-medium"
-                  />
-                  <button
-                    type="submit"
-                    className="h-12 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-all focus:scale-95 whitespace-nowrap"
-                  >
-                    Garantir Vaga
-                  </button>
-                </form>
+                <div className="flex flex-col gap-3 max-w-lg mx-auto">
+                  <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="seu.melhor@email.com"
+                      required
+                      className="flex-1 h-12 px-4 rounded-xl bg-black border border-white/10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-zinc-100 placeholder:text-zinc-600 transition-all font-medium"
+                    />
+                    <button
+                      type="submit"
+                      className="h-12 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-all focus:scale-95 whitespace-nowrap"
+                    >
+                      Garantir Vaga
+                    </button>
+                  </form>
+                  <p className="text-xs text-zinc-500 font-medium mt-1">
+                    Tratamento de dados em conformidade com a LGPD. Zero spam.
+                  </p>
+                </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 text-amber-400 font-bold animate-in fade-in zoom-in duration-300">
                   <CheckCircle2 className="h-6 w-6" />

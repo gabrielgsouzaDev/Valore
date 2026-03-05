@@ -85,6 +85,7 @@ export default function ConfiguracoesPage() {
     setTheme,
     clearAllData,
     loadExampleData,
+    totalNetWorth,
   } = useApp()
 
   const [localSettings, setLocalSettings] = useState<{
@@ -322,7 +323,7 @@ export default function ConfiguracoesPage() {
                     Portfolio
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Configuracoes gerais de investimentos
+                    Configurações gerais de investimentos
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
@@ -330,13 +331,18 @@ export default function ConfiguracoesPage() {
                     <Label htmlFor="capital" className="text-foreground/80 text-xs sm:text-sm">
                       Capital Investido Total (R$)
                     </Label>
-                    <Input
-                      id="capital"
-                      type="number"
-                      value={localSettings.capitalInvestido}
-                      onChange={(e) => setLocalSettings({ ...localSettings, capitalInvestido: e.target.value })}
-                      className="bg-muted border-border text-sm"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="capital"
+                        type="text"
+                        value={formatCurrency(totalNetWorth)}
+                        disabled
+                        className="bg-muted border-border text-sm opacity-50 cursor-not-allowed"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                        Auto
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5 sm:space-y-2">
