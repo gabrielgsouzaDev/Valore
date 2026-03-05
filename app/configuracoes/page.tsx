@@ -111,6 +111,7 @@ export default function ConfiguracoesPage() {
     updateSettings({
       nome: localSettings.nome,
       rendaMensal: Number.parseFloat(localSettings.rendaMensal) || 0,
+      investmentStrategy: localSettings.investmentStrategy as InvestmentStrategy,
     })
     setSaveStatus("perfil")
     setTimeout(() => setSaveStatus(null), 2000)
@@ -147,6 +148,7 @@ export default function ConfiguracoesPage() {
           rendaMensal: settings.rendaMensal.toString(),
           capitalInvestido: settings.capitalInvestido.toString(),
           metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
+          investmentStrategy: settings.investmentStrategy,
         })
         setSaveStatus("import")
         setTimeout(() => setSaveStatus(null), 2000)
@@ -323,6 +325,45 @@ export default function ConfiguracoesPage() {
                       className="bg-muted border-border text-sm"
                     />
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Recomendado: 6 meses</p>
+                  </div>
+
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-foreground/80 text-xs sm:text-sm">Estratégia de Investimento</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button
+                        variant={localSettings.investmentStrategy === "rebalance" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLocalSettings({ ...localSettings, investmentStrategy: "rebalance" })}
+                        className="justify-start text-xs sm:text-sm h-auto py-2 px-3"
+                      >
+                        <div className="text-left">
+                          <p className="font-bold">Rebalanceamento Inteligente</p>
+                          <p className="text-[10px] opacity-70">Aporta onde está mais longe da meta</p>
+                        </div>
+                      </Button>
+                      <Button
+                        variant={localSettings.investmentStrategy === "proportional" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLocalSettings({ ...localSettings, investmentStrategy: "proportional" })}
+                        className="justify-start text-xs sm:text-sm h-auto py-2 px-3"
+                      >
+                        <div className="text-left">
+                          <p className="font-bold">Distribuição Proporcional</p>
+                          <p className="text-[10px] opacity-70">Divide estritamente pelas metas (%)</p>
+                        </div>
+                      </Button>
+                      <Button
+                        variant={localSettings.investmentStrategy === "waterfall" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLocalSettings({ ...localSettings, investmentStrategy: "waterfall" })}
+                        className="justify-start text-xs sm:text-sm h-auto py-2 px-3"
+                      >
+                        <div className="text-left">
+                          <p className="font-bold">Cascata (Waterfall)</p>
+                          <p className="text-[10px] opacity-70">Preenche metas 100% sequencialmente</p>
+                        </div>
+                      </Button>
+                    </div>
                   </div>
 
                   <Button

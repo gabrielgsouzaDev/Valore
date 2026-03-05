@@ -1,0 +1,28 @@
+# Evolução da Lógica de Investimentos
+
+## Lógica Atual: Rebalanceamento por Aporte
+Atualmente, o sistema utiliza uma estratégia de **Smart Rebalancing**. Quando você insere um valor de aporte:
+1. Ele calcula qual seria o seu **Patrimônio Total Futuro** (Patrimônio Atual + Aporte).
+2. Calcula o **Valor Alvo** de cada ativo baseado na `targetPercentage` definida.
+3. Sugere a compra (`toBuy`) da diferença entre o **Valor Alvo** e o **Valor Atual**.
+
+**Vantagem**: Tira a emoção da decisão e força o rebalanceamento natural da carteira usando dinheiro novo, sem precisar vender ativos.
+
+---
+
+## Proposta: Regras Customizáveis
+Para permitir que o usuário crie suas próprias regras, propomos a implementação de um **Seletor de Estratégia** no [ContributionWidget](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/components/contribution-widget.tsx#21-100).
+
+### Estratégias Sugeridas:
+1. **Rebalanceamento Clássico (Atual)**: Prioriza os ativos que estão mais longe (abaixo) da meta.
+2. **Distribuição Proporcional**: Divide o aporte estritamente pelas porcentagens da meta, ignorando o estado atual da carteira.
+3. **Sinal de Alerta (Waterfall)**: Preenche primeiro a Reserva de Emergência (até atingir 100%) e só depois distribui pelos outros ativos.
+4. **Regra de Preço-Teto (Avançado)**: Permite definir um preço máximo para cada ativo; se o preço estiver acima, o sistema pula esse ativo e redistribui para o próximo.
+
+## Mudanças Técnicas Necessárias:
+- **[lib/types.ts](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts)**: Adicionar `InvestmentStrategy` ao objeto [Settings](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/lib/types.ts#63-70) ou para o componente.
+- **[contexts/app-context.tsx](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/contexts/app-context.tsx)**: Adicionar função `calculateInvestment(amount, strategy)`.
+- **[components/contribution-widget.tsx](file:///c:/Users/Usu%C3%A1rio/Downloads/investmentdashboard/components/contribution-widget.tsx)**: Interface para selecionar a estratégia e visualizar o impacto de cada uma.
+
+## Verificação:
+- Simular diferentes aportes com diferentes estratégias e validar se os cálculos matemáticos batem com o esperado de cada perfil de investidor.
