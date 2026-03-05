@@ -181,8 +181,8 @@ export default function CartoesPage() {
 
       <main className="lg:ml-64 transition-all duration-300">
         {/* Header */}
-        <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
-          <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
+          <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex flex-col justify-center">
               <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Cartões</h2>
               <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">

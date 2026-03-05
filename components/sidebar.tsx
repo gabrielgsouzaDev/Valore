@@ -44,8 +44,8 @@ export function Sidebar() {
         {/* Logo */}
         <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-primary truncate">{settings.nome}</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Mission Control</p>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tighter">Valore</h1>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-70">Mission Control</p>
           </div>
           <button
             onClick={() => setIsOpen(false)}

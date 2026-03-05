@@ -37,7 +37,7 @@ import {
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
-import type { Bank, BankType, ThemePreset } from "@/lib/types"
+import type { Bank, BankType, ThemePreset, InvestmentStrategy } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 const bankTypes: { value: BankType; label: string; icon: React.ReactNode }[] = [
@@ -223,10 +223,14 @@ export default function ConfiguracoesPage() {
       <Sidebar />
       <main className="lg:ml-64 transition-all duration-300">
         {/* Header */}
-        <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
-          <div className="px-4 sm:px-6 py-3 sm:py-4 pl-14 lg:pl-6">
-            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Configurações</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Ajuste as informações essenciais do sistema</p>
+        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
+          <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col justify-center text-left">
+              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Configurações</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                Sistema • Preferências e Personalização
+              </p>
+            </div>
           </div>
         </header>
 

@@ -60,12 +60,17 @@ export type Goal = {
     bankId?: number
 }
 
+export type InvestmentStrategy = "rebalance" | "proportional" | "waterfall"
+
 export type Settings = {
     nome: string
     rendaMensal: number
     capitalInvestido: number
     metaReservaEmergencia: number
     themeId: string
+    moeda?: string
+    proximidadeAlerta?: number
+    investmentStrategy: InvestmentStrategy
 }
 
 export type ScheduledTransaction = {
