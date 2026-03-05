@@ -18,8 +18,6 @@ import { Asset } from "@/lib/types"
 
 export default function Dashboard() {
   const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
-  const router = useRouter()
-
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAsset, setEditingAsset] = useState<(typeof assets)[0] | null>(null)
 

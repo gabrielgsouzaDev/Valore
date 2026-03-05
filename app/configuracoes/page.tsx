@@ -33,6 +33,7 @@ import {
   Check,
   FileJson,
   FileSpreadsheet,
+  Sparkles,
   Zap,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
@@ -169,6 +170,7 @@ export default function ConfiguracoesPage() {
           capitalInvestido: settings.capitalInvestido.toString(),
           metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
           investmentStrategy: settings.investmentStrategy,
+          userFocus: settings.userFocus || "both",
         })
         setSaveStatus("import")
         setTimeout(() => setSaveStatus(null), 2000)

@@ -15,9 +15,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 })
 
-import { OnboardingWizard } from "@/components/onboarding-wizard"
-import { OnboardingCopilot } from "@/components/onboarding-copilot"
-import { OnboardingWrapper } from "@/components/onboarding-wrapper"
+import { OnboardingWrapper } from "../components/onboarding-wrapper"
 
 export const metadata: Metadata = {
   title: "Valore Gray v1",
