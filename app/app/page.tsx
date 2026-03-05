@@ -197,7 +197,7 @@ export default function DashboardPage() {
                         {upcomingTransactions.map((t) => (
                           <div key={t.id} className="flex items-center justify-between gap-2">
                             <span className="text-xs text-muted-foreground truncate">{t.name}</span>
-                            <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-emerald-400" : "text-foreground"}`}>
+                            <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-success" : "text-foreground"}`}>
                               {t.type === "ganho" ? "+" : "-"}{fmt(t.amount)}
                             </span>
                           </div>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-5 pt-0">
-                    <p className="text-xl sm:text-2xl font-bold text-primary">{fmt(Math.max(balance, 0))}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-success">{fmt(Math.max(balance, 0))}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Estratégia: <span className="capitalize text-foreground font-medium">{settings.investmentStrategy}</span>
                     </p>

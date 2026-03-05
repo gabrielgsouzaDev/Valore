@@ -38,9 +38,9 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
   }
 
   const getAlertColor = () => {
-    if (showSellAlert) return "var(--theme-danger)"
-    if (showBuyAlert) return "var(--theme-accent)"
-    return "var(--theme-primary)"
+    if (showSellAlert) return "var(--danger)"
+    if (showBuyAlert) return "var(--accent)"
+    return "var(--primary)"
   }
 
   return (
@@ -126,7 +126,7 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
               <p
                 className="text-sm font-medium"
                 style={{
-                  color: difference > 0 ? "rgb(34 211 238)" : difference < 0 ? "rgb(248 113 113)" : "rgb(148 163 184)",
+                  color: difference > 0 ? "var(--accent)" : difference < 0 ? "var(--danger)" : "var(--muted-foreground)",
                 }}
               >
                 {difference > 0 ? "+" : ""}

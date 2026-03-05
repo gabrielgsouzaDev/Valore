@@ -9,6 +9,7 @@ import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
 import { useApp } from "@/contexts/app-context"
+import { cn } from "@/lib/utils"
 import type { Category, Subcategory } from "@/lib/types"
 
 export default function EconomiaPage() {
@@ -38,9 +39,9 @@ export default function EconomiaPage() {
 
   const getProgressColor = (spent: number, budgeted: number) => {
     const percentage = (spent / budgeted) * 100
-    if (percentage < 75) return "bg-emerald-500"
-    if (percentage < 100) return "bg-yellow-500"
-    return "bg-red-500"
+    if (percentage > 100) return "bg-danger"
+    if (percentage > 85) return "bg-warning"
+    return "bg-success"
   }
 
   const handleAddCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
@@ -213,9 +214,14 @@ export default function EconomiaPage() {
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
                                   <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                    <p className="text-xs sm:text-sm text-muted-foreground">
-                                      {formatCurrency(sub.spent)} / {formatCurrency(sub.budgeted)}
-                                    </p>
+                                    <span
+                                      className={cn(
+                                        "text-[10px] sm:text-xs font-medium",
+                                        sub.spent > sub.budgeted ? "text-danger" : "text-success",
+                                      )}
+                                    >
+                                      {formatCurrency(sub.spent)}
+                                    </span>
                                     <Button
                                       onClick={() => {
                                         setEditingSubcategory({ categoryId: category.id, subcategory: sub })
@@ -287,12 +293,12 @@ export default function EconomiaPage() {
                       </div>
                       <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
                         <span className="text-xs sm:text-sm font-medium text-foreground/80">Restante</span>
-                        <span
-                          className="font-bold text-base sm:text-lg"
-                          style={{ color: remaining >= 0 ? "rgb(52 211 153)" : "rgb(248 113 113)" }}
+                        <p
+                          className="text-lg sm:text-2xl font-bold transition-all duration-300"
+                          style={{ color: remaining >= 0 ? "var(--success)" : "var(--danger)" }}
                         >
                           {formatCurrency(remaining)}
-                        </span>
+                        </p>
                       </div>
                     </div>
 

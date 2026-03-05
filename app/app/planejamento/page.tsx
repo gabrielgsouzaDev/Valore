@@ -146,11 +146,11 @@ export default function PlanejamentoPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pago":
-        return "text-emerald-400 bg-emerald-400/10"
+        return "text-success bg-success/10"
       case "pendente":
-        return "text-amber-400 bg-amber-400/10"
+        return "text-warning bg-warning/10"
       case "atrasado":
-        return "text-red-400 bg-red-400/10"
+        return "text-danger bg-danger/10"
       default:
         return "text-muted-foreground bg-muted"
     }
@@ -229,12 +229,12 @@ export default function PlanejamentoPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-card border-border">
-                          <SelectItem value="ganho" className="text-emerald-400">
+                          <SelectItem value="ganho" className="text-success">
                             <span className="flex items-center gap-2">
                               <ArrowUpCircle className="h-3.5 w-3.5" /> Ganho
                             </span>
                           </SelectItem>
-                          <SelectItem value="pagamento" className="text-red-400">
+                          <SelectItem value="pagamento" className="text-danger">
                             <span className="flex items-center gap-2">
                               <ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento
                             </span>
@@ -365,12 +365,12 @@ export default function PlanejamentoPage() {
             <Card className="bg-card border-border">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-emerald-400/10 rounded-lg flex-shrink-0">
-                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                  <div className="p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Entradas</p>
-                    <p className="text-sm sm:text-xl font-bold text-emerald-400 truncate">
+                    <p className="text-sm sm:text-xl font-bold text-success truncate">
                       {formatCurrency(monthlyScheduledIncome)}
                     </p>
                   </div>
@@ -381,12 +381,12 @@ export default function PlanejamentoPage() {
             <Card className="bg-card border-border">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-red-400/10 rounded-lg flex-shrink-0">
-                    <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+                  <div className="p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0">
+                    <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Saídas</p>
-                    <p className="text-sm sm:text-xl font-bold text-red-400 truncate">
+                    <p className="text-sm sm:text-xl font-bold text-danger truncate">
                       {formatCurrency(monthlyScheduledExpenses)}
                     </p>
                   </div>
@@ -400,11 +400,11 @@ export default function PlanejamentoPage() {
                   <div
                     className={cn(
                       "p-1.5 sm:p-2 rounded-lg flex-shrink-0",
-                      monthlyBalance >= 0 ? "bg-cyan-400/10" : "bg-red-400/10",
+                      monthlyBalance >= 0 ? "bg-success/10" : "bg-danger/10",
                     )}
                   >
                     <Calendar
-                      className={cn("h-4 w-4 sm:h-5 sm:w-5", monthlyBalance >= 0 ? "text-cyan-400" : "text-red-400")}
+                      className={cn("h-4 w-4 sm:h-5 sm:w-5", monthlyBalance >= 0 ? "text-success" : "text-danger")}
                     />
                   </div>
                   <div className="min-w-0">
@@ -412,7 +412,7 @@ export default function PlanejamentoPage() {
                     <p
                       className={cn(
                         "text-sm sm:text-xl font-bold truncate",
-                        monthlyBalance >= 0 ? "text-cyan-400" : "text-red-400",
+                        monthlyBalance >= 0 ? "text-success" : "text-danger",
                       )}
                     >
                       {formatCurrency(monthlyBalance)}
@@ -428,21 +428,21 @@ export default function PlanejamentoPage() {
                   <div
                     className={cn(
                       "p-1.5 sm:p-2 rounded-lg flex-shrink-0",
-                      overdueCount > 0 ? "bg-red-400/10" : "bg-amber-400/10",
+                      overdueCount > 0 ? "bg-danger/10" : "bg-warning/10",
                     )}
                   >
                     {overdueCount > 0 ? (
-                      <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+                      <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-danger" />
                     ) : (
-                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
                     )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Pendentes</p>
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <span className="text-sm sm:text-xl font-bold text-amber-400">{pendingCount}</span>
+                      <span className="text-sm sm:text-xl font-bold text-warning">{pendingCount}</span>
                       {overdueCount > 0 && (
-                        <span className="text-[10px] sm:text-sm text-red-400">({overdueCount})</span>
+                        <span className="text-[10px] sm:text-sm text-danger">({overdueCount})</span>
                       )}
                     </div>
                   </div>
@@ -614,7 +614,7 @@ export default function PlanejamentoPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-emerald-400"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-success"
                               onClick={() => markAsPaid(transaction.id)}
                             >
                               <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

@@ -194,7 +194,7 @@ export default function CartoesPage() {
             </div>
             <div className="text-left sm:text-right flex flex-col justify-center">
               <p className="text-xs sm:text-sm text-muted-foreground font-medium">Dívida Total</p>
-              <p className={cn("text-xl sm:text-3xl font-bold tracking-tight", totalDebt > 0 ? "text-rose-400" : "text-emerald-400")}>
+              <p className={cn("text-xl sm:text-3xl font-bold tracking-tight", totalDebt > 0 ? "text-danger" : "text-success")}>
                 {formatCurrency(totalDebt)}
               </p>
             </div>
@@ -206,8 +206,8 @@ export default function CartoesPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <Card className="bg-card border-border p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-violet-400/10 flex-shrink-0">
-                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Cartões</p>
@@ -218,36 +218,36 @@ export default function CartoesPage() {
 
             <Card className="bg-card border-border p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-rose-400/10 flex-shrink-0">
-                  <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-rose-400" />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-danger/10 flex-shrink-0">
+                  <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Fatura Atual</p>
-                  <p className="text-sm sm:text-xl font-bold text-rose-400">{formatCurrency(currentMonthInvoice)}</p>
+                  <p className="text-sm sm:text-xl font-bold text-danger">{formatCurrency(currentMonthInvoice)}</p>
                 </div>
               </div>
             </Card>
 
             <Card className="bg-card border-border p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-amber-400/10 flex-shrink-0">
-                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-warning/10 flex-shrink-0">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Próxima Fatura</p>
-                  <p className="text-sm sm:text-xl font-bold text-amber-400">{formatCurrency(nextMonthInvoice)}</p>
+                  <p className="text-sm sm:text-xl font-bold text-warning">{formatCurrency(nextMonthInvoice)}</p>
                 </div>
               </div>
             </Card>
 
             <Card className="bg-card border-border p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-cyan-400/10 flex-shrink-0">
-                  <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400" />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10 flex-shrink-0">
+                  <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Parcelas</p>
-                  <p className="text-sm sm:text-xl font-bold text-cyan-400">{cardExpenses.length}</p>
+                  <p className="text-sm sm:text-xl font-bold text-accent">{cardExpenses.length}</p>
                 </div>
               </div>
             </Card>
@@ -374,7 +374,7 @@ export default function CartoesPage() {
                   <Button
                     onClick={() => openAddExpenseDialog()}
                     size="sm"
-                    className="bg-violet-500 hover:bg-violet-600 text-white text-xs sm:text-sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
                     disabled={creditCards.length === 0}
                   >
                     <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
@@ -441,7 +441,7 @@ export default function CartoesPage() {
                                 {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
                               </span>
                             </div>
-                            <span className="text-sm font-semibold text-emerald-400">
+                            <span className="text-sm font-semibold text-success">
                               {formatCurrency(installmentValue)}/mes
                             </span>
                           </div>
@@ -516,7 +516,7 @@ export default function CartoesPage() {
                                   {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
                                 </span>
                               </td>
-                              <td className="p-3 sm:p-4 text-right font-semibold text-emerald-400 text-sm">
+                              <td className="p-3 sm:p-4 text-right font-semibold text-success text-sm">
                                 {formatCurrency(installmentValue)}
                               </td>
                               <td className="p-3 sm:p-4 text-right">

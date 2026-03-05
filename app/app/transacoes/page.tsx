@@ -183,10 +183,10 @@ export default function TransacoesPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case "pago":
-            case "realizado": return "text-primary bg-primary/10"
+            case "realizado": return "text-success bg-success/10"
             case "pendente":
-            case "agendado": return "text-accent bg-accent/10"
-            case "atrasado": return "text-destructive bg-destructive/10"
+            case "agendado": return "text-warning bg-warning/10"
+            case "atrasado": return "text-danger bg-danger/10"
             default: return "text-muted-foreground bg-muted"
         }
     }
@@ -215,9 +215,9 @@ export default function TransacoesPage() {
                 )}
             >
                 <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-primary/10" : "bg-muted")}>
+                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-success/10" : "bg-muted")}>
                         {transaction.type === "ganho"
-                            ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                            ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                             : <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         }
                     </div>
@@ -247,7 +247,7 @@ export default function TransacoesPage() {
 
                 <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-primary" : "text-foreground")}>
+                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-success" : "text-foreground")}>
                             {transaction.type === "ganho" ? "+" : "-"}{formatCurrency(transaction.amount)}
                         </span>
                         <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full capitalize", getStatusColor(transaction.status))}>
@@ -258,7 +258,7 @@ export default function TransacoesPage() {
                     {showActions && (
                         <div className="flex gap-1">
                             {transaction.status !== "pago" && transaction.status !== "realizado" && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-primary" onClick={() => markAsPaid(transaction.id)}>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-success" onClick={() => markAsPaid(transaction.id)}>
                                     <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                 </Button>
                             )}
@@ -315,7 +315,7 @@ export default function TransacoesPage() {
                                             <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "pagamento" | "ganho" })}>
                                                 <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
                                                 <SelectContent className="bg-card border-border">
-                                                    <SelectItem value="ganho"><span className="flex items-center gap-2 text-emerald-400"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
+                                                    <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
                                                     <SelectItem value="pagamento"><span className="flex items-center gap-2 text-muted-foreground"><ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento</span></SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -389,12 +389,12 @@ export default function TransacoesPage() {
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" /></div>
+                                    <div className="p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" /></div>
                                     <div className="min-w-0">
                                         <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
                                             {activeTab === "agendadas" ? "Entradas Previstas" : "Entradas Realizadas"}
                                         </p>
-                                        <p className="text-sm sm:text-xl font-bold text-primary truncate">
+                                        <p className="text-sm sm:text-xl font-bold text-success truncate">
                                             {formatCurrency(activeTab === "agendadas" ? agendadasIncome : historyIncome)}
                                         </p>
                                     </div>
@@ -419,14 +419,14 @@ export default function TransacoesPage() {
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"}>
-                                        <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-primary" : "h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground"} />
+                                    <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"}>
+                                        <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground"} />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
                                             {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
                                         </p>
-                                        <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-primary" : "text-foreground")}>
+                                        <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-foreground")}>
                                             {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
                                         </p>
                                     </div>
@@ -539,9 +539,9 @@ export default function TransacoesPage() {
                             {/* Resumo do período */}
                             {historyTransactions.length > 0 && (
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-emerald-400/5 border border-emerald-400/20 rounded-xl p-3 sm:p-4">
+                                    <div className="bg-success/5 border border-success/20 rounded-xl p-3 sm:p-4">
                                         <p className="text-xs text-muted-foreground mb-1">Entradas no período</p>
-                                        <p className="text-base sm:text-xl font-bold text-emerald-400">{formatCurrency(historyIncome)}</p>
+                                        <p className="text-base sm:text-xl font-bold text-success">{formatCurrency(historyIncome)}</p>
                                     </div>
                                     <div className="bg-muted/60 border border-border rounded-xl p-3 sm:p-4">
                                         <p className="text-xs text-muted-foreground mb-1">Saídas no período</p>

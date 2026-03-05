@@ -65,32 +65,11 @@ export default function InvestimentosPage() {
             <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
                 <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
                     <div className="px-4 sm:px-8 py-4 sm:py-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 h-full">
-                            <div className="flex items-center gap-3">
-                                <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-                                <div className="flex flex-col justify-center">
-                                    <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Investimentos</h2>
-                                    <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Mission Control • Portfólio em tempo real</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
-                                {totalCardDebt > 0 && (
-                                    <Link href="/app/cartoes" className="text-right hover:opacity-80 transition-opacity flex-shrink-0">
-                                        <div className="flex items-center gap-1.5 sm:gap-2 font-medium text-muted-foreground">
-                                            <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                                            <span className="text-xs sm:text-sm">Dívida</span>
-                                        </div>
-                                        <p className="text-base sm:text-xl font-bold text-foreground">{formatCurrency(totalCardDebt)}</p>
-                                    </Link>
-                                )}
-                                <div className="text-right flex-shrink-0">
-                                    <p className="text-xs sm:text-sm text-muted-foreground font-medium">Patrimônio</p>
-                                    <p className="text-xl sm:text-3xl font-bold text-primary">{formatCurrency(totalNetWorth)}</p>
-                                </div>
-                                <Link href="/app/configuracoes" className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary hidden sm:flex" aria-label="Configurações">
-                                    <Settings className="h-5 w-5" />
-                                </Link>
+                        <div className="flex items-center gap-3">
+                            <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                            <div className="flex flex-col justify-center">
+                                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Investimentos</h2>
+                                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Mission Control • Portfólio em tempo real</p>
                             </div>
                         </div>
                     </div>
@@ -130,7 +109,7 @@ export default function InvestimentosPage() {
                                     {[["Mês", "+8.3%"], ["Ano", "+24.7%"], ["Total", "+42.1%"]].map(([label, value]) => (
                                         <div key={label} className="flex items-center justify-between">
                                             <span className="text-xs sm:text-sm text-foreground/80">{label}</span>
-                                            <div className="flex items-center gap-1 font-medium text-emerald-400">
+                                            <div className="flex items-center gap-1 font-medium text-success">
                                                 <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                                                 <span className="font-semibold text-sm sm:text-base">{value}</span>
                                             </div>
@@ -149,6 +128,6 @@ export default function InvestimentosPage() {
                 asset={editingAsset}
                 onSave={editingAsset ? handleEditAsset : handleAddAsset}
             />
-        </div>
+        </div >
     )
 }
