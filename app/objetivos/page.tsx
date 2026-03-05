@@ -61,9 +61,13 @@ export default function ObjetivosPage() {
       <main className="lg:ml-64 transition-all duration-300 pt-20 lg:pt-0">
         {/* Header */}
         <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
-          <div className="px-4 sm:px-6 py-3 sm:py-4">
-            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Objetivos</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Acompanhe suas metas financeiras</p>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Objetivos</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                Projetos de vida • Metas financeiras
+              </p>
+            </div>
           </div>
         </header>
 

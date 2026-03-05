@@ -182,14 +182,16 @@ export default function CartoesPage() {
       <main className="lg:ml-64 transition-all duration-300">
         {/* Header */}
         <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
-          <div className="px-4 sm:px-6 py-3 sm:py-4 pl-14 lg:pl-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className="text-lg sm:text-2xl font-bold text-foreground">{settings.nome} - Cartões</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">Gerencie seus cartões de crédito e parcelas</p>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Cartões</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                Gestão de crédito • Projeção de parcelas
+              </p>
             </div>
-            <div className="text-left sm:text-right">
+            <div className="text-left sm:text-right flex flex-col justify-center">
               <p className="text-xs sm:text-sm text-muted-foreground font-medium">Dívida Total</p>
-              <p className={cn("text-xl sm:text-3xl font-bold", totalDebt > 0 ? "text-rose-400" : "text-emerald-400")}>
+              <p className={cn("text-xl sm:text-3xl font-bold tracking-tight", totalDebt > 0 ? "text-rose-400" : "text-emerald-400")}>
                 {formatCurrency(totalDebt)}
               </p>
             </div>

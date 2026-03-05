@@ -66,12 +66,14 @@ export default function Dashboard() {
         <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
           <div className="px-4 sm:px-6 py-3 sm:py-4">
             {/* Mobile: stack layout */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-              <div>
-                <h2 className="text-lg sm:text-2xl font-bold text-foreground truncate">
-                  {settings.nome} - Investimentos
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 h-full">
+              <div className="flex flex-col justify-center">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                  Investimentos
                 </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground">Acompanhe seu portfólio em tempo real</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                  Mission Control • Portfólio em tempo real
+                </p>
               </div>
 
               <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto pb-1 sm:pb-0">
