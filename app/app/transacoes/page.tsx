@@ -215,10 +215,10 @@ export default function TransacoesPage() {
                 )}
             >
                 <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-success/10" : "bg-muted")}>
+                    <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-success/10" : "bg-danger/10")}>
                         {transaction.type === "ganho"
                             ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
-                            : <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            : <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5 text-danger" />
                         }
                     </div>
                     <div className="flex-1 min-w-0">
@@ -247,7 +247,7 @@ export default function TransacoesPage() {
 
                 <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-success" : "text-foreground")}>
+                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-success" : "text-danger")}>
                             {transaction.type === "ganho" ? "+" : "-"}{formatCurrency(transaction.amount)}
                         </span>
                         <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full capitalize", getStatusColor(transaction.status))}>
@@ -404,12 +404,12 @@ export default function TransacoesPage() {
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className="p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" /></div>
+                                    <div className="p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" /></div>
                                     <div className="min-w-0">
                                         <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
                                             {activeTab === "agendadas" ? "Saídas Previstas" : "Saídas Realizadas"}
                                         </p>
-                                        <p className="text-sm sm:text-xl font-bold text-foreground truncate">
+                                        <p className="text-sm sm:text-xl font-bold text-danger truncate">
                                             {formatCurrency(activeTab === "agendadas" ? agendadasExpenses : historyExpenses)}
                                         </p>
                                     </div>
@@ -419,14 +419,14 @@ export default function TransacoesPage() {
                         <Card className="bg-card border-border">
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-muted rounded-lg flex-shrink-0"}>
-                                        <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground"} />
+                                    <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"}>
+                                        <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-danger"} />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
                                             {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
                                         </p>
-                                        <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-foreground")}>
+                                        <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-danger")}>
                                             {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
                                         </p>
                                     </div>
@@ -543,9 +543,9 @@ export default function TransacoesPage() {
                                         <p className="text-xs text-muted-foreground mb-1">Entradas no período</p>
                                         <p className="text-base sm:text-xl font-bold text-success">{formatCurrency(historyIncome)}</p>
                                     </div>
-                                    <div className="bg-muted/60 border border-border rounded-xl p-3 sm:p-4">
+                                    <div className="bg-danger/5 border border-danger/20 rounded-xl p-3 sm:p-4">
                                         <p className="text-xs text-muted-foreground mb-1">Saídas no período</p>
-                                        <p className="text-base sm:text-xl font-bold text-foreground">{formatCurrency(historyExpenses)}</p>
+                                        <p className="text-base sm:text-xl font-bold text-danger">{formatCurrency(historyExpenses)}</p>
                                     </div>
                                 </div>
                             )}

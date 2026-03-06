@@ -38,7 +38,9 @@ export default function EconomiaPage() {
   const remaining = totalBudgeted - totalSpent
 
   const getProgressColor = (spent: number, budgeted: number) => {
+    if (budgeted === 0) return "bg-primary"
     if (spent > budgeted) return "bg-danger"
+    if (spent === budgeted && spent > 0) return "bg-success"
     return "bg-primary"
   }
 

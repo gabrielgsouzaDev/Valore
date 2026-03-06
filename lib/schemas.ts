@@ -134,6 +134,20 @@ export const settingsSchema = z.object({
 })
 
 /**
+ * Esquema de validação para Despesas de Cartão
+ */
+export const cardExpenseSchema = z.object({
+    cardId: z.number(),
+    description: z.string().min(2),
+    totalAmount: z.number().positive(),
+    installments: z.number().min(1),
+    purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    paidInstallments: z.number().min(0).default(0),
+})
+
+export const cardExpenseWithIdSchema = cardExpenseSchema.merge(idSchema)
+
+/**
  * Esquema de validação para o Armazenamento Completo (localStorage)
  */
 export const appStorageSchema = z.object({
@@ -144,7 +158,7 @@ export const appStorageSchema = z.object({
     settings: settingsSchema.default({}),
     transactions: z.array(transactionWithIdSchema).default([]),
     creditCards: z.array(creditCardWithIdSchema).default([]),
-    cardExpenses: z.array(z.any()).default([]), // CardExpense schema can be added if needed
+    cardExpenses: z.array(cardExpenseWithIdSchema).default([]),
     banks: z.array(bankWithIdSchema).default([]),
     patrimonialHistory: z.array(patrimonialSnapshotSchema).default([]),
     lastUpdated: z.string().optional(),

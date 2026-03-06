@@ -31,8 +31,8 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
     : true
 
   const getBorderColor = () => {
-    if (showSellAlert) return "border-destructive"
-    if (showBuyAlert) return "border-accent"
+    if (showSellAlert) return "border-danger"
+    if (showBuyAlert) return "border-success"
     if (isStale) return "border-muted-foreground/50"
     if (Math.abs(difference) < 2) return "border-primary"
     return "border-border"
@@ -40,7 +40,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
 
   const getAlertColor = () => {
     if (showSellAlert) return "var(--danger)"
-    if (showBuyAlert) return "var(--accent)"
+    if (showBuyAlert) return "var(--success)"
     return "var(--primary)"
   }
 
@@ -77,20 +77,20 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
                   variant="ghost"
                   size="icon"
                   aria-label={`Excluir ${asset.name}`}
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                  className="h-8 w-8 text-muted-foreground hover:text-danger transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
             </div>
             {showSellAlert && (
-              <Badge className="bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50">
+              <Badge className="bg-danger/20 text-danger hover:bg-danger/30 border-danger/50">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 VENDER
               </Badge>
             )}
             {showBuyAlert && (
-              <Badge className="bg-accent/20 text-accent hover:bg-accent/30 border-accent/50">
+              <Badge className="bg-success/20 text-success hover:bg-success/30 border-success/50">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 COMPRAR
               </Badge>
@@ -129,7 +129,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
               <p
                 className="text-sm font-medium"
                 style={{
-                  color: difference > 0 ? "var(--accent)" : difference < 0 ? "var(--danger)" : "var(--muted-foreground)",
+                  color: difference > 0 ? "var(--success)" : difference < 0 ? "var(--danger)" : "var(--muted-foreground)",
                 }}
               >
                 {difference > 0 ? "+" : ""}
@@ -146,7 +146,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
             <Progress
               value={Math.min(progressValue, 100)}
               className="h-2 bg-muted"
-              indicatorClassName={showSellAlert ? "bg-destructive" : showBuyAlert ? "bg-accent" : "bg-primary"}
+              indicatorClassName={showSellAlert ? "bg-danger" : showBuyAlert ? "bg-success" : "bg-primary"}
             />
           </div>
         </div>

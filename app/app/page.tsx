@@ -128,14 +128,18 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 pt-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalSpent)}</p>
+                        <p className="text-xl sm:text-2xl font-bold text-danger">{fmt(totalSpent)}</p>
                         <span className="text-xs text-muted-foreground">/ {fmt(totalBudgeted)}</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-1.5 mt-2">
                         <div
                           className={cn(
                             "h-1.5 rounded-full transition-all",
-                            totalSpent > totalBudgeted ? "bg-danger" : "bg-primary"
+                            totalSpent > totalBudgeted
+                              ? "bg-danger"
+                              : totalSpent === totalBudgeted && totalSpent > 0
+                                ? "bg-success"
+                                : "bg-primary"
                           )}
                           style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
                         />
@@ -222,7 +226,7 @@ export default function DashboardPage() {
                           {upcomingTransactions.map((t) => (
                             <div key={t.id} className="flex items-center justify-between gap-2">
                               <span className="text-xs text-muted-foreground truncate">{t.name}</span>
-                              <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-success" : "text-foreground"}`}>
+                              <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-success" : "text-danger"}`}>
                                 {t.type === "ganho" ? "+" : "-"}{fmt(t.amount)}
                               </span>
                             </div>
@@ -254,7 +258,7 @@ export default function DashboardPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 pt-0">
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalCardDebt)}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-danger">{fmt(totalCardDebt)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">dívida total em cartões</p>
                       {nextInvoice && (
                         <p className="text-xs text-muted-foreground mt-1.5">Próx. fatura: {fmt(nextInvoice.total)}</p>

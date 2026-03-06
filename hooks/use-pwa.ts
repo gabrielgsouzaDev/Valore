@@ -33,7 +33,7 @@ export function usePWA() {
 
     const checkIOS = useCallback(() => {
         if (typeof window === "undefined") return false
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+        return /iPad|iPhone|iPod/.test(window.navigator.userAgent) && !window.MSStream
     }, [])
 
     useEffect(() => {

@@ -640,14 +640,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [setTheme])
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground animate-pulse">Carregando seus investimentos...</div>
-      </div>
-    )
-  }
-
   const value = useMemo(() => ({
     assets, setAssets, addAsset, updateAsset, deleteAsset,
     categories, setCategories, addCategory, updateCategory, deleteCategory,
