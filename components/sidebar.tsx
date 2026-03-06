@@ -25,7 +25,7 @@ const BOTTOM_NAV_FIXED_KEYS = ["dashboard", "investimentos", "economia", "cartoe
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { settings } = useApp()
+  const { settings, goals } = useApp()
   const activeModules = settings.activeModules || {}
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -60,7 +60,7 @@ export function Sidebar() {
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex-col z-50">
         <div className="p-6 border-b border-border">
           <h1 className="text-2xl font-extrabold text-primary tracking-tighter">Valore</h1>
-          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-70">Mission Control</p>
+          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-70">Gestão Financeira</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -84,6 +84,7 @@ export function Sidebar() {
             )
           })}
         </nav>
+
 
         <div className="p-4 border-t border-border">
           <Link

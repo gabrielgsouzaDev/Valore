@@ -141,6 +141,7 @@ type AppContextType = {
   monthlyScheduledIncome: number
   monthlyScheduledExpenses: number
   upcomingTransactions: ScheduledTransaction[]
+  isLoaded: boolean
 
   // Utilitários de Dados
   exportData: (format: "json" | "csv") => void
@@ -168,7 +169,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [patrimonialHistory, setPatrimonialHistory] = useState<PatrimonialSnapshot[]>([])
 
   // --- Temas ---
-  const initialTheme = themePresets.find((t: ThemePreset) => t.id === defaultSettings.themeId) || themePresets[0]
+  const initialTheme = themePresets.find((t: ThemePreset) => t.id === "paper") || themePresets[0]
   const currentTheme = themePresets.find((t: ThemePreset) => t.id === settings.themeId) || initialTheme
 
   const setTheme = useCallback((themeId: string) => {
@@ -178,7 +179,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [initialTheme])
 
   // --- Valores Computados ---
-  const totalNetWorth = useMemo(() => calculateTotalNetWorth(assets), [assets])
+  const totalNetWorth = useMemo(() => calculateTotalNetWorth(assets, banks), [assets, banks])
   const totalBudgeted = useMemo(() => calculateTotalBudgeted(categories), [categories])
   const totalSpent = useMemo(() => calculateTotalSpent(categories), [categories])
 
@@ -217,7 +218,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
           // Aplica tema após carregar configurações
           setTimeout(() => {
-            const theme = themePresets.find((t: ThemePreset) => t.id === data.settings.themeId) || initialTheme
+            const theme = themePresets.find((t: ThemePreset) => t.id === (data.settings.themeId || "paper")) || initialTheme
             applyThemeVariables(theme)
           }, 0)
         } else {
@@ -411,9 +412,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setGoalsState((prev: Goal[]) =>
       prev.map((goal: Goal) => (goal.id === goalId ? { ...goal, current: goal.current + amount } : goal)),
     )
-    setCategoriesState((prev: Category[]) =>
-      prev.map((cat: Category) => (cat.name === "Investimentos" ? { ...cat, spent: cat.spent + amount } : cat)),
-    )
+
   }, [])
 
   // --- Funções de Transações ---
@@ -621,8 +620,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setTheme])
 
   const loadExampleData = useCallback(() => {
-    importData(JSON.stringify(exampleData))
-  }, [importData])
+    const currentName = settings.nome
+    const dataWithUserContext = {
+      ...exampleData,
+      settings: {
+        ...exampleData.settings,
+        nome: currentName || exampleData.settings.nome
+      }
+    }
+    importData(JSON.stringify(dataWithUserContext))
+  }, [importData, settings.nome])
 
   const clearAllData = useCallback(() => {
     if (typeof window !== "undefined" && confirm("Tem certeza que deseja apagar todos os dados?")) {
@@ -654,6 +661,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings, updateSettings, currentTheme, setTheme,
     totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
     monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
+    isLoaded,
     exportData, importData, clearAllData, loadExampleData,
   }), [
     assets, setAssets, addAsset, updateAsset, deleteAsset,
@@ -669,16 +677,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings, updateSettings, currentTheme, setTheme,
     totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
     monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
+    isLoaded,
     exportData, importData, clearAllData, loadExampleData,
   ])
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground animate-pulse">Carregando seus investimentos...</div>
-      </div>
-    )
-  }
 
   return (
     <AppContext.Provider value={value}>

@@ -5,19 +5,20 @@
 
 :root {
   /* Sistema de temas dinâmicos */
-  --theme-background: 15 23 42;
-  --theme-card: 30 41 59;
-  --theme-card-hover: 51 65 85;
-  --theme-border: 51 65 85;
-  --theme-primary: 52 211 153;
-  --theme-primary-foreground: 15 23 42;
-  --theme-accent: 34 211 238;
-  --theme-accent-foreground: 15 23 42;
-  --theme-muted: 71 85 105;
-  --theme-muted-foreground: 148 163 184;
-  --theme-success: 52 211 153;
-  --theme-warning: 251 191 36;
-  --theme-danger: 248 113 113;
+  /* Fallbacks baseados no tema Paper */
+  --theme-background: 250 247 240;
+  --theme-card: 255 252 248;
+  --theme-card-hover: 245 240 232;
+  --theme-border: 220 210 195;
+  --theme-primary: 124 73 20;
+  --theme-primary-foreground: 255 255 255;
+  --theme-accent: 180 100 40;
+  --theme-accent-foreground: 255 255 255;
+  --theme-muted: 238 228 215;
+  --theme-muted-foreground: 130 110 85;
+  --theme-success: 76 140 74;
+  --theme-warning: 190 120 30;
+  --theme-danger: 185 50 50;
 
   /* Fallbacks baseados no tema Paper */
   --fallback-success: 76 140 74;

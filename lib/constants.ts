@@ -2,6 +2,27 @@ import { ThemePreset, Settings, Asset, Category, Goal, ScheduledTransaction, Cre
 
 export const themePresets: ThemePreset[] = [
     {
+        id: "paper",
+        name: "Paper",
+        description: "Papel envelhecido — leitura confortável e elegante",
+        mode: "light" as const,
+        colors: {
+            background: "250 247 240",
+            card: "255 252 248",
+            cardHover: "245 240 232",
+            border: "220 210 195",
+            primary: "124 73 20",
+            primaryForeground: "255 255 255",
+            accent: "180 100 40",
+            accentForeground: "255 255 255",
+            muted: "238 228 215",
+            mutedForeground: "130 110 85",
+            success: "76 140 74",
+            warning: "190 120 30",
+            danger: "185 50 50",
+        },
+    },
+    {
         id: "midnight",
         name: "Midnight",
         description: "Azul escuro elegante com acentos esmeralda",
@@ -15,7 +36,7 @@ export const themePresets: ThemePreset[] = [
             accent: "34 211 238",
             accentForeground: "15 23 42",
             muted: "71 85 105",
-            mutedForeground: "148 163 184",
+            mutedForeground: "160 174 192", // original: 148 163 184, adjusted: 160 174 192 for contrast
             success: "52 211 153",
             warning: "251 191 36",
             danger: "248 113 113",
@@ -382,27 +403,7 @@ export const themePresets: ThemePreset[] = [
         },
     },
     // ── TEMAS CLAROS ──────────────────────────────────────────────
-    {
-        id: "paper",
-        name: "Paper",
-        description: "Papel envelhecido — leitura confortável e elegante",
-        mode: "light" as const,
-        colors: {
-            background: "250 247 240",
-            card: "255 252 248",
-            cardHover: "245 240 232",
-            border: "220 210 195",
-            primary: "124 73 20",
-            primaryForeground: "255 255 255",
-            accent: "180 100 40",
-            accentForeground: "255 255 255",
-            muted: "238 228 215",
-            mutedForeground: "130 110 85",
-            success: "76 140 74",
-            warning: "190 120 30",
-            danger: "185 50 50",
-        },
-    },
+
     {
         id: "sage",
         name: "Sage",
@@ -511,13 +512,13 @@ export const themePresets: ThemePreset[] = [
 ]
 
 export const defaultSettings: Settings = {
-    nome: "Valore Gray",
-    rendaMensal: 0,
-    capitalInvestido: 0,
+    nome: "",
+    rendaMensal: 6500,
+    capitalInvestido: 46000,
     metaReservaEmergencia: 6,
     themeId: "paper",
     onboardingCompleted: false,
-    investmentStrategy: "rebalance",
+    investmentStrategy: "waterfall",
     activeGuideStep: null,
     showGuide: false,
     activeModules: {
@@ -529,7 +530,7 @@ export const defaultSettings: Settings = {
     },
 }
 
-export const STORAGE_KEY = "gabriel-sa-app-data"
+export const STORAGE_KEY = "valore-app-data-v1"
 
 export const defaultAssets: Asset[] = []
 export const defaultCategories: Category[] = []
@@ -540,46 +541,56 @@ export const defaultCardExpenses: CardExpense[] = []
 export const defaultBanks: Bank[] = []
 
 export const exampleData = {
+    settings: { ...defaultSettings, nome: "" },
     banks: [
-        { id: 1, name: "Nubank", type: "banco_digital", color: "violet", balance: 5420.50, isMain: true, notes: "Conta principal" },
-        { id: 2, name: "Itaú", type: "banco_tradicional", color: "orange", balance: 12850.20, isMain: false, notes: "Reserva e investimentos" }
+        { id: 1, name: "Nubank", type: "banco_digital", color: "violet", balance: 3200, isMain: true, notes: "Conta do dia a dia" },
+        { id: 2, name: "Itaú", type: "banco_tradicional", color: "orange", balance: 8400, isMain: false, notes: "Reserva imediata" }
     ] as Bank[],
     assets: [
-        { id: 1, name: "IVVB11", targetPercentage: 35, currentValue: 12500, quantity: 45, price: 277.70, bankId: 2, ceilingPrice: 300, priority: 2 },
-        { id: 2, name: "Bitcoin", targetPercentage: 10, currentValue: 8500, quantity: 0.025, price: 340000, bankId: 2, ceilingPrice: 400000, priority: 3 },
-        { id: 3, name: "CDB Pós-Fixado", targetPercentage: 55, currentValue: 25000, quantity: 1, price: 25000, bankId: 2, priority: 1 }
+        { id: 1, name: "IVVB11", type: "ETF", targetPercentage: 35, currentValue: 11000, quantity: 40, price: 275.00, bankId: 2, ceilingPrice: 320, priority: 2 },
+        { id: 2, name: "Bitcoin", type: "Cripto", targetPercentage: 10, currentValue: 6440, quantity: 0.02, price: 322000, bankId: 2, ceilingPrice: 280000, priority: 4 },
+        { id: 3, name: "Tesouro Selic 2029", type: "Renda Fixa", targetPercentage: 40, currentValue: 21200, quantity: 1, price: 21200, bankId: 2, priority: 1 },
+        { id: 4, name: "XPLG11 FII", type: "FII", targetPercentage: 15, currentValue: 7360, quantity: 70, price: 105.14, bankId: 2, priority: 3 }
     ] as Asset[],
     categories: [
         {
-            id: 1, name: "Moradia", percentage: 30, budgeted: 3500, spent: 3450, color: "blue", expanded: false, subcategories: [
-                { id: 11, name: "Aluguel", budgeted: 2500, spent: 2500 },
-                { id: 12, name: "Energia", budgeted: 300, spent: 320 },
-                { id: 13, name: "Internet", budgeted: 150, spent: 150 }
+            id: 1, name: "Moradia", percentage: 30, budgeted: 1950, spent: 1950, color: "blue", expanded: false, subcategories: [
+                { id: 11, name: "Aluguel", budgeted: 1500, spent: 1500 },
+                { id: 12, name: "Condomínio", budgeted: 280, spent: 280 },
+                { id: 13, name: "Energia", budgeted: 170, spent: 170 }
             ]
         },
         {
-            id: 2, name: "Alimentação", percentage: 15, budgeted: 1200, spent: 980, color: "emerald", expanded: false, subcategories: [
-                { id: 21, name: "Mercado", budgeted: 800, spent: 750 },
-                { id: 22, name: "Ifood/Restaurantes", budgeted: 400, spent: 230 }
+            id: 2, name: "Alimentação", percentage: 15, budgeted: 975, spent: 700, color: "emerald", expanded: false, subcategories: [
+                { id: 21, name: "Mercado", budgeted: 700, spent: 530 },
+                { id: 22, name: "Ifood", budgeted: 275, spent: 170 }
             ]
         },
-        { id: 3, name: "Investimentos", percentage: 50, budgeted: 5000, spent: 4800, color: "cyan", expanded: false, subcategories: [] }
+        { id: 3, name: "Transporte", percentage: 10, budgeted: 650, spent: 450, color: "orange", expanded: false, subcategories: [] },
+        { id: 4, name: "Lazer", percentage: 5, budgeted: 325, spent: 220, color: "rose", expanded: false, subcategories: [] },
+        { id: 5, name: "Investimentos", percentage: 35, budgeted: 2275, spent: 2100, color: "cyan", expanded: false, subcategories: [] },
+        { id: 6, name: "Saúde", percentage: 5, budgeted: 325, spent: 410, color: "red", expanded: false, subcategories: [] }
     ] as Category[],
     goals: [
-        { id: 1, name: "Reserva de Emergência", target: 30000, current: 18500, deadline: "2026-12-31", monthlyContribution: 1500, priority: "alta", category: "Segurança", bankId: 2 },
-        { id: 2, name: "Viagem Europa", target: 15000, current: 4200, deadline: "2027-06-15", monthlyContribution: 500, priority: "média", category: "Lazer", bankId: 1 }
+        { id: 1, name: "Reserva de Emergência", target: 39000, current: 18500, deadline: "2027-09-06", monthlyContribution: 1100, priority: "alta", category: "Segurança", bankId: 2 },
+        { id: 2, name: "Viagem Europa", target: 15000, current: 4200, deadline: "2027-05-06", monthlyContribution: 500, priority: "média", category: "Lazer", bankId: 1 },
+        { id: 3, name: "MacBook Pro", target: 12000, current: 12000, deadline: "2026-03-01", monthlyContribution: 0, priority: "baixa", category: "Tech", bankId: 1 }
     ] as Goal[],
     creditCards: [
-        { id: 1, name: "Nubank Ultra", limit: 15000, closingDay: 25, dueDay: 2, color: "violet", bankId: 1 },
-        { id: 2, name: "Mercado Pago", limit: 8000, closingDay: 10, dueDay: 17, color: "pink", bankId: 1 }
+        { id: 1, name: "Nubank Ultravioleta", limit: 15000, closingDay: 25, dueDay: 2, color: "violet", bankId: 1 },
+        { id: 2, name: "Mercado Pago", limit: 5000, closingDay: 1, dueDay: 10, color: "green", bankId: 1 }
     ] as CreditCard[],
     cardExpenses: [
-        { id: 1, description: "MacBook Air M2", totalAmount: 8500, purchaseDate: new Date().toISOString(), installments: 10, cardId: 1 },
-        { id: 2, description: "Jantar Especial", totalAmount: 350, purchaseDate: new Date().toISOString(), installments: 1, cardId: 1 },
-        { id: 3, description: "Supermercado", totalAmount: 650, purchaseDate: new Date().toISOString(), installments: 1, cardId: 2 }
+        { id: 1, description: "MacBook Air M2", totalAmount: 8500, purchaseDate: "2026-03-04T12:00:00.000Z", installments: 10, cardId: 1 },
+        { id: 2, description: "Jantar especial", totalAmount: 350, purchaseDate: "2026-03-01T12:00:00.000Z", installments: 1, cardId: 1 },
+        { id: 3, description: "Supermercado mensal", totalAmount: 680, purchaseDate: "2026-03-03T12:00:00.000Z", installments: 1, cardId: 2 },
+        { id: 4, description: "Academia anual", totalAmount: 1200, purchaseDate: "2026-02-01T12:00:00.000Z", installments: 12, cardId: 2 }
     ] as CardExpense[],
     transactions: [
-        { id: 1, name: "Salário Software Engineer", amount: 12500, type: "ganho", status: "pago", recurrence: "mensal", dueDate: new Date().toISOString() },
-        { id: 2, name: "Condomínio", amount: 650, type: "pagamento", status: "pendente", recurrence: "mensal", dueDate: new Date().toISOString() }
+        { id: 1, name: "Salário", amount: 6500, type: "ganho", status: "pago", recurrence: "mensal", dueDate: "2026-03-05T12:00:00.000Z" },
+        { id: 2, name: "Aluguel", amount: 1500, type: "pagamento", status: "pago", recurrence: "mensal", dueDate: "2026-03-10T12:00:00.000Z" },
+        { id: 3, name: "Condomínio", amount: 280, type: "pagamento", status: "pendente", recurrence: "mensal", dueDate: "2026-03-15T12:00:00.000Z" },
+        { id: 4, name: "Freelance design", amount: 1200, type: "ganho", status: "pago", recurrence: "unico", dueDate: "2026-03-08T12:00:00.000Z" },
+        { id: 5, name: "Plano de saúde", amount: 320, type: "pagamento", status: "pendente", recurrence: "mensal", dueDate: "2026-03-20T12:00:00.000Z" }
     ] as ScheduledTransaction[]
 }

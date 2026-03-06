@@ -543,21 +543,27 @@ export default function PlanejamentoPage() {
                       className={cn(
                         "flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg border transition-all gap-3",
                         transaction.status === "atrasado"
-                          ? "bg-red-950/20 border-red-900/50"
+                          ? "bg-muted/50 border-border/50"
                           : "bg-muted/50 border-border/50 hover:border-border",
                       )}
+                      style={{
+                        backgroundColor: transaction.status === "atrasado" ? "rgb(var(--theme-danger) / 0.15)" : undefined,
+                        borderColor: transaction.status === "atrasado" ? "var(--danger)" : undefined
+                      }}
                     >
                       <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                         <div
                           className={cn(
                             "p-2 rounded-lg flex-shrink-0",
-                            transaction.type === "ganho" ? "bg-emerald-400/10" : "bg-red-400/10",
                           )}
+                          style={{
+                            backgroundColor: transaction.type === "ganho" ? "rgb(var(--theme-success) / 0.1)" : "rgb(var(--theme-danger) / 0.1)"
+                          }}
                         >
                           {transaction.type === "ganho" ? (
-                            <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                            <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: "var(--success)" }} />
                           ) : (
-                            <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+                            <ArrowDownCircle className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: "var(--danger)" }} />
                           )}
                         </div>
 
@@ -593,8 +599,8 @@ export default function PlanejamentoPage() {
                           <span
                             className={cn(
                               "text-sm sm:text-lg font-bold",
-                              transaction.type === "ganho" ? "text-emerald-400" : "text-red-400",
                             )}
+                            style={{ color: transaction.type === "ganho" ? "var(--success)" : "var(--danger)" }}
                           >
                             {transaction.type === "ganho" ? "+" : "-"}
                             {formatCurrency(transaction.amount)}
@@ -614,31 +620,31 @@ export default function PlanejamentoPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-success"
+                              className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-success transition-colors duration-150 rounded-md"
                               onClick={() => markAsPaid(transaction.id)}
                             >
-                              <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                           )}
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
+                            className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                             onClick={() => handleEdit(transaction)}
                           >
-                            <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
+                            className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                             onClick={() => {
                               if (confirm("Excluir esta transação?")) {
                                 deleteTransaction(transaction.id)
                               }
                             }}
                           >
-                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

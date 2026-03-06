@@ -87,8 +87,8 @@ export function OnboardingWizard() {
                                 onClick={() => { setFocus("finances"); handleNext(); }}
                                 className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-2xl border-2 border-border/50 hover:border-primary bg-card hover:bg-primary/5 transition-all text-left group relative overflow-hidden"
                             >
-                                <div className="bg-orange-500/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
-                                    <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-orange-500" />
+                                <div className="bg-warning/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
+                                    <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-warning" />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-bold text-base sm:text-lg">Gastos e Dívidas</h3>
@@ -101,8 +101,8 @@ export function OnboardingWizard() {
                                 onClick={() => { setFocus("investments"); handleNext(); }}
                                 className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-2xl border-2 border-border/50 hover:border-primary bg-card hover:bg-primary/5 transition-all text-left group relative overflow-hidden"
                             >
-                                <div className="bg-emerald-500/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
-                                    <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-500" />
+                                <div className="bg-success/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
+                                    <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-success" />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-bold text-base sm:text-lg">Multiplicar Patrimônio</h3>
@@ -158,7 +158,7 @@ export function OnboardingWizard() {
                             disabled={isFinishing}
                             className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold rounded-2xl shadow-xl shadow-primary/20"
                         >
-                            {isFinishing ? "Preparando Mission Control..." : "Entrar no Dashboard"}
+                            {isFinishing ? "Preparando Valore..." : "Entrar no Dashboard"}
                         </Button>
                     </div>
                 )
@@ -175,12 +175,16 @@ export function OnboardingWizard() {
                 <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px]" />
             </div>
 
-            <Card className="w-full max-w-xl p-6 sm:p-12 shadow-[0_0_50px_-12px_rgba(var(--primary),0.2)] border-primary/20 bg-card/80 backdrop-blur-sm relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem]">
+            <Card className="w-full max-w-xl p-6 sm:p-12 shadow-[0_0_50px_-12px_rgba(var(--theme-primary),0.2)] border-primary/20 bg-card/80 backdrop-blur-sm relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem]">
                 {/* Progress bar */}
-                <div className="absolute top-0 left-0 h-2 bg-muted/30 w-full">
+                <div className="absolute top-0 left-0 h-2 bg-muted/30 w-full overflow-hidden">
                     <div
-                        className="h-full bg-primary transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(var(--primary),0.5)]"
-                        style={{ width: `${(step / 3) * 100}%` }}
+                        className="h-full transition-all duration-700 ease-in-out"
+                        style={{
+                            width: `${(step / 3) * 100}%`,
+                            backgroundColor: 'var(--primary)',
+                            boxShadow: '0 0 10px rgba(var(--theme-primary), 0.5)'
+                        }}
                     />
                 </div>
 

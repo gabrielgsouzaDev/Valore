@@ -14,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useApp } from "@/contexts/app-context"
 
 interface Goal {
   id: number
@@ -24,6 +26,7 @@ interface Goal {
   monthlyContribution: number
   priority: "alta" | "média" | "baixa"
   category: string
+  bankId?: number
 }
 
 interface GoalDialogProps {
@@ -34,6 +37,7 @@ interface GoalDialogProps {
 }
 
 export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps) {
+  const { banks, categories } = useApp()
   const [formData, setFormData] = useState({
     name: "",
     target: "",
@@ -42,6 +46,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
     monthlyContribution: "",
     priority: "média" as "alta" | "média" | "baixa",
     category: "",
+    bankId: "",
   })
 
   useEffect(() => {
@@ -54,6 +59,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
         monthlyContribution: goal.monthlyContribution.toString(),
         priority: goal.priority,
         category: goal.category,
+        bankId: goal.bankId?.toString() || "",
       })
     } else {
       setFormData({
@@ -64,6 +70,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
         monthlyContribution: "",
         priority: "média",
         category: "",
+        bankId: "",
       })
     }
   }, [goal, open])
@@ -78,6 +85,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
       monthlyContribution: Number.parseFloat(formData.monthlyContribution),
       priority: formData.priority,
       category: formData.category,
+      bankId: formData.bankId ? Number.parseInt(formData.bankId) : undefined,
     })
     setFormData({
       name: "",
@@ -87,6 +95,7 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
       monthlyContribution: "",
       priority: "média",
       category: "",
+      bankId: "",
     })
   }
 
@@ -169,28 +178,62 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="priority">Prioridade</Label>
-                <select
-                  id="priority"
+                <Select
                   value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as "alta" | "média" | "baixa" })}
-                  className="bg-muted border border-border rounded-md px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onValueChange={(value) => setFormData({ ...formData, priority: value as "alta" | "média" | "baixa" })}
                 >
-                  <option value="alta">Alta</option>
-                  <option value="média">Média</option>
-                  <option value="baixa">Baixa</option>
-                </select>
+                  <SelectTrigger id="priority" className="bg-muted border-border text-foreground">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="média">Média</SelectItem>
+                    <SelectItem value="baixa">Baixa</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="category">Categoria</Label>
-                <Input
-                  id="category"
+                <Select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="Ex: Segurança, Lazer"
-                  className="bg-muted border-border text-foreground"
-                  required
-                />
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                >
+                  <SelectTrigger id="category" className="bg-muted border-border text-foreground">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                    {categories.length === 0 && (
+                      <p className="text-xs text-muted-foreground p-2">Nenhuma categoria cadastrada</p>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="bank">Instituição / Banco (Opcional)</Label>
+              <Select
+                value={formData.bankId}
+                onValueChange={(value) => setFormData({ ...formData, bankId: value })}
+              >
+                <SelectTrigger id="bank" className="bg-muted border-border text-foreground">
+                  <SelectValue placeholder="Selecione a instituição" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {banks.map((bank) => (
+                    <SelectItem key={bank.id} value={bank.id.toString()}>
+                      {bank.name}
+                    </SelectItem>
+                  ))}
+                  {banks.length === 0 && (
+                    <p className="text-xs text-muted-foreground p-2">Nenhum banco cadastrado</p>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

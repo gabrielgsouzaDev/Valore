@@ -24,8 +24,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Valore — Mission Control",
-  description: "Mission Control para seu portfólio de investimentos e finanças pessoais",
+  title: "Valore",
+  description: "Controle para seu portfólio de investimentos e finanças pessoais",
   applicationName: "Valore",
   generator: "Next.js",
   keywords: ["investimentos", "finanças", "portfólio", "controle financeiro"],
@@ -79,6 +79,41 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const saved = localStorage.getItem('gabriel-sa-app-data');
+                  if (saved) {
+                    const data = JSON.parse(saved);
+                    const themeId = data.settings?.themeId || 'paper';
+                    const themePresets = [
+                      { id: 'paper', colors: { background: '250 247 240', card: '255 252 248', border: '220 210 195', primary: '124 73 20', accent: '180 100 40', muted: '238 228 215', mutedForeground: '130 110 85', success: '76 140 74', warning: '190 120 30', danger: '185 50 50' }, mode: 'light' },
+                      { id: 'midnight', colors: { background: '15 23 42', card: '30 41 59', border: '51 65 85', primary: '52 211 153', accent: '34 211 238', muted: '71 85 105', mutedForeground: '160 174 192', success: '52 211 153', warning: '251 191 36', danger: '248 113 113' }, mode: 'dark' },
+                      { id: 'amoled', colors: { background: '0 0 0', card: '17 17 17', border: '38 38 38', primary: '139 92 246', accent: '236 72 153', muted: '64 64 64', mutedForeground: '163 163 163', success: '74 222 128', warning: '250 204 21', danger: '248 113 113' }, mode: 'dark' }
+                    ];
+                    const theme = themePresets.find(t => t.id === themeId) || themePresets[0];
+                    const root = document.documentElement;
+                    
+                    Object.entries(theme.colors).forEach(([key, value]) => {
+                      const cssVarName = '--theme-' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                      root.style.setProperty(cssVarName, value);
+                    });
+
+                    if (theme.mode === 'dark') {
+                      root.classList.add('dark');
+                    } else {
+                      root.classList.remove('dark');
+                    }
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning>
         {children}
         <Analytics />

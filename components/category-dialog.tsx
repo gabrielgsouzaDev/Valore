@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Category {
   id: number
@@ -117,19 +118,22 @@ export function CategoryDialog({ open, onOpenChange, category, onSave }: Categor
             </div>
             <div className="grid gap-2">
               <Label htmlFor="color" className="text-foreground/80">Cor</Label>
-              <select
-                id="color"
+              <Select
                 value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="bg-muted border border-border rounded-md px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                onValueChange={(value) => setFormData({ ...formData, color: value })}
               >
-                <option value="emerald">Verde</option>
-                <option value="cyan">Ciano</option>
-                <option value="blue">Azul</option>
-                <option value="violet">Violeta</option>
-                <option value="amber">Âmbar</option>
-                <option value="red">Vermelho</option>
-              </select>
+                <SelectTrigger id="color" className="bg-muted border-border text-foreground h-10">
+                  <SelectValue placeholder="Selecione uma cor" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="emerald">Verde</SelectItem>
+                  <SelectItem value="cyan">Ciano</SelectItem>
+                  <SelectItem value="blue">Azul</SelectItem>
+                  <SelectItem value="violet">Violeta</SelectItem>
+                  <SelectItem value="amber">Âmbar</SelectItem>
+                  <SelectItem value="red">Vermelho</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "Valore — Mission Control",
+        name: "Valore",
         short_name: "Valore",
-        description: "Mission Control para seu portfólio de investimentos e finanças pessoais",
+        description: "Controle para seu portfólio de investimentos e finanças pessoais",
         start_url: "/app",
         display: "standalone",
         orientation: "portrait-primary",

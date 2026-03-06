@@ -293,18 +293,18 @@ export default function CartoesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 sm:h-7 sm:w-7 text-white/70 hover:text-white hover:bg-white/20"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-foreground/80 hover:bg-white/10 transition-colors duration-150 rounded-md"
                               onClick={() => openEditCardDialog(card)}
                             >
-                              <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 sm:h-7 sm:w-7 text-white/70 hover:text-white hover:bg-white/20"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-foreground/80 hover:bg-white/10 transition-colors duration-150 rounded-md"
                               onClick={() => handleDeleteCard(card.id)}
                             >
-                              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </div>
@@ -377,7 +377,7 @@ export default function CartoesPage() {
                     className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
                     disabled={creditCards.length === 0}
                   >
-                    <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                    <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
                     <span className="hidden sm:inline">Nova Despesa</span>
                     <span className="sm:hidden">Nova</span>
                   </Button>
@@ -403,18 +403,18 @@ export default function CartoesPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:text-accent"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                                 onClick={() => openEditExpenseDialog(expense)}
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Pencil className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                                 onClick={() => handleDeleteExpense(expense.id)}
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
@@ -459,10 +459,10 @@ export default function CartoesPage() {
                       <thead className="bg-muted/50">
                         <tr>
                           <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                            Descricao
+                            Descrição
                           </th>
                           <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                            Cartao
+                            Cartão
                           </th>
                           <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
                             Total
@@ -471,10 +471,9 @@ export default function CartoesPage() {
                             Parcelas
                           </th>
                           <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                            Valor/Mes
+                            Por mês
                           </th>
                           <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                            Acoes
                           </th>
                         </tr>
                       </thead>
@@ -524,7 +523,7 @@ export default function CartoesPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
+                                    className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                                     onClick={() => openEditExpenseDialog(expense)}
                                   >
                                     <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -532,7 +531,7 @@ export default function CartoesPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
+                                    className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                                     onClick={() => handleDeleteExpense(expense.id)}
                                   >
                                     <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

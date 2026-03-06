@@ -1,4 +1,4 @@
-import { InvoiceProjection, CardExpense, CreditCard, Asset, InvestmentStrategy, ScheduledTransaction, Category } from "./types"
+import { InvoiceProjection, CardExpense, CreditCard, Asset, InvestmentStrategy, ScheduledTransaction, Category, Goal, Bank } from "./types"
 import { addMonths, format, startOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -89,10 +89,12 @@ export function generateId<T extends { id: number }>(items: T[]): number {
 }
 
 /**
- * Calcula o patrimônio total somando o valor atual de cada ativo.
+ * Calcula o patrimônio total somando o valor atual de cada ativo e o saldo dos bancos.
  */
-export function calculateTotalNetWorth(assets: Asset[]): number {
-    return assets.reduce((sum, asset) => sum + asset.currentValue, 0)
+export function calculateTotalNetWorth(assets: Asset[], banks: Bank[] = []): number {
+    const assetsTotal = assets.reduce((sum, asset) => sum + asset.currentValue, 0)
+    const banksTotal = banks.reduce((sum, bank) => sum + bank.balance, 0)
+    return assetsTotal + banksTotal
 }
 
 /**
@@ -225,4 +227,86 @@ export function calculateInvestmentDistribution(
     }
 
     return recs.filter((r) => r.amount > 0.01)
+}
+
+/**
+ * Retorna a cor da barra de progresso para Economia (Categoria).
+ */
+export function getEconomyBarColor(spent: number, budget: number): string {
+    const TOLERANCE = 0.01
+    const percent = budget > 0 ? (spent / budget) * 100 : 0
+    if (percent < 75) return "var(--success)"
+    if (percent < 100 - TOLERANCE) return "var(--warning)"
+    return "var(--danger)"
+}
+
+/**
+ * Retorna a cor da barra de progresso para Objetivos (Metas).
+ */
+export function getGoalBarColor(current: number, target: number, monthlyContribution: number, monthlyNeeded: number): string {
+    const TOLERANCE = 0.01
+    if (current >= target) return "var(--success)"
+    // Se o aporte estiver abaixo de 95% do necessário -> VERMELHO
+    if (monthlyContribution < (monthlyNeeded * 0.95) - TOLERANCE) return "var(--danger)"
+    // Se o aporte estiver entre 95% e 105% do necessário -> AMARELO
+    if (monthlyContribution < (monthlyNeeded * 1.05) - TOLERANCE) return "var(--warning)"
+    // Se for maior que 105% -> TEMA (PRIMARY)
+    return "var(--primary)"
+}
+
+/**
+ * Retorna a cor da barra de progresso para Investimentos (Ativos).
+ */
+export function getAssetBarColor(currentValue: number, targetValue: number): string {
+    if (targetValue === 0) return "var(--primary)"
+    const ratio = currentValue / targetValue
+    // 95% a 105% -> VERDE (Rebalanceado)
+    if (ratio >= 0.95 && ratio <= 1.05) return "var(--success)"
+    // 80% a 95% -> AZUL (Abaixo mas aceitável)
+    if (ratio >= 0.8 && ratio < 0.95) return "var(--primary)"
+    // 105% a 140% -> AMARELO (Acima da meta / Bitcoin story)
+    if (ratio > 1.05 && ratio <= 1.40) return "var(--warning)"
+    // Fora disso -> VERMELHO
+    return "var(--danger)"
+}
+
+/**
+ * Retorna a cor crítica para o widget de Economia no Dashboard.
+ */
+export function getDashboardEconomyColor(categories: Category[]): string {
+    const colors = categories.map(cat => getEconomyBarColor(cat.spent, cat.budgeted))
+    if (colors.includes("var(--danger)")) return "var(--danger)"
+    if (colors.includes("var(--warning)")) return "var(--warning)"
+    return "var(--success)"
+}
+
+/**
+ * Retorna a cor crítica para o widget de Objetivos no Dashboard.
+ */
+export function getDashboardGoalColor(goals: Goal[]): string {
+    const colors = goals.map(goal => {
+        const monthsRemaining = (() => {
+            const today = new Date()
+            const target = new Date(goal.deadline)
+            return Math.max(0, (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth()))
+        })()
+        const monthlyNeeded = monthsRemaining > 0 ? (goal.target - goal.current) / monthsRemaining : 0
+        return getGoalBarColor(goal.current, goal.target, goal.monthlyContribution, monthlyNeeded)
+    })
+    if (colors.includes("var(--danger)")) return "var(--danger)"
+    if (colors.includes("var(--warning)")) return "var(--warning)"
+    return "var(--success)"
+}
+
+/**
+ * Retorna a cor crítica para o widget de Investimentos no Dashboard.
+ */
+export function getDashboardAssetColor(assets: Asset[], totalNetWorth: number): string {
+    const assetColors = assets.map(asset => {
+        const targetValue = totalNetWorth * (asset.targetPercentage / 100)
+        return getAssetBarColor(asset.currentValue, targetValue)
+    })
+    if (assetColors.includes("var(--danger)")) return "var(--danger)"
+    if (assetColors.includes("var(--warning)")) return "var(--warning)"
+    return "var(--success)"
 }

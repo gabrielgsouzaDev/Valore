@@ -65,13 +65,12 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
               {editingAsset !== asset.id && (
                 <Button
                   onClick={() => startEditing(asset)}
-                  size="sm"
-                  variant="outline"
+                  size="icon"
+                  variant="ghost"
                   aria-label={`Atualizar ${asset.name}`}
-                  className="border-border text-foreground hover:bg-muted transition-theme font-medium min-h-[44px] px-3"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                 >
-                  <RefreshCcw className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Atualizar</span>
+                  <RefreshCcw className="h-4 w-4" />
                 </Button>
               )}
             </div>

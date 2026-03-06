@@ -3,10 +3,10 @@
 import { memo } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, AlertTriangle, Pencil, Trash2 } from "lucide-react"
 
+import { getAssetBarColor } from "@/lib/services"
 import type { Asset } from "@/lib/types"
 
 interface AssetCardProps {
@@ -66,7 +66,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
                   variant="ghost"
                   size="icon"
                   aria-label={`Editar ${asset.name}`}
-                  className="h-8 w-8 text-muted-foreground hover:text-accent transition-colors"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -77,7 +77,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
                   variant="ghost"
                   size="icon"
                   aria-label={`Excluir ${asset.name}`}
-                  className="h-8 w-8 text-muted-foreground hover:text-danger transition-colors"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -143,11 +143,15 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
               <span>Progresso</span>
               <span>{progressValue.toFixed(0)}%</span>
             </div>
-            <Progress
-              value={Math.min(progressValue, 100)}
-              className="h-2 bg-muted"
-              indicatorClassName={showSellAlert ? "bg-danger" : showBuyAlert ? "bg-success" : "bg-primary"}
-            />
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(progressValue, 100)}%`,
+                  backgroundColor: getAssetBarColor(asset.currentValue, totalNetWorth * (asset.targetPercentage / 100))
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

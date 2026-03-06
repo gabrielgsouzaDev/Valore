@@ -21,9 +21,12 @@ export type ThemePreset = {
     }
 }
 
+export type AssetType = "Ação" | "FII" | "ETF" | "Renda Fixa" | "Cripto" | "Outro"
+
 export type Asset = {
     id: number
     name: string
+    type: AssetType
     targetPercentage: number
     currentValue: number
     quantity: number

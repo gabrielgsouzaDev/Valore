@@ -115,7 +115,7 @@ export function OnboardingCopilot() {
         return (
             <div className={baseClasses}>
                 <Card className="p-4 bg-primary text-primary-foreground border-none shadow-2xl flex items-center gap-4 rounded-2xl">
-                    <div className="bg-white/20 p-2 rounded-full">
+                    <div className="bg-primary-foreground/20 p-2 rounded-full">
                         <CheckCircle2 className="h-6 w-6" />
                     </div>
                     <div className="flex-1">
@@ -126,7 +126,7 @@ export function OnboardingCopilot() {
                         size="sm"
                         variant="ghost"
                         onClick={closeGuide}
-                        className="hover:bg-white/10 shrink-0"
+                        className="hover:bg-primary-foreground/10 shrink-0"
                     >
                         <X className="h-4 w-4" />
                     </Button>
@@ -146,18 +146,18 @@ export function OnboardingCopilot() {
                     <Sparkles className="h-6 w-6" />
                 </Button>
             ) : (
-                <Card className="overflow-hidden border-primary/20 shadow-[0_20px_50px_-12px_rgba(var(--primary),0.3)] bg-card/95 backdrop-blur-md rounded-[2rem]">
+                <Card className="overflow-hidden border-primary/20 shadow-[0_20px_50px_-12px_rgba(var(--theme-primary),0.3)] bg-card/95 backdrop-blur-md rounded-[2rem]">
                     {/* Header */}
                     <div className="bg-primary p-4 flex items-center justify-between text-primary-foreground">
                         <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 fill-current" />
-                            <span className="font-bold text-sm tracking-tight">MISSION CONTROL</span>
+                            <span className="font-bold text-sm tracking-tight">Valore</span>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 hover:bg-white/10 rounded-full"
+                                className="h-8 w-8 hover:bg-primary-foreground/10 rounded-full"
                                 onClick={handleMinimize}
                                 aria-label="Minimizar"
                             >
@@ -166,7 +166,7 @@ export function OnboardingCopilot() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 hover:bg-white/10 rounded-full"
+                                className="h-8 w-8 hover:bg-primary-foreground/10 rounded-full"
                                 onClick={closeGuide}
                                 aria-label="Fechar guia"
                             >
@@ -185,7 +185,7 @@ export function OnboardingCopilot() {
                                         key={i}
                                         className={cn(
                                             "h-1.5 rounded-full transition-all duration-300",
-                                            i === activeIndex ? "w-6 bg-primary" : m.isDone ? "w-2 bg-emerald-500" : "w-2 bg-muted"
+                                            i === activeIndex ? "w-6 bg-primary" : m.isDone ? "w-2 bg-success" : "w-2 bg-muted"
                                         )}
                                     />
                                 ))}
@@ -199,17 +199,17 @@ export function OnboardingCopilot() {
                         <div className="flex gap-3 sm:gap-4 items-start">
                             <div className={cn(
                                 "p-2 sm:p-3 rounded-xl sm:rounded-2xl flex-shrink-0",
-                                currentMission.isDone ? "bg-emerald-500/10" : "bg-primary/10"
+                                currentMission.isDone ? "bg-success/10" : "bg-primary/10"
                             )}>
                                 <currentMission.icon className={cn(
                                     "h-5 w-5 sm:h-6 sm:w-6",
-                                    currentMission.isDone ? "text-emerald-500" : "text-primary"
+                                    currentMission.isDone ? "text-success" : "text-primary"
                                 )} />
                             </div>
                             <div className="space-y-0.5 sm:space-y-1">
                                 <h3 className="font-bold text-foreground flex items-center gap-1.5 text-xs sm:text-sm">
                                     {currentMission.title}
-                                    {currentMission.isDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+                                    {currentMission.isDone && <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />}
                                 </h3>
                                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                     {currentMission.description}
@@ -252,7 +252,7 @@ export function OnboardingCopilot() {
                     {/* Barra de progresso total */}
                     <div className="h-1.5 w-full bg-muted">
                         <div
-                            className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                            className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(var(--theme-primary),0.5)]"
                             style={{ width: `${progress}%` }}
                         />
                     </div>

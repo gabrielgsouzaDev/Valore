@@ -108,7 +108,7 @@ export default function TransacoesPage() {
         return t
     })
 
-    const agendadasTransactions = processedTransactions.filter(t => t.status === "pendente" || t.status === "agendado")
+    const agendadasTransactions = processedTransactions.filter(t => t.status === "pendente")
 
     const filteredTransactions = agendadasTransactions
         .filter((t) => filter === "todos" || t.status === filter)
@@ -128,7 +128,7 @@ export default function TransacoesPage() {
         return Infinity
     }
 
-    const historyBaseTransactions = processedTransactions.filter(t => t.status === "pago" || t.status === "atrasado" || t.status === "realizado")
+    const historyBaseTransactions = processedTransactions.filter(t => t.status === "pago" || t.status === "atrasado")
 
     const historyTransactions = historyBaseTransactions
         .filter((t) => {
@@ -257,16 +257,16 @@ export default function TransacoesPage() {
 
                     {showActions && (
                         <div className="flex gap-1">
-                            {transaction.status !== "pago" && transaction.status !== "realizado" && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-success" onClick={() => markAsPaid(transaction.id)}>
-                                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            {transaction.status !== "pago" && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-success transition-colors duration-150 rounded-md" onClick={() => markAsPaid(transaction.id)}>
+                                    <Check className="h-4 w-4" />
                                 </Button>
                             )}
-                            <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent" onClick={() => handleEdit(transaction)}>
-                                <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md" onClick={() => handleEdit(transaction)}>
+                                <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive" onClick={() => { if (confirm("Excluir esta transação?")) deleteTransaction(transaction.id) }}>
-                                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md" onClick={() => { if (confirm("Excluir esta transação?")) deleteTransaction(transaction.id) }}>
+                                <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
                     )}

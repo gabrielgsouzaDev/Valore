@@ -12,6 +12,7 @@ const idSchema = z.object({
  */
 export const assetSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
+    type: z.enum(["Ação", "FII", "ETF", "Renda Fixa", "Cripto", "Outro"]),
     targetPercentage: z.number().min(0).max(100),
     quantity: z.number().min(0),
     price: z.number().min(0),
@@ -155,7 +156,7 @@ export const appStorageSchema = z.object({
     assets: z.array(assetWithIdSchema).default([]),
     categories: z.array(categoryWithIdSchema).default([]),
     goals: z.array(goalWithIdSchema).default([]),
-    settings: settingsSchema.default({}),
+    settings: settingsSchema.default({ themeId: "paper" }),
     transactions: z.array(transactionWithIdSchema).default([]),
     creditCards: z.array(creditCardWithIdSchema).default([]),
     cardExpenses: z.array(cardExpenseWithIdSchema).default([]),

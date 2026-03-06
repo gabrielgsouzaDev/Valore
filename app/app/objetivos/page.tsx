@@ -3,12 +3,11 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Sidebar } from "@/components/sidebar"
 import { Plus, Target, TrendingUp, Calendar, DollarSign, Pencil, Trash2, PlusCircle } from "lucide-react"
 import { GoalDialog } from "@/components/goal-dialog"
 import { useApp } from "@/contexts/app-context"
-import { cn } from "@/lib/utils"
+import { getGoalBarColor } from "@/lib/services"
 import type { Goal } from "@/lib/types"
 
 export default function ObjetivosPage() {
@@ -22,24 +21,17 @@ export default function ObjetivosPage() {
   const totalCurrent = goals.reduce((sum, goal) => sum + goal.current, 0)
   const totalMonthly = goals.reduce((sum, goal) => sum + goal.monthlyContribution, 0)
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityStyles = (priority: string) => {
     switch (priority) {
       case "alta":
-        return "text-danger bg-danger/10"
+        return { color: "var(--danger)", borderColor: "var(--danger)" }
       case "média":
-        return "text-warning bg-warning/10"
+        return { color: "var(--warning)", borderColor: "var(--warning)" }
       case "baixa":
-        return "text-accent bg-accent/10"
+        return { color: "var(--success)", borderColor: "var(--success)" }
       default:
-        return "text-muted-foreground bg-muted/50"
+        return { color: "var(--muted-foreground)", borderColor: "var(--border)" }
     }
-  }
-
-  const getProgressColor = (current: number, target: number, monthlyNeeded: number, monthlyContribution: number) => {
-    if (current >= target) return "bg-success"
-    if (monthlyNeeded > monthlyContribution) return "bg-danger"
-    if (monthlyNeeded === monthlyContribution && monthlyNeeded > 0) return "bg-warning"
-    return "bg-primary"
   }
 
   const calculateMonthsRemaining = (deadline: string) => {
@@ -69,6 +61,17 @@ export default function ObjetivosPage() {
                 <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Objetivos</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
                   Projetos de vida • Metas financeiras
+                </p>
+              </div>
+            </div>
+            <div className="text-left sm:text-right flex flex-col justify-center">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Total Acumulado vs Meta</p>
+              <div className="flex flex-col sm:items-end">
+                <p className="text-xl sm:text-3xl font-bold tracking-tight text-success">
+                  {formatCurrency(totalCurrent)}
+                </p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                  de {formatCurrency(totalTarget)} ({totalTarget > 0 ? ((totalCurrent / totalTarget) * 100).toFixed(1) : "0"}%)
                 </p>
               </div>
             </div>
@@ -115,7 +118,8 @@ export default function ObjetivosPage() {
                                 {goal.name}
                               </h4>
                               <span
-                                className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full font-medium ${getPriorityColor(goal.priority)}`}
+                                className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full font-semibold uppercase border bg-transparent transition-theme"
+                                style={getPriorityStyles(goal.priority)}
                               >
                                 {goal.priority}
                               </span>
@@ -131,9 +135,9 @@ export default function ObjetivosPage() {
                               variant="ghost"
                               size="icon"
                               aria-label={`Editar ${goal.name}`}
-                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
+                              className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                             >
-                              <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
                               onClick={() => {
@@ -144,9 +148,9 @@ export default function ObjetivosPage() {
                               variant="ghost"
                               size="icon"
                               aria-label={`Excluir ${goal.name}`}
-                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
+                              className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                             >
-                              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                             <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary hidden sm:block" />
                           </div>
@@ -160,11 +164,15 @@ export default function ObjetivosPage() {
                               {percentage.toFixed(1)}%
                             </span>
                           </div>
-                          <Progress
-                            value={percentage}
-                            className="h-2 sm:h-3 bg-muted"
-                            indicatorClassName={getProgressColor(goal.current, goal.target, monthlyNeeded, goal.monthlyContribution)}
-                          />
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-3 mt-1.5 sm:mt-2 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(percentage, 100)}%`,
+                                backgroundColor: getGoalBarColor(goal.current, goal.target, goal.monthlyContribution, monthlyNeeded)
+                              }}
+                            />
+                          </div>
                           <div className="flex items-center justify-between mt-1.5 sm:mt-2">
                             <span className="text-xs sm:text-sm text-foreground/80">
                               {formatCurrency(goal.current)}
@@ -241,9 +249,16 @@ export default function ObjetivosPage() {
                         </div>
 
                         {/* Alert */}
-                        {monthlyNeeded > goal.monthlyContribution && (
-                          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2 sm:p-3">
-                            <p className="text-[10px] sm:text-xs text-red-400">
+                        {monthlyNeeded > goal.monthlyContribution * 1.05 && (
+                          <div
+                            className="rounded-lg p-2 sm:p-3 border"
+                            style={{
+                              backgroundColor: "var(--danger)",
+                              opacity: 0.1,
+                              borderColor: "var(--danger)"
+                            }}
+                          >
+                            <p className="text-[10px] sm:text-xs font-medium" style={{ color: "var(--danger)" }}>
                               Aporte insuficiente. Aumente em {formatCurrency(monthlyNeeded - goal.monthlyContribution)}
                               /mês
                             </p>
@@ -289,11 +304,15 @@ export default function ObjetivosPage() {
                         {formatCurrency(totalTarget - totalCurrent)}
                       </p>
                     </div>
-                    <Progress
-                      value={totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0}
-                      className="h-2 sm:h-3 bg-muted"
-                      indicatorClassName="bg-success"
-                    />
+                    <div className="w-full bg-muted rounded-full h-2 sm:h-3 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0}%`,
+                          backgroundColor: "var(--success)"
+                        }}
+                      />
+                    </div>
                     <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
                       {totalTarget > 0 ? ((totalCurrent / totalTarget) * 100).toFixed(1) : "0.0"}% alcançado
                     </p>
@@ -319,7 +338,7 @@ export default function ObjetivosPage() {
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-danger"></div>
+                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full" style={{ backgroundColor: "var(--danger)" }}></div>
                         <span className="text-xs sm:text-sm text-foreground/80">Alta</span>
                       </div>
                       <span className="font-semibold text-foreground text-sm">
@@ -328,7 +347,7 @@ export default function ObjetivosPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-warning"></div>
+                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full" style={{ backgroundColor: "var(--warning)" }}></div>
                         <span className="text-xs sm:text-sm text-foreground/80">Média</span>
                       </div>
                       <span className="font-semibold text-foreground text-sm">
@@ -337,7 +356,7 @@ export default function ObjetivosPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-accent"></div>
+                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full" style={{ backgroundColor: "var(--success)" }}></div>
                         <span className="text-xs sm:text-sm text-foreground/80">Baixa</span>
                       </div>
                       <span className="font-semibold text-foreground text-sm">

@@ -788,24 +788,24 @@ export default function ConfiguracoesPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
+                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     openEditBankDialog(bank)
                                   }}
                                 >
-                                  <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                  <Pencil className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
+                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handleDeleteBank(bank.id)
                                   }}
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>

@@ -14,14 +14,19 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useApp } from "@/contexts/app-context"
+import { AssetType } from "@/lib/types"
 
 interface Asset {
   id: number
   name: string
+  type: AssetType
   targetPercentage: number
   currentValue: number
   quantity: number
   price: number
+  bankId?: number
 }
 
 interface AssetDialogProps {
@@ -32,27 +37,34 @@ interface AssetDialogProps {
 }
 
 export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogProps) {
+  const { banks } = useApp()
   const [formData, setFormData] = useState({
     name: "",
+    type: "Ação" as AssetType,
     targetPercentage: "",
     quantity: "",
     price: "",
+    bankId: "",
   })
 
   useEffect(() => {
     if (asset) {
       setFormData({
         name: asset.name,
+        type: asset.type,
         targetPercentage: asset.targetPercentage.toString(),
         quantity: asset.quantity.toString(),
         price: asset.price.toString(),
+        bankId: asset.bankId?.toString() || "",
       })
     } else {
       setFormData({
         name: "",
+        type: "Ação",
         targetPercentage: "",
         quantity: "",
         price: "",
+        bankId: "",
       })
     }
   }, [asset, open])
@@ -61,11 +73,13 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
     e.preventDefault()
     onSave({
       name: formData.name,
+      type: formData.type,
       targetPercentage: Number.parseFloat(formData.targetPercentage),
       quantity: Number.parseFloat(formData.quantity),
       price: Number.parseFloat(formData.price),
+      bankId: formData.bankId ? Number.parseInt(formData.bankId) : undefined,
     })
-    setFormData({ name: "", targetPercentage: "", quantity: "", price: "" })
+    setFormData({ name: "", type: "Ação", targetPercentage: "", quantity: "", price: "", bankId: "" })
   }
 
   return (
@@ -80,17 +94,48 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name" className="text-foreground font-medium">
-                Nome do Ativo
+              <Label htmlFor="type" className="text-foreground font-medium">
+                Tipo de Ativo
               </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: VWRA11, Bitcoin"
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                required
-              />
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value as AssetType })}
+              >
+                <SelectTrigger id="type" className="bg-muted border-border text-foreground">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="Ação">Ação</SelectItem>
+                  <SelectItem value="FII">FII</SelectItem>
+                  <SelectItem value="ETF">ETF</SelectItem>
+                  <SelectItem value="Renda Fixa">Renda Fixa</SelectItem>
+                  <SelectItem value="Cripto">Cripto</SelectItem>
+                  <SelectItem value="Outro">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="bank" className="text-foreground font-medium">
+                Instituição / Banco
+              </Label>
+              <Select
+                value={formData.bankId}
+                onValueChange={(value) => setFormData({ ...formData, bankId: value })}
+              >
+                <SelectTrigger id="bank" className="bg-muted border-border text-foreground">
+                  <SelectValue placeholder="Selecione a instituição" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {banks.map((bank) => (
+                    <SelectItem key={bank.id} value={bank.id.toString()}>
+                      {bank.name}
+                    </SelectItem>
+                  ))}
+                  {banks.length === 0 && (
+                    <p className="text-xs text-muted-foreground p-2">Nenhum banco cadastrado</p>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="targetPercentage" className="text-foreground font-medium">

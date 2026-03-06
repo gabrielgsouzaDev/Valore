@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Sidebar } from "@/components/sidebar"
+import { getEconomyBarColor } from "@/lib/services"
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
@@ -27,6 +27,8 @@ export default function EconomiaPage() {
     totalSpent,
   } = useApp()
 
+  const remaining = totalBudgeted - totalSpent
+
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false)
@@ -34,15 +36,6 @@ export default function EconomiaPage() {
     categoryId: number
     subcategory: Subcategory | null
   } | null>(null)
-
-  const remaining = totalBudgeted - totalSpent
-
-  const getProgressColor = (spent: number, budgeted: number) => {
-    if (budgeted === 0) return "bg-primary"
-    if (spent > budgeted) return "bg-danger"
-    if (spent === budgeted && spent > 0) return "bg-success"
-    return "bg-primary"
-  }
 
   const handleAddCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
     addCategory(categoryData)
@@ -109,6 +102,12 @@ export default function EconomiaPage() {
                   Orçamento • Alocação de capital
                 </p>
               </div>
+            </div>
+            <div className="text-left sm:text-right flex flex-col justify-center">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Saldo Restante</p>
+              <p className={cn("text-xl sm:text-3xl font-bold tracking-tight", remaining >= 0 ? "text-success" : "text-danger")}>
+                {formatCurrency(remaining)}
+              </p>
             </div>
           </div>
         </header>
@@ -178,17 +177,17 @@ export default function EconomiaPage() {
                                 onClick={() => openEditCategoryDialog(category)}
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                               >
-                                <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                <Pencil className="h-4 w-4" />
                               </Button>
                               <Button
                                 onClick={() => handleDeleteCategory(category.id)}
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                               >
-                                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
@@ -200,11 +199,15 @@ export default function EconomiaPage() {
                           </p>
                         </div>
 
-                        <Progress
-                          value={(category.spent / category.budgeted) * 100}
-                          className="h-1.5 sm:h-2 bg-muted"
-                          indicatorClassName={getProgressColor(category.spent, category.budgeted)}
-                        />
+                        <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
+                              backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
+                            }}
+                          />
+                        </div>
 
                         {/* Subcategories */}
                         {category.expanded && (
@@ -229,25 +232,29 @@ export default function EconomiaPage() {
                                       }}
                                       variant="ghost"
                                       size="icon"
-                                      className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground hover:text-accent"
+                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                                     >
-                                      <Pencil className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                      <Pencil className="h-4 w-4" />
                                     </Button>
                                     <Button
                                       onClick={() => handleDeleteSubcategory(category.id, sub.id)}
                                       variant="ghost"
                                       size="icon"
-                                      className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground hover:text-destructive"
+                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
                                     >
-                                      <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                      <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </div>
                                 </div>
-                                <Progress
-                                  value={(sub.spent / sub.budgeted) * 100}
-                                  className="h-1 bg-muted"
-                                  indicatorClassName={getProgressColor(sub.spent, sub.budgeted)}
-                                />
+                                <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
+                                      backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
+                                    }}
+                                  />
+                                </div>
                               </div>
                             ))}
                             <Button
@@ -302,11 +309,15 @@ export default function EconomiaPage() {
                       </div>
                     </div>
 
-                    <Progress
-                      value={totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0}
-                      className="h-2 sm:h-3 bg-muted"
-                      indicatorClassName={getProgressColor(totalSpent, totalBudgeted)}
-                    />
+                    <div className="w-full bg-muted rounded-full h-2 sm:h-3 mt-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${totalBudgeted > 0 ? Math.min((totalSpent / totalBudgeted) * 100, 100) : 0}%`,
+                          backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
+                        }}
+                      />
+                    </div>
 
                     <p className="text-xs text-muted-foreground text-center">
                       {totalBudgeted > 0 ? ((totalSpent / totalBudgeted) * 100).toFixed(1) : "0.0"}% utilizado
@@ -346,12 +357,12 @@ export default function EconomiaPage() {
         open={categoryDialogOpen}
         onOpenChange={setCategoryDialogOpen}
         category={editingCategory}
-        onSave={(data) => {
+        onSave={(data: { name: string; percentage: number; budgeted: number; color: string }) => {
           if (editingCategory) {
             updateCategory(editingCategory.id, data)
             setEditingCategory(null)
           } else {
-            addCategory(data)
+            handleAddCategory(data)
           }
           setCategoryDialogOpen(false)
         }}

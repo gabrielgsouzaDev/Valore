@@ -10,6 +10,14 @@ import {
 import { useApp } from "@/contexts/app-context"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { cn } from "@/lib/utils"
+import {
+  getEconomyBarColor,
+  getGoalBarColor,
+  getAssetBarColor,
+  getDashboardEconomyColor,
+  getDashboardGoalColor,
+  getDashboardAssetColor
+} from "@/lib/services"
 
 export default function DashboardPage() {
   const {
@@ -93,8 +101,9 @@ export default function DashboardPage() {
                     <CardHeader className="pb-2 p-4 sm:p-5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-xl bg-primary/10">
-                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          <div className="p-2 rounded-xl relative overflow-hidden">
+                            <div className="absolute inset-0" style={{ backgroundColor: getDashboardAssetColor(assets, totalNetWorth), opacity: 0.1 }} />
+                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 relative" style={{ color: getDashboardAssetColor(assets, totalNetWorth) }} />
                           </div>
                           <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Investimentos</CardTitle>
                         </div>
@@ -102,7 +111,7 @@ export default function DashboardPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 pt-0">
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalNetWorth)}</p>
+                      <p className="text-xl sm:text-2xl font-bold" style={{ color: getDashboardAssetColor(assets, totalNetWorth) }}>{fmt(totalNetWorth)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{assets.length} ativo{assets.length !== 1 ? "s" : ""}</p>
                     </CardContent>
                   </Card>
@@ -118,8 +127,9 @@ export default function DashboardPage() {
                     <CardHeader className="pb-2 p-4 sm:p-5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-xl bg-primary/10">
-                            <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          <div className="p-2 rounded-xl relative overflow-hidden">
+                            <div className="absolute inset-0" style={{ backgroundColor: getDashboardEconomyColor(categories), opacity: 0.1 }} />
+                            <Wallet className="h-4 w-4 sm:h-5 sm:w-5 relative" style={{ color: getDashboardEconomyColor(categories) }} />
                           </div>
                           <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Economia</CardTitle>
                         </div>
@@ -128,20 +138,16 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-5 pt-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xl sm:text-2xl font-bold text-danger">{fmt(totalSpent)}</p>
+                        <p className="text-xl sm:text-2xl font-bold" style={{ color: getDashboardEconomyColor(categories) }}>{fmt(totalSpent)}</p>
                         <span className="text-xs text-muted-foreground">/ {fmt(totalBudgeted)}</span>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                      <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
                         <div
-                          className={cn(
-                            "h-1.5 rounded-full transition-all",
-                            totalSpent > totalBudgeted
-                              ? "bg-danger"
-                              : totalSpent === totalBudgeted && totalSpent > 0
-                                ? "bg-success"
-                                : "bg-primary"
-                          )}
-                          style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%`,
+                            backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
+                          }}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground mt-1.5">{pct(totalSpent, totalBudgeted)}% do orçamento usado</p>
@@ -159,8 +165,9 @@ export default function DashboardPage() {
                     <CardHeader className="pb-2 p-4 sm:p-5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-xl bg-primary/10">
-                            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          <div className="p-2 rounded-xl relative overflow-hidden">
+                            <div className="absolute inset-0" style={{ backgroundColor: getDashboardGoalColor(goals), opacity: 0.1 }} />
+                            <Target className="h-4 w-4 sm:h-5 sm:w-5 relative" style={{ color: getDashboardGoalColor(goals) }} />
                           </div>
                           <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Objetivos</CardTitle>
                         </div>
@@ -171,24 +178,20 @@ export default function DashboardPage() {
                       {topGoal ? (
                         <>
                           <p className="text-sm font-semibold text-foreground truncate">{topGoal.name}</p>
-                          <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                          <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
                             <div
-                              className={cn(
-                                "h-1.5 rounded-full transition-all",
-                                (() => {
-                                  const monthsToTarget = (() => {
-                                    const today = new Date()
-                                    const target = new Date(topGoal.deadline)
-                                    return Math.max(0, (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth()))
-                                  })()
-                                  const needed = monthsToTarget > 0 ? (topGoal.target - topGoal.current) / monthsToTarget : 0
-                                  if (topGoal.current >= topGoal.target) return "bg-success"
-                                  if (needed > topGoal.monthlyContribution) return "bg-danger"
-                                  if (needed === topGoal.monthlyContribution && needed > 0) return "bg-warning"
-                                  return "bg-primary"
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(pct(topGoal.current, topGoal.target), 100)}%`,
+                                backgroundColor: (() => {
+                                  const today = new Date()
+                                  today.setHours(0, 0, 0, 0)
+                                  const deadline = new Date(topGoal.deadline)
+                                  const monthsToTarget = Math.max(0, (deadline.getFullYear() - today.getFullYear()) * 12 + (deadline.getMonth() - today.getMonth()))
+                                  const monthlyNeeded = monthsToTarget > 0 ? (topGoal.target - topGoal.current) / monthsToTarget : 0
+                                  return getGoalBarColor(topGoal.current, topGoal.target, topGoal.monthlyContribution, monthlyNeeded)
                                 })()
-                              )}
-                              style={{ width: `${Math.min(pct(topGoal.current, topGoal.target), 100)}%` }}
+                              }}
                             />
                           </div>
                           <p className="text-xs text-muted-foreground mt-1.5">
