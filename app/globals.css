@@ -19,6 +19,12 @@
   --theme-warning: 251 191 36;
   --theme-danger: 248 113 113;
 
+  /* Fallbacks baseados no tema Paper */
+  --fallback-success: 76 140 74;
+  --fallback-warning: 190 120 30;
+  --fallback-danger: 185 50 50;
+  --fallback-primary: 124 73 20;
+
   --background: rgb(var(--theme-background));
   --foreground: oklch(0.145 0 0);
   --card: rgb(var(--theme-card));

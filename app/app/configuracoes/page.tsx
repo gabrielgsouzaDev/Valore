@@ -44,58 +44,12 @@ import { themePresets } from "@/lib/constants"
 import type { Bank, BankType, ThemePreset, InvestmentStrategy } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
-function isIOS() {
-  if (typeof window === "undefined") return false
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-}
-
-function isInStandaloneMode() {
-  if (typeof window === "undefined") return false
-  return (window.navigator as any).standalone === true ||
-    window.matchMedia("(display-mode: standalone)").matches
-}
+import { usePWA } from "@/hooks/use-pwa"
 
 function PWAInstallCard() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-  const [isInstallable, setIsInstallable] = useState(false)
-  const [isIOSDevice, setIsIOSDevice] = useState(false)
-  const [installed, setInstalled] = useState(false)
+  const { isInstallable, isIOSDevice, isStandalone, promptInstall } = usePWA()
 
-  useEffect(() => {
-    if (isInStandaloneMode()) {
-      setInstalled(true)
-      return
-    }
-
-    const ios = isIOS()
-    setIsIOSDevice(ios)
-
-    if (ios) {
-      setIsInstallable(true)
-      return
-    }
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setIsInstallable(true)
-    }
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-
-    const handleAppInstalled = () => {
-      setInstalled(true)
-      setIsInstallable(false)
-    }
-    window.addEventListener("appinstalled", handleAppInstalled)
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-      window.removeEventListener("appinstalled", handleAppInstalled)
-    }
-  }, [])
-
-  if (installed || !isInstallable) return null
+  if (isStandalone || !isInstallable) return null
 
   return (
     <Card className="bg-primary/5 border-primary/20 mt-4">
@@ -110,15 +64,7 @@ function PWAInstallCard() {
         </div>
         {!isIOSDevice && (
           <Button
-            onClick={async () => {
-              if (!deferredPrompt) return
-              deferredPrompt.prompt()
-              const { outcome } = await deferredPrompt.userChoice
-              if (outcome === "accepted") {
-                setDeferredPrompt(null)
-                setIsInstallable(false)
-              }
-            }}
+            onClick={promptInstall}
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm w-full sm:w-auto shrink-0"
           >
             <Download className="h-4 w-4 mr-2" />

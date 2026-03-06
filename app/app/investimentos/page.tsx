@@ -7,14 +7,18 @@ import { Settings, ArrowUpRight, CreditCard, TrendingUp } from "lucide-react"
 import { AssetCard } from "@/components/asset-card"
 import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
-import { PortfolioChart } from "@/components/portfolio-chart"
-import { HistoryChart } from "@/components/history-chart"
-import { BudgetComparison } from "@/components/budget-comparison"
 import { Sidebar } from "@/components/sidebar"
 import { AssetDialog } from "@/components/asset-dialog"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import type { Asset } from "@/lib/types"
+
+// Dynamic imports for charts (no SSR)
+const PortfolioChart = dynamic(() => import("@/components/portfolio-chart").then(mod => mod.PortfolioChart), { ssr: false })
+const HistoryChart = dynamic(() => import("@/components/history-chart").then(mod => mod.HistoryChart), { ssr: false })
+const BudgetComparison = dynamic(() => import("@/components/budget-comparison").then(mod => mod.BudgetComparison), { ssr: false })
 
 export default function InvestimentosPage() {
     const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
@@ -92,15 +96,25 @@ export default function InvestimentosPage() {
                                 </div>
                             </div>
 
-                            <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
-                            <HistoryChart />
+                            <ErrorBoundary moduleName="Tabela de Ativos">
+                                <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
+                            </ErrorBoundary>
+                            <ErrorBoundary moduleName="Evolução Patrimonial">
+                                <HistoryChart />
+                            </ErrorBoundary>
                         </div>
 
                         <div className="space-y-6 sm:space-y-8 min-w-0">
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-6 sm:gap-8">
-                                <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
-                                <BudgetComparison />
-                                <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} />
+                                <ErrorBoundary moduleName="Composição da Carteira">
+                                    <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
+                                </ErrorBoundary>
+                                <ErrorBoundary moduleName="Orçamento vs Gastos">
+                                    <BudgetComparison />
+                                </ErrorBoundary>
+                                <ErrorBoundary moduleName="Calculadora de Aportes">
+                                    <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} />
+                                </ErrorBoundary>
                             </div>
 
                             <Card className="bg-card border-border p-4 sm:p-6 transition-theme">

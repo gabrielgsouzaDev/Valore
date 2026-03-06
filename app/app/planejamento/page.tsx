@@ -506,7 +506,7 @@ export default function PlanejamentoPage() {
 
               {showFilters && (
                 <div className="grid sm:grid-cols-2 gap-2 bg-muted/50 rounded-lg p-3 sm:p-4">
-                  <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
+                  <Select value={filter} onValueChange={(v: typeof filter) => setFilter(v)}>
                     <SelectTrigger className="bg-card border-border text-sm">
                       <SelectValue />
                     </SelectTrigger>
@@ -517,7 +517,7 @@ export default function PlanejamentoPage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+                  <Select value={typeFilter} onValueChange={(v: typeof typeFilter) => setTypeFilter(v)}>
                     <SelectTrigger className="bg-card border-border text-sm">
                       <SelectValue />
                     </SelectTrigger>

@@ -67,6 +67,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   onClick={() => startEditing(asset)}
                   size="sm"
                   variant="outline"
+                  aria-label={`Atualizar ${asset.name}`}
                   className="border-border text-foreground hover:bg-muted transition-theme font-medium min-h-[44px] px-3"
                 >
                   <RefreshCcw className="h-4 w-4 sm:mr-2" />
@@ -133,6 +134,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleUpdate(asset.id)}
+                    aria-label={`Salvar alterações em ${asset.name}`}
                     className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium min-h-[44px]"
                   >
                     <Check className="h-4 w-4 mr-1" />
@@ -141,6 +143,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   <Button
                     onClick={() => setEditingAsset(null)}
                     variant="outline"
+                    aria-label="Cancelar edição"
                     className="border-border text-foreground hover:bg-muted min-h-[44px] px-4"
                   >
                     <X className="h-4 w-4" />

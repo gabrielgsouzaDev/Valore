@@ -38,10 +38,8 @@ export default function EconomiaPage() {
   const remaining = totalBudgeted - totalSpent
 
   const getProgressColor = (spent: number, budgeted: number) => {
-    const percentage = (spent / budgeted) * 100
-    if (percentage > 100) return "bg-danger"
-    if (percentage > 85) return "bg-warning"
-    return "bg-success"
+    if (spent > budgeted) return "bg-danger"
+    return "bg-primary"
   }
 
   const handleAddCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {

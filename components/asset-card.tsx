@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -15,7 +16,7 @@ interface AssetCardProps {
   onDelete?: () => void
 }
 
-export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardProps) {
+export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardProps) {
   const currentPercentage = (asset.currentValue / totalNetWorth) * 100
   const difference = currentPercentage - asset.targetPercentage
   const progressValue = (currentPercentage / asset.targetPercentage) * 100
@@ -64,6 +65,7 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
                   onClick={onEdit}
                   variant="ghost"
                   size="icon"
+                  aria-label={`Editar ${asset.name}`}
                   className="h-8 w-8 text-muted-foreground hover:text-accent transition-colors"
                 >
                   <Pencil className="h-4 w-4" />
@@ -74,6 +76,7 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
                   onClick={onDelete}
                   variant="ghost"
                   size="icon"
+                  aria-label={`Excluir ${asset.name}`}
                   className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -150,4 +153,4 @@ export function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardP
       </div>
     </Card>
   )
-}
+})

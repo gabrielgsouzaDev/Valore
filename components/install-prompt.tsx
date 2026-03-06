@@ -4,66 +4,32 @@ import { useState, useEffect } from "react"
 import { X, Download, Share } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>
-    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
-}
+import { usePWA } from "@/hooks/use-pwa"
 
 const DISMISSED_KEY = "valore-pwa-install-dismissed"
 
-function isIOS() {
-    if (typeof window === "undefined") return false
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-}
-
-function isInStandaloneMode() {
-    if (typeof window === "undefined") return false
-    return (window.navigator as any).standalone === true ||
-        window.matchMedia("(display-mode: standalone)").matches
-}
-
 export function InstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+    const { isInstallable, isIOSDevice, isStandalone, promptInstall } = usePWA()
     const [showBanner, setShowBanner] = useState(false)
-    const [isIOSDevice, setIsIOSDevice] = useState(false)
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
         // Se já está instalado ou já foi dispensado, não exibir
-        if (isInStandaloneMode()) return
+        if (isStandalone) return
         if (localStorage.getItem(DISMISSED_KEY)) return
 
-        const ios = isIOS()
-        setIsIOSDevice(ios)
-
-        if (ios) {
-            // iOS: mostra instrução manual
-            setTimeout(() => {
+        if (isInstallable) {
+            const timer = setTimeout(() => {
                 setShowBanner(true)
                 setTimeout(() => setIsVisible(true), 50)
             }, 3000)
-            return
+            return () => clearTimeout(timer)
         }
-
-        // Android/Desktop: ouve o evento nativo
-        const handleBeforeInstall = (e: Event) => {
-            e.preventDefault()
-            setDeferredPrompt(e as BeforeInstallPromptEvent)
-            setTimeout(() => {
-                setShowBanner(true)
-                setTimeout(() => setIsVisible(true), 50)
-            }, 3000)
-        }
-
-        window.addEventListener("beforeinstallprompt", handleBeforeInstall)
-        return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstall)
-    }, [])
+    }, [isStandalone, isInstallable])
 
     const handleInstall = async () => {
-        if (!deferredPrompt) return
-        await deferredPrompt.prompt()
-        const choice = await deferredPrompt.userChoice
-        if (choice.outcome === "accepted") {
+        const success = await promptInstall()
+        if (success) {
             dismiss()
         }
     }

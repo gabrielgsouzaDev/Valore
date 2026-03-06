@@ -35,11 +35,11 @@ export default function ObjetivosPage() {
     }
   }
 
-  const getProgressColor = (current: number, target: number) => {
-    const percentage = (current / target) * 100
-    if (percentage < 33) return "bg-danger"
-    if (percentage < 66) return "bg-warning"
-    return "bg-success"
+  const getProgressColor = (current: number, target: number, monthlyNeeded: number, monthlyContribution: number) => {
+    if (current >= target) return "bg-success"
+    if (monthlyNeeded > monthlyContribution) return "bg-danger"
+    if (monthlyNeeded === monthlyContribution && monthlyNeeded > 0) return "bg-warning"
+    return "bg-primary"
   }
 
   const calculateMonthsRemaining = (deadline: string) => {
@@ -130,6 +130,7 @@ export default function ObjetivosPage() {
                               }}
                               variant="ghost"
                               size="icon"
+                              aria-label={`Editar ${goal.name}`}
                               className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-accent"
                             >
                               <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -142,6 +143,7 @@ export default function ObjetivosPage() {
                               }}
                               variant="ghost"
                               size="icon"
+                              aria-label={`Excluir ${goal.name}`}
                               className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -161,7 +163,7 @@ export default function ObjetivosPage() {
                           <Progress
                             value={percentage}
                             className="h-2 sm:h-3 bg-muted"
-                            indicatorClassName={getProgressColor(goal.current, goal.target)}
+                            indicatorClassName={getProgressColor(goal.current, goal.target, monthlyNeeded, goal.monthlyContribution)}
                           />
                           <div className="flex items-center justify-between mt-1.5 sm:mt-2">
                             <span className="text-xs sm:text-sm text-foreground/80">
@@ -195,6 +197,7 @@ export default function ObjetivosPage() {
                               }
                             }}
                             size="sm"
+                            aria-label={`Aportar em ${goal.name}`}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
                           >
                             <PlusCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, type ReactNode } from "react"
 import {
   Asset, Category, Goal, Settings, ScheduledTransaction,
   CreditCard, CardExpense, InvoiceProjection, Bank, ThemePreset, Subcategory, PatrimonialSnapshot
@@ -10,8 +10,46 @@ import {
   defaultGoals, defaultTransactions, defaultCreditCards, defaultCardExpenses,
   defaultBanks, STORAGE_KEY, exampleData
 } from "@/lib/constants"
-import { calculateInvoices as calculateInvoicesUtil, applyThemeVariables } from "@/lib/services"
+import {
+  calculateInvoices as calculateInvoicesUtil,
+  generateId,
+  calculateTotalNetWorth,
+  calculateTotalBudgeted,
+  calculateTotalSpent,
+  calculateMonthlyIncome,
+  calculateMonthlyExpenses,
+  calculateNextDate
+} from "@/lib/services"
+import { appStorageSchema } from "@/lib/schemas"
 import "jspdf-autotable"
+
+/**
+ * Aplica o tema visual ao documento via variáveis CSS.
+ * Esta função acessa a API do browser (document) por necessidade técnica.
+ */
+function applyThemeVariables(theme: ThemePreset) {
+  if (typeof document === "undefined") return
+
+  const root = document.documentElement
+  Object.entries(theme.colors).forEach(([key, value]) => {
+    const cssVarName = `--theme-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`
+    root.style.setProperty(cssVarName, value as string)
+  })
+
+  // Alterna o modo claro/escuro
+  if (theme.mode === "light") {
+    root.classList.remove("dark")
+  } else {
+    root.classList.add("dark")
+  }
+
+  // Atualiza a meta tag theme-color
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+  if (metaThemeColor) {
+    const bgColor = `rgb(${theme.colors.background.split(" ").join(", ")})`
+    metaThemeColor.setAttribute("content", bgColor)
+  }
+}
 
 /**
  * Interface que define o formato de dados e funções expostas pelo contexto global da aplicação.
@@ -133,69 +171,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const initialTheme = themePresets.find((t: ThemePreset) => t.id === defaultSettings.themeId) || themePresets[0]
   const currentTheme = themePresets.find((t: ThemePreset) => t.id === settings.themeId) || initialTheme
 
-  const setTheme = (themeId: string) => {
+  const setTheme = useCallback((themeId: string) => {
     setSettingsState((prev: Settings) => ({ ...prev, themeId }))
     const theme = themePresets.find((t: ThemePreset) => t.id === themeId) || initialTheme
     applyThemeVariables(theme)
-  }
+  }, [initialTheme])
 
   // --- Valores Computados ---
-  const totalNetWorth = assets.reduce((sum: number, asset: Asset) => sum + asset.currentValue, 0)
-  const totalBudgeted = categories.reduce((sum: number, cat: Category) => sum + cat.budgeted, 0)
-  const totalSpent = categories.reduce((sum: number, cat: Category) => sum + cat.spent, 0)
+  const totalNetWorth = useMemo(() => calculateTotalNetWorth(assets), [assets])
+  const totalBudgeted = useMemo(() => calculateTotalBudgeted(categories), [categories])
+  const totalSpent = useMemo(() => calculateTotalSpent(categories), [categories])
 
-  const investmentCategory = categories.find((c: Category) => c.name === "Investimentos")
-  const availableForInvestment = investmentCategory ? investmentCategory.budgeted - investmentCategory.spent : 0
+  const investmentCategory = useMemo(() => categories.find((c: Category) => c.name === "Investimentos"), [categories])
+  const availableForInvestment = useMemo(() => investmentCategory ? investmentCategory.budgeted - investmentCategory.spent : 0, [investmentCategory])
 
-  const monthlyScheduledIncome = transactions
-    .filter((t: ScheduledTransaction) => t.type === "ganho" && (t.recurrence === "mensal" || t.recurrence === "unico"))
-    .reduce((sum: number, t: ScheduledTransaction) => sum + t.amount, 0)
+  const monthlyScheduledIncome = useMemo(() => calculateMonthlyIncome(transactions), [transactions])
+  const monthlyScheduledExpenses = useMemo(() => calculateMonthlyExpenses(transactions), [transactions])
 
-  const monthlyScheduledExpenses = transactions
-    .filter((t: ScheduledTransaction) => t.type === "pagamento" && (t.recurrence === "mensal" || t.recurrence === "unico"))
-    .reduce((sum: number, t: ScheduledTransaction) => sum + t.amount, 0)
-
-  const upcomingTransactions = transactions
+  const upcomingTransactions = useMemo(() => transactions
     .filter((t: ScheduledTransaction) => t.status === "pendente")
     .sort((a: ScheduledTransaction, b: ScheduledTransaction) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, 5)
+    .slice(0, 5), [transactions])
 
   // --- Persistência (LocalStorage) ---
   useEffect(() => {
     try {
       const savedData = window.localStorage.getItem(STORAGE_KEY)
       if (savedData) {
-        const parsed = JSON.parse(savedData)
-        if (parsed.assets) setAssetsState(parsed.assets)
-        if (parsed.categories) setCategoriesState(parsed.categories)
-        if (parsed.goals) setGoalsState(parsed.goals)
-        if (parsed.settings) {
-          setSettingsState(parsed.settings)
+        const rawParsed = JSON.parse(savedData)
+
+        // Validação defensiva com Zod
+        const validation = appStorageSchema.safeParse(rawParsed)
+
+        if (validation.success) {
+          const data = validation.data
+          setAssetsState(data.assets)
+          setCategoriesState(data.categories)
+          setGoalsState(data.goals)
+          setSettingsState(data.settings as Settings)
+          setTransactionsState(data.transactions)
+          setCreditCardsState(data.creditCards)
+          setCardExpensesState(data.cardExpenses as CardExpense[])
+          setBanksState(data.banks)
+          setPatrimonialHistory(data.patrimonialHistory)
+
+          // Aplica tema após carregar configurações
           setTimeout(() => {
-            const theme = themePresets.find((t: ThemePreset) => t.id === parsed.settings.themeId) || initialTheme
+            const theme = themePresets.find((t: ThemePreset) => t.id === data.settings.themeId) || initialTheme
             applyThemeVariables(theme)
           }, 0)
+        } else {
+          // Se falhar a validação (ex: schema antigo), tenta carregar o que for possível ou resetar
+          console.warn("Falha na validação do localStorage, carregando exemplos.")
+          loadExampleData()
         }
-        if (parsed.transactions) setTransactionsState(parsed.transactions)
-        if (parsed.creditCards) setCreditCardsState(parsed.creditCards)
-        if (parsed.cardExpenses) setCardExpensesState(parsed.cardExpenses)
-        if (parsed.banks) setBanksState(parsed.banks)
-        if (parsed.patrimonialHistory) setPatrimonialHistory(parsed.patrimonialHistory)
       } else {
-        // Carregar dados de exemplo por padrão no primeiro acesso
-        setAssetsState(exampleData.assets)
-        setCategoriesState(exampleData.categories)
-        setGoalsState(exampleData.goals)
-        setTransactionsState(exampleData.transactions)
-        setCreditCardsState(exampleData.creditCards)
-        setCardExpensesState(exampleData.cardExpenses)
-        setBanksState(exampleData.banks)
-
-        // Aplicar o tema padrão (Golden Hour)
-        applyThemeVariables(initialTheme)
+        loadExampleData()
       }
     } catch (error) {
-      console.error("Erro ao carregar dados:", error)
+      console.error("Erro ao carregar do localStorage:", error)
       applyThemeVariables(initialTheme)
     }
     setIsLoaded(true)
@@ -205,24 +239,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!isLoaded) return
     try {
       const dataToSave = {
+        _version: 1,
         assets, categories, goals, settings, transactions,
         creditCards, cardExpenses, banks, patrimonialHistory,
         lastUpdated: new Date().toISOString(),
       }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
     } catch (error) {
-      console.error("Erro ao salvar dados:", error)
+      console.warn("Storage cheio ou indisponível:", error)
     }
   }, [assets, categories, goals, settings, transactions, creditCards, cardExpenses, banks, patrimonialHistory, isLoaded])
 
   // --- Histórico Patrimonial ---
-  const savePatrimonialSnapshot = () => {
+  const savePatrimonialSnapshot = useCallback(() => {
     const today = new Date().toISOString().split("T")[0]
     setPatrimonialHistory((prev: PatrimonialSnapshot[]) => {
       const historyWithoutToday = prev.filter((s: PatrimonialSnapshot) => s.date !== today)
       return [...historyWithoutToday, { date: today, totalNetWorth }]
     })
-  }
+  }, [totalNetWorth])
 
   // --- Snapshot Automático ---
   useEffect(() => {
@@ -242,19 +277,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [totalNetWorth, isLoaded])
 
   // --- Funções de Ativos ---
-  const setAssets = (newAssets: Asset[]) => setAssetsState(newAssets)
+  const setAssets = useCallback((newAssets: Asset[]) => setAssetsState(newAssets), [])
 
-  const addAsset = (assetData: Omit<Asset, "id" | "currentValue">) => {
+  const addAsset = useCallback((assetData: Omit<Asset, "id" | "currentValue">) => {
     const newAsset: Asset = {
       ...assetData,
-      id: Math.max(...assets.map((a: Asset) => a.id), 0) + 1,
+      id: generateId(assets),
       currentValue: assetData.quantity * assetData.price,
       lastUpdated: new Date().toISOString(),
     }
     setAssetsState((prev: Asset[]) => [...prev, newAsset])
-  }
+  }, [assets])
 
-  const updateAsset = (id: number, data: Partial<Asset>) => {
+  const updateAsset = useCallback((id: number, data: Partial<Asset>) => {
     setAssetsState((prev: Asset[]) =>
       prev.map((asset: Asset) => {
         if (asset.id === id) {
@@ -268,41 +303,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return asset
       }),
     )
-  }
+  }, [])
 
-  const deleteAsset = (id: number) => {
+  const deleteAsset = useCallback((id: number) => {
     setAssetsState((prev: Asset[]) => prev.filter((asset: Asset) => asset.id !== id))
-  }
+  }, [])
 
   // --- Funções de Orçamento ---
-  const setCategories = (newCategories: Category[]) => setCategoriesState(newCategories)
+  const setCategories = useCallback((newCategories: Category[]) => setCategoriesState(newCategories), [])
 
-  const addCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
+  const addCategory = useCallback((categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
     const newCategory: Category = {
       ...categoryData,
-      id: Math.max(...categories.map((c: Category) => c.id), 0) + 1,
+      id: generateId(categories),
       spent: 0,
       subcategories: [],
       expanded: false,
     }
     setCategoriesState((prev: Category[]) => [...prev, newCategory])
-  }
+  }, [categories])
 
-  const updateCategory = (id: number, data: Partial<Category>) => {
+  const updateCategory = useCallback((id: number, data: Partial<Category>) => {
     setCategoriesState((prev: Category[]) => prev.map((cat: Category) => (cat.id === id ? { ...cat, ...data } : cat)))
-  }
+  }, [])
 
-  const deleteCategory = (id: number) => {
+  const deleteCategory = useCallback((id: number) => {
     setCategoriesState((prev: Category[]) => prev.filter((cat: Category) => cat.id !== id))
-  }
+  }, [])
 
-  const addSubcategory = (categoryId: number, subcategoryData: Omit<Subcategory, "id">) => {
+  const addSubcategory = useCallback((categoryId: number, subcategoryData: Omit<Subcategory, "id">) => {
     setCategoriesState((prev: Category[]) =>
       prev.map((cat: Category) => {
         if (cat.id === categoryId) {
           const newSub: Subcategory = {
             ...subcategoryData,
-            id: Math.max(...(cat.subcategories?.map((s: Subcategory) => s.id) || [0]), 0) + 1,
+            id: generateId(cat.subcategories || []),
           }
           return {
             ...cat,
@@ -313,9 +348,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return cat
       }),
     )
-  }
+  }, [])
 
-  const updateSubcategory = (categoryId: number, subcategoryId: number, data: Partial<Subcategory>) => {
+  const updateSubcategory = useCallback((categoryId: number, subcategoryId: number, data: Partial<Subcategory>) => {
     setCategoriesState((prev: Category[]) =>
       prev.map((cat: Category) => {
         if (cat.id === categoryId) {
@@ -331,9 +366,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return cat
       }),
     )
-  }
+  }, [])
 
-  const deleteSubcategory = (categoryId: number, subcategoryId: number) => {
+  const deleteSubcategory = useCallback((categoryId: number, subcategoryId: number) => {
     setCategoriesState((prev: Category[]) =>
       prev.map((cat: Category) => {
         if (cat.id === categoryId) {
@@ -347,194 +382,193 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return cat
       }),
     )
-  }
+  }, [])
 
-  const toggleCategory = (id: number) => {
+  const toggleCategory = useCallback((id: number) => {
     setCategoriesState((prev: Category[]) => prev.map((cat: Category) => (cat.id === id ? { ...cat, expanded: !cat.expanded } : cat)))
-  }
+  }, [])
 
   // --- Funções de Metas ---
-  const setGoals = (newGoals: Goal[]) => setGoalsState(newGoals)
+  const setGoals = useCallback((newGoals: Goal[]) => setGoalsState(newGoals), [])
 
-  const addGoal = (goalData: Omit<Goal, "id">) => {
+  const addGoal = useCallback((goalData: Omit<Goal, "id">) => {
     const newGoal: Goal = {
       ...goalData,
-      id: Math.max(...goals.map((g: Goal) => g.id), 0) + 1,
+      id: generateId(goals),
     }
     setGoalsState((prev: Goal[]) => [...prev, newGoal])
-  }
+  }, [goals])
 
-  const updateGoal = (id: number, data: Partial<Goal>) => {
+  const updateGoal = useCallback((id: number, data: Partial<Goal>) => {
     setGoalsState((prev: Goal[]) => prev.map((goal: Goal) => (goal.id === id ? { ...goal, ...data } : goal)))
-  }
+  }, [])
 
-  const deleteGoal = (id: number) => {
+  const deleteGoal = useCallback((id: number) => {
     setGoalsState((prev: Goal[]) => prev.filter((goal: Goal) => goal.id !== id))
-  }
+  }, [])
 
-  const addContributionToGoal = (goalId: number, amount: number) => {
+  const addContributionToGoal = useCallback((goalId: number, amount: number) => {
     setGoalsState((prev: Goal[]) =>
       prev.map((goal: Goal) => (goal.id === goalId ? { ...goal, current: goal.current + amount } : goal)),
     )
     setCategoriesState((prev: Category[]) =>
       prev.map((cat: Category) => (cat.name === "Investimentos" ? { ...cat, spent: cat.spent + amount } : cat)),
     )
-  }
+  }, [])
 
   // --- Funções de Transações ---
-  const setTransactions = (newTransactions: ScheduledTransaction[]) => setTransactionsState(newTransactions)
+  const setTransactions = useCallback((newTransactions: ScheduledTransaction[]) => setTransactionsState(newTransactions), [])
 
-  const addTransaction = (transactionData: Omit<ScheduledTransaction, "id">) => {
+  const addTransaction = useCallback((transactionData: Omit<ScheduledTransaction, "id">) => {
     const newTransaction: ScheduledTransaction = {
       ...transactionData,
-      id: Math.max(...transactions.map((t: ScheduledTransaction) => t.id), 0) + 1,
+      id: generateId(transactions),
     }
     setTransactionsState((prev: ScheduledTransaction[]) => [...prev, newTransaction])
-  }
+  }, [transactions])
 
-  const updateTransaction = (id: number, data: Partial<ScheduledTransaction>) => {
+  const updateTransaction = useCallback((id: number, data: Partial<ScheduledTransaction>) => {
     setTransactionsState((prev: ScheduledTransaction[]) => prev.map((t: ScheduledTransaction) => (t.id === id ? { ...t, ...data } : t)))
-  }
+  }, [])
 
-  const deleteTransaction = (id: number) => {
+  const deleteTransaction = useCallback((id: number) => {
     setTransactionsState((prev: ScheduledTransaction[]) => prev.filter((t: ScheduledTransaction) => t.id !== id))
-  }
+  }, [])
 
-  const markAsPaid = (id: number) => {
-    const transaction = transactions.find((t: ScheduledTransaction) => t.id === id)
-    if (!transaction) return
+  const markAsPaid = useCallback((id: number) => {
+    setTransactionsState((prev: ScheduledTransaction[]) => {
+      const transaction = prev.find((t: ScheduledTransaction) => t.id === id)
+      if (!transaction) return prev
 
-    setTransactionsState((prev: ScheduledTransaction[]) => prev.map((t: ScheduledTransaction) => (t.id === id ? { ...t, status: "pago" } : t)))
+      const updated = prev.map((t: ScheduledTransaction) => (t.id === id ? { ...t, status: "pago" as const } : t))
 
-    if (transaction.type === "pagamento" && transaction.categoryId) {
-      setCategoriesState((prev: Category[]) =>
-        prev.map((cat: Category) =>
-          cat.id === transaction.categoryId ? { ...cat, spent: cat.spent + transaction.amount } : cat,
-        ),
-      )
-    }
-
-    if (transaction.recurrence !== "unico") {
-      const nextDate = new Date(transaction.dueDate)
-      if (transaction.recurrence === "semanal") nextDate.setDate(nextDate.getDate() + 7)
-      else if (transaction.recurrence === "mensal") nextDate.setMonth(nextDate.getMonth() + 1)
-      else if (transaction.recurrence === "anual") nextDate.setFullYear(nextDate.getFullYear() + 1)
-
-      const newTransaction: ScheduledTransaction = {
-        ...transaction,
-        id: Math.max(...transactions.map((t: ScheduledTransaction) => t.id), 0) + 1,
-        dueDate: nextDate.toISOString().split("T")[0],
-        status: "pendente",
+      if (transaction.type === "pagamento" && transaction.categoryId) {
+        setCategoriesState((catPrev: Category[]) =>
+          catPrev.map((cat: Category) =>
+            cat.id === transaction.categoryId ? { ...cat, spent: cat.spent + transaction.amount } : cat,
+          ),
+        )
       }
-      setTransactionsState((prev: ScheduledTransaction[]) => [...prev, newTransaction])
-    }
-  }
+
+      if (transaction.recurrence !== "unico") {
+        const nextDate = calculateNextDate(transaction.dueDate, transaction.recurrence)
+        const newTransaction: ScheduledTransaction = {
+          ...transaction,
+          id: generateId(prev),
+          dueDate: nextDate,
+          status: "pendente" as const,
+        }
+        return [...updated, newTransaction]
+      }
+      return updated
+    })
+  }, [calculateNextDate, generateId, setCategoriesState])
 
   // --- Funções de Cartão ---
-  const setCreditCards = (cards: CreditCard[]) => setCreditCardsState(cards)
+  const setCreditCards = useCallback((cards: CreditCard[]) => setCreditCardsState(cards), [])
 
-  const addCreditCard = (cardData: Omit<CreditCard, "id">) => {
+  const addCreditCard = useCallback((cardData: Omit<CreditCard, "id">) => {
     const newCard: CreditCard = {
       ...cardData,
-      id: Math.max(...creditCards.map((c: CreditCard) => c.id), 0) + 1,
+      id: generateId(creditCards),
     }
     setCreditCardsState((prev: CreditCard[]) => [...prev, newCard])
-  }
+  }, [creditCards])
 
-  const updateCreditCard = (id: number, data: Partial<CreditCard>) => {
+  const updateCreditCard = useCallback((id: number, data: Partial<CreditCard>) => {
     setCreditCardsState((prev: CreditCard[]) => prev.map((card: CreditCard) => (card.id === id ? { ...card, ...data } : card)))
-  }
+  }, [])
 
-  const deleteCreditCard = (id: number) => {
+  const deleteCreditCard = useCallback((id: number) => {
     setCreditCardsState((prev: CreditCard[]) => prev.filter((card: CreditCard) => card.id !== id))
     setCardExpensesState((prev: CardExpense[]) => prev.filter((expense: CardExpense) => expense.cardId !== id))
-  }
+  }, [])
 
-  const setCardExpenses = (expenses: CardExpense[]) => setCardExpensesState(expenses)
+  const setCardExpenses = useCallback((expenses: CardExpense[]) => setCardExpensesState(expenses), [])
 
-  const addCardExpense = (expenseData: Omit<CardExpense, "id">) => {
+  const addCardExpense = useCallback((expenseData: Omit<CardExpense, "id">) => {
     const newExpense: CardExpense = {
       ...expenseData,
-      id: Math.max(...cardExpenses.map((e: CardExpense) => e.id), 0) + 1,
+      id: generateId(cardExpenses),
       paidInstallments: 0,
     }
     setCardExpensesState((prev: CardExpense[]) => [...prev, newExpense])
-  }
+  }, [cardExpenses])
 
-  const updateCardExpense = (id: number, data: Partial<CardExpense>) => {
+  const updateCardExpense = useCallback((id: number, data: Partial<CardExpense>) => {
     setCardExpensesState((prev: CardExpense[]) => prev.map((expense: CardExpense) => (expense.id === id ? { ...expense, ...data } : expense)))
-  }
+  }, [])
 
-  const deleteCardExpense = (id: number) => {
+  const deleteCardExpense = useCallback((id: number) => {
     setCardExpensesState((prev: CardExpense[]) => prev.filter((expense: CardExpense) => expense.id !== id))
-  }
+  }, [])
 
-  const calculateInvoices = (cardId?: number) => calculateInvoicesUtil(cardExpenses, creditCards, cardId)
+  const calculateInvoices = useCallback((cardId?: number) => calculateInvoicesUtil(cardExpenses, creditCards, cardId), [cardExpenses, creditCards])
 
-  const getTotalCardDebt = () => {
+  const getTotalCardDebt = useCallback(() => {
     return cardExpenses.reduce((sum: number, expense: CardExpense) => {
       const remainingInstallments = expense.installments - (expense.paidInstallments || 0)
       const installmentValue = expense.totalAmount / expense.installments
       return sum + remainingInstallments * installmentValue
     }, 0)
-  }
+  }, [cardExpenses])
 
-  const getCardAvailableLimit = (cardId: number) => {
+  const getCardAvailableLimit = useCallback((cardId: number) => {
     const card = creditCards.find((c: CreditCard) => c.id === cardId)
     if (!card) return 0
     const invoices = calculateInvoices(cardId)
     const nextInvoice = invoices[0]?.total || 0
     return card.limit - nextInvoice
-  }
+  }, [creditCards, calculateInvoices])
 
   // --- Funções de Bancos ---
-  const setBanks = (newBanks: Bank[]) => setBanksState(newBanks)
+  const setBanks = useCallback((newBanks: Bank[]) => setBanksState(newBanks), [])
 
-  const addBank = (bankData: Omit<Bank, "id">) => {
+  const addBank = useCallback((bankData: Omit<Bank, "id">) => {
     const newBank: Bank = {
       ...bankData,
-      id: Math.max(...banks.map((b: Bank) => b.id), 0) + 1,
+      id: generateId(banks),
     }
     if (bankData.isMain) {
       setBanksState((prev: Bank[]) => prev.map((b: Bank) => ({ ...b, isMain: false })))
     }
     setBanksState((prev: Bank[]) => [...prev, newBank])
-  }
+  }, [banks])
 
-  const updateBank = (id: number, data: Partial<Bank>) => {
+  const updateBank = useCallback((id: number, data: Partial<Bank>) => {
     if (data.isMain) {
       setBanksState((prev: Bank[]) => prev.map((b: Bank) => ({ ...b, isMain: b.id === id })))
     }
     setBanksState((prev: Bank[]) => prev.map((bank: Bank) => (bank.id === id ? { ...bank, ...data } : bank)))
-  }
+  }, [])
 
-  const deleteBank = (id: number) => {
+  const deleteBank = useCallback((id: number) => {
     setAssetsState((prev: Asset[]) => prev.map((a: Asset) => (a.bankId === id ? { ...a, bankId: undefined } : a)))
     setGoalsState((prev: Goal[]) => prev.map((g: Goal) => (g.bankId === id ? { ...g, bankId: undefined } : g)))
     setTransactionsState((prev: ScheduledTransaction[]) => prev.map((t: ScheduledTransaction) => (t.bankId === id ? { ...t, bankId: undefined } : t)))
     setCreditCardsState((prev: CreditCard[]) => prev.map((c: CreditCard) => (c.bankId === id ? { ...c, bankId: undefined } : c)))
     setBanksState((prev: Bank[]) => prev.filter((bank: Bank) => bank.id !== id))
-  }
+  }, [])
 
-  const getBankById = (id: number) => banks.find((b: Bank) => b.id === id)
+  const getBankById = useCallback((id: number) => banks.find((b: Bank) => b.id === id), [banks])
 
-  const getTotalBankBalance = () => banks.reduce((sum: number, bank: Bank) => sum + bank.balance, 0)
+  const getTotalBankBalance = useCallback(() => banks.reduce((sum: number, bank: Bank) => sum + bank.balance, 0), [banks])
 
-  const getLinkedItems = (bankId: number) => ({
+  const getLinkedItems = useCallback((bankId: number) => ({
     assets: assets.filter((a: Asset) => a.bankId === bankId),
     goals: goals.filter((g: Goal) => g.bankId === bankId),
     transactions: transactions.filter((t: ScheduledTransaction) => t.bankId === bankId),
     creditCards: creditCards.filter((c: CreditCard) => c.bankId === bankId),
-  })
+  }), [assets, goals, transactions, creditCards])
 
   // --- Configurações ---
-  const updateSettings = (data: Partial<Settings>) => {
+  const updateSettings = useCallback((data: Partial<Settings>) => {
     setSettingsState((prev: Settings) => ({ ...prev, ...data }))
     if (data.themeId) setTheme(data.themeId)
-  }
+  }, [setTheme])
 
   // --- Backup e Restauração ---
-  const exportData = (format: "json" | "csv" = "json") => {
+  const exportData = useCallback((format: "json" | "csv" = "json") => {
     const dataToExport = {
       assets, categories, goals, settings, transactions,
       creditCards, cardExpenses, banks, patrimonialHistory,
@@ -562,9 +596,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       a.click()
       URL.revokeObjectURL(url)
     }
-  }
+  }, [assets, categories, goals, settings, transactions, creditCards, cardExpenses, banks, patrimonialHistory])
 
-  const importData = (dataString: string): boolean => {
+  const importData = useCallback((dataString: string): boolean => {
     try {
       const parsed = JSON.parse(dataString)
       if (parsed.assets) setAssetsState(parsed.assets)
@@ -584,13 +618,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch {
       return false
     }
-  }
+  }, [setTheme])
 
-  const loadExampleData = () => {
-    importData(JSON.stringify(require("@/lib/constants").exampleData))
-  }
+  const loadExampleData = useCallback(() => {
+    importData(JSON.stringify(exampleData))
+  }, [importData])
 
-  const clearAllData = () => {
+  const clearAllData = useCallback(() => {
     if (typeof window !== "undefined" && confirm("Tem certeza que deseja apagar todos os dados?")) {
       window.localStorage.removeItem(STORAGE_KEY)
       setAssetsState([])
@@ -602,10 +636,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCardExpensesState([])
       setBanksState([])
       setPatrimonialHistory([])
-      setSettingsState(defaultSettings)
       setTheme("paper")
     }
+  }, [setTheme])
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground animate-pulse">Carregando seus investimentos...</div>
+      </div>
+    )
   }
+
+  const value = useMemo(() => ({
+    assets, setAssets, addAsset, updateAsset, deleteAsset,
+    categories, setCategories, addCategory, updateCategory, deleteCategory,
+    addSubcategory, updateSubcategory, deleteSubcategory, toggleCategory,
+    goals, setGoals, addGoal, updateGoal, deleteGoal, addContributionToGoal,
+    transactions, setTransactions, addTransaction, updateTransaction, deleteTransaction, markAsPaid,
+    creditCards, setCreditCards, addCreditCard, updateCreditCard, deleteCreditCard,
+    cardExpenses, setCardExpenses, addCardExpense, updateCardExpense, deleteCardExpense,
+    banks, setBanks, addBank, updateBank, deleteBank, getBankById, getTotalBankBalance, getLinkedItems,
+    patrimonialHistory, savePatrimonialSnapshot,
+    calculateInvoices, getTotalCardDebt, getCardAvailableLimit,
+    settings, updateSettings, currentTheme, setTheme,
+    totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
+    monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
+    exportData, importData, clearAllData, loadExampleData,
+  }), [
+    assets, setAssets, addAsset, updateAsset, deleteAsset,
+    categories, setCategories, addCategory, updateCategory, deleteCategory,
+    addSubcategory, updateSubcategory, deleteSubcategory, toggleCategory,
+    goals, setGoals, addGoal, updateGoal, deleteGoal, addContributionToGoal,
+    transactions, setTransactions, addTransaction, updateTransaction, deleteTransaction, markAsPaid,
+    creditCards, setCreditCards, addCreditCard, updateCreditCard, deleteCreditCard,
+    cardExpenses, setCardExpenses, addCardExpense, updateCardExpense, deleteCardExpense,
+    banks, setBanks, addBank, updateBank, deleteBank, getBankById, getTotalBankBalance, getLinkedItems,
+    patrimonialHistory, savePatrimonialSnapshot,
+    calculateInvoices, getTotalCardDebt, getCardAvailableLimit,
+    settings, updateSettings, currentTheme, setTheme,
+    totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
+    monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
+    exportData, importData, clearAllData, loadExampleData,
+  ])
 
   if (!isLoaded) {
     return (
@@ -616,24 +689,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppContext.Provider
-      value={{
-        assets, setAssets, addAsset, updateAsset, deleteAsset,
-        categories, setCategories, addCategory, updateCategory, deleteCategory,
-        addSubcategory, updateSubcategory, deleteSubcategory, toggleCategory,
-        goals, setGoals, addGoal, updateGoal, deleteGoal, addContributionToGoal,
-        transactions, setTransactions, addTransaction, updateTransaction, deleteTransaction, markAsPaid,
-        creditCards, setCreditCards, addCreditCard, updateCreditCard, deleteCreditCard,
-        cardExpenses, setCardExpenses, addCardExpense, updateCardExpense, deleteCardExpense,
-        banks, setBanks, addBank, updateBank, deleteBank, getBankById, getTotalBankBalance, getLinkedItems,
-        patrimonialHistory, savePatrimonialSnapshot,
-        calculateInvoices, getTotalCardDebt, getCardAvailableLimit,
-        settings, updateSettings, currentTheme, setTheme,
-        totalNetWorth, totalBudgeted, totalSpent, availableForInvestment,
-        monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
-        exportData, importData, clearAllData, loadExampleData,
-      }}
-    >
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   )

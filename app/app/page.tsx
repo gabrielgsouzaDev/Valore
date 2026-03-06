@@ -8,6 +8,8 @@ import {
   ArrowUpRight, ArrowDownRight, ChevronRight, Zap,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
+import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
   const {
@@ -83,183 +85,211 @@ export default function DashboardPage() {
 
           {/* Grid de cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
             {/* Investimentos */}
             {(activeModules.investimentos !== false) && (
-              <Link href="/app/investimentos" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                          <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <ErrorBoundary moduleName="Card de Investimentos">
+                <Link href="/app/investimentos" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Investimentos</CardTitle>
                         </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Investimentos</CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalNetWorth)}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{assets.length} ativo{assets.length !== 1 ? "s" : ""}</p>
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalNetWorth)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{assets.length} ativo{assets.length !== 1 ? "s" : ""}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
 
             {/* Economia */}
             {(activeModules.economia !== false) && (
-              <Link href="/app/economia" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <ErrorBoundary moduleName="Card de Economia">
+                <Link href="/app/economia" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Economia</CardTitle>
                         </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Economia</CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalSpent)}</p>
-                      <span className="text-xs text-muted-foreground">/ {fmt(totalBudgeted)}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                      <div
-                        className="bg-primary h-1.5 rounded-full transition-all"
-                        style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1.5">{pct(totalSpent, totalBudgeted)}% do orçamento usado</p>
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalSpent)}</p>
+                        <span className="text-xs text-muted-foreground">/ {fmt(totalBudgeted)}</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                        <div
+                          className={cn(
+                            "h-1.5 rounded-full transition-all",
+                            totalSpent > totalBudgeted ? "bg-danger" : "bg-primary"
+                          )}
+                          style={{ width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1.5">{pct(totalSpent, totalBudgeted)}% do orçamento usado</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
 
             {/* Objetivos */}
             {(activeModules.objetivos !== false) && (
-              <Link href="/app/objetivos" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                          <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <ErrorBoundary moduleName="Card de Objetivos">
+                <Link href="/app/objetivos" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Objetivos</CardTitle>
                         </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Objetivos</CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    {topGoal ? (
-                      <>
-                        <p className="text-sm font-semibold text-foreground truncate">{topGoal.name}</p>
-                        <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                          <div
-                            className="bg-primary h-1.5 rounded-full transition-all"
-                            style={{ width: `${Math.min(pct(topGoal.current, topGoal.target), 100)}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1.5">
-                          {fmt(topGoal.current)} de {fmt(topGoal.target)} • {pct(topGoal.current, topGoal.target)}%
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">{goals.length} objetivo{goals.length !== 1 ? "s" : ""} ativo{goals.length !== 1 ? "s" : ""}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      {topGoal ? (
+                        <>
+                          <p className="text-sm font-semibold text-foreground truncate">{topGoal.name}</p>
+                          <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                            <div
+                              className={cn(
+                                "h-1.5 rounded-full transition-all",
+                                (() => {
+                                  const monthsToTarget = (() => {
+                                    const today = new Date()
+                                    const target = new Date(topGoal.deadline)
+                                    return Math.max(0, (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth()))
+                                  })()
+                                  const needed = monthsToTarget > 0 ? (topGoal.target - topGoal.current) / monthsToTarget : 0
+                                  if (topGoal.current >= topGoal.target) return "bg-success"
+                                  if (needed > topGoal.monthlyContribution) return "bg-danger"
+                                  if (needed === topGoal.monthlyContribution && needed > 0) return "bg-warning"
+                                  return "bg-primary"
+                                })()
+                              )}
+                              style={{ width: `${Math.min(pct(topGoal.current, topGoal.target), 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            {fmt(topGoal.current)} de {fmt(topGoal.target)} • {pct(topGoal.current, topGoal.target)}%
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">{goals.length} objetivo{goals.length !== 1 ? "s" : ""} ativo{goals.length !== 1 ? "s" : ""}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
 
             {/* Transações */}
             {(activeModules.transacoes !== false) && (
-              <Link href="/app/transacoes" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-muted">
-                          <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                        </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Transações</CardTitle>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    {upcomingTransactions.length > 0 ? (
-                      <div className="space-y-1.5">
-                        {upcomingTransactions.map((t) => (
-                          <div key={t.id} className="flex items-center justify-between gap-2">
-                            <span className="text-xs text-muted-foreground truncate">{t.name}</span>
-                            <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-success" : "text-foreground"}`}>
-                              {t.type === "ganho" ? "+" : "-"}{fmt(t.amount)}
-                            </span>
+              <ErrorBoundary moduleName="Card de Transações">
+                <Link href="/app/transacoes" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-muted">
+                            <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                           </div>
-                        ))}
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Transações</CardTitle>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">Nenhuma transação nos próximos 30 dias</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      {upcomingTransactions.length > 0 ? (
+                        <div className="space-y-1.5">
+                          {upcomingTransactions.map((t) => (
+                            <div key={t.id} className="flex items-center justify-between gap-2">
+                              <span className="text-xs text-muted-foreground truncate">{t.name}</span>
+                              <span className={`text-xs font-semibold flex-shrink-0 ${t.type === "ganho" ? "text-success" : "text-foreground"}`}>
+                                {t.type === "ganho" ? "+" : "-"}{fmt(t.amount)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Nenhuma transação nos próximos 30 dias</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
 
             {/* Cartões */}
             {(activeModules.cartoes !== false) && (
-              <Link href="/app/cartoes" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                          <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <ErrorBoundary moduleName="Card de Cartões">
+                <Link href="/app/cartoes" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Cartões</CardTitle>
                         </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Cartões</CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalCardDebt)}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">dívida total em cartões</p>
-                    {nextInvoice && (
-                      <p className="text-xs text-muted-foreground mt-1.5">Próx. fatura: {fmt(nextInvoice.total)}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      <p className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalCardDebt)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">dívida total em cartões</p>
+                      {nextInvoice && (
+                        <p className="text-xs text-muted-foreground mt-1.5">Próx. fatura: {fmt(nextInvoice.total)}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
 
             {/* Aporte Recomendado */}
             {(activeModules.investimentos !== false) && (
-              <Link href="/app/investimentos" className="group">
-                <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
-                  <CardHeader className="pb-2 p-4 sm:p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                          <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <ErrorBoundary moduleName="Card de Próximo Aporte">
+                <Link href="/app/investimentos" className="group">
+                  <Card className="bg-card border-border hover:border-primary/40 transition-all h-full">
+                    <CardHeader className="pb-2 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Próximo Aporte</CardTitle>
                         </div>
-                        <CardTitle className="text-sm sm:text-base font-semibold text-foreground">Próximo Aporte</CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-5 pt-0">
-                    <p className="text-xl sm:text-2xl font-bold text-success">{fmt(Math.max(balance, 0))}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Estratégia: <span className="capitalize text-foreground font-medium">{settings.investmentStrategy}</span>
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-5 pt-0">
+                      <p className="text-xl sm:text-2xl font-bold text-success">{fmt(Math.max(balance, 0))}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Estratégia: <span className="capitalize text-foreground font-medium">{settings.investmentStrategy}</span>
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ErrorBoundary>
             )}
           </div>
         </div>

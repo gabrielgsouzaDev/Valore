@@ -49,15 +49,14 @@ function CountUp({ end, duration = 1500 }: { end: number, duration?: number }) {
     return () => window.cancelAnimationFrame(animationFrame)
   }, [isInView, end, duration])
 
-  return <span ref={setRef as any}>{count}</span>
-  return <span ref={setRef as any}>{count}</span>
+  return <span ref={(el) => setRef(el)}>{count}</span>
 }
 
 function PainCard({ pain, index }: { pain: { step: string; title: string; desc: string }, index: number }) {
   const { setRef, isInView } = useInView()
   return (
     <div
-      ref={setRef as any}
+      ref={(el) => setRef(el)}
       className={cn(
         "p-8 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors",
         "opacity-0 translate-y-4 duration-400 transition-all",

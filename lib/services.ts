@@ -1,4 +1,4 @@
-import { InvoiceProjection, CardExpense, CreditCard, ThemePreset, Asset, InvestmentStrategy } from "./types"
+import { InvoiceProjection, CardExpense, CreditCard, Asset, InvestmentStrategy, ScheduledTransaction, Category } from "./types"
 import { addMonths, format, startOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -82,33 +82,60 @@ export function formatCurrency(value: number): string {
 }
 
 /**
- * Aplica o tema visual ao documento via variáveis CSS.
- * Também alterna a classe `dark` no <html> para temas claros.
+ * Gera um novo ID sequencial para uma lista de itens.
  */
-export function applyThemeVariables(theme: ThemePreset) {
-    if (typeof document === "undefined") return
+export function generateId<T extends { id: number }>(items: T[]): number {
+    return Math.max(...items.map((i) => i.id), 0) + 1
+}
 
-    const root = document.documentElement
-    Object.entries(theme.colors).forEach(([key, value]) => {
-        // Converte camelCase para kebab-case e adiciona prefixo --theme-
-        const cssVarName = `--theme-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`
-        root.style.setProperty(cssVarName, value as string)
-    })
+/**
+ * Calcula o patrimônio total somando o valor atual de cada ativo.
+ */
+export function calculateTotalNetWorth(assets: Asset[]): number {
+    return assets.reduce((sum, asset) => sum + asset.currentValue, 0)
+}
 
-    // Alterna o modo claro/escuro no elemento raiz
-    if (theme.mode === "light") {
-        root.classList.remove("dark")
-    } else {
-        root.classList.add("dark")
-    }
+/**
+ * Calcula o total orçado de uma lista de categorias.
+ */
+export function calculateTotalBudgeted(categories: Category[]): number {
+    return categories.reduce((sum, cat) => sum + cat.budgeted, 0)
+}
 
-    // Atualiza a meta tag theme-color para a barra de status mobile acompanhar o tema
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (metaThemeColor) {
-        // Converte a string "R G B" em "rgb(R, G, B)"
-        const bgColor = `rgb(${theme.colors.background.split(" ").join(", ")})`
-        metaThemeColor.setAttribute("content", bgColor)
-    }
+/**
+ * Calcula o total gasto de uma lista de categorias.
+ */
+export function calculateTotalSpent(categories: Category[]): number {
+    return categories.reduce((sum, cat) => sum + cat.spent, 0)
+}
+
+/**
+ * Filtra e soma transações de ganho recorrentes ou únicas do mês.
+ */
+export function calculateMonthlyIncome(transactions: ScheduledTransaction[]): number {
+    return transactions
+        .filter((t) => t.type === "ganho" && (t.recurrence === "mensal" || t.recurrence === "unico"))
+        .reduce((sum, t) => sum + t.amount, 0)
+}
+
+/**
+ * Filtra e soma transações de pagamento recorrentes ou únicas do mês.
+ */
+export function calculateMonthlyExpenses(transactions: ScheduledTransaction[]): number {
+    return transactions
+        .filter((t) => t.type === "pagamento" && (t.recurrence === "mensal" || t.recurrence === "unico"))
+        .reduce((sum, t) => sum + t.amount, 0)
+}
+
+/**
+ * Calcula a próxima data de uma transação com base na recorrência.
+ */
+export function calculateNextDate(currentDate: string | Date, recurrence: string): string {
+    const nextDate = new Date(currentDate)
+    if (recurrence === "semanal") nextDate.setDate(nextDate.getDate() + 7)
+    else if (recurrence === "mensal") nextDate.setMonth(nextDate.getMonth() + 1)
+    else if (recurrence === "anual") nextDate.setFullYear(nextDate.getFullYear() + 1)
+    return nextDate.toISOString().split("T")[0]
 }
 
 /**
