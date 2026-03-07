@@ -132,6 +132,7 @@ export const settingsSchema = z.object({
     activeGuideStep: z.number().nullable().default(null),
     showGuide: z.boolean().default(true),
     activeModules: z.record(z.boolean()).optional(),
+    isDemoMode: z.boolean().optional(),
 })
 
 /**

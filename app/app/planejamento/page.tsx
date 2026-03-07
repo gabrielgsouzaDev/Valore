@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -366,6 +367,7 @@ export default function PlanejamentoPage() {
               </Dialog>
             </div>
           </header>
+          <DemoBanner />
 
           <div className="p-4 sm:p-6 lg:p-8">
             {/* Summary Cards */}

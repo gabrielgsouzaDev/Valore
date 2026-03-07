@@ -8,6 +8,7 @@ import { AssetCard } from "@/components/asset-card"
 import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { AssetDialog } from "@/components/asset-dialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
@@ -89,6 +90,7 @@ export default function InvestimentosPage() {
                         </div>
                     </div>
                 </header>
+                <DemoBanner />
 
                 <div className="p-4 sm:p-6 lg:p-8 overflow-hidden">
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">

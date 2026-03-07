@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { useToast } from "@/hooks/use-toast"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Button } from "@/components/ui/button"
@@ -43,6 +44,8 @@ import {
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
+import { appStorageSchema } from "@/lib/schemas"
+import { migrateBackup } from "@/lib/services"
 import type { Bank, BankType, ThemePreset, InvestmentStrategy } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -112,6 +115,8 @@ export default function ConfiguracoesPage() {
     isOpen: boolean
     title: string
     description: string
+    confirmLabel?: string
+    variant?: "destructive" | "default"
     action: () => void
   }>({
     isOpen: false,
@@ -233,30 +238,78 @@ export default function ConfiguracoesPage() {
 
     const reader = new FileReader()
     reader.onload = (event) => {
-      const success = importData(event.target?.result as string)
-      if (success) {
-        setLocalSettings({
-          nome: settings.nome,
-          rendaMensal: settings.rendaMensal.toString(),
-          capitalInvestido: settings.capitalInvestido.toString(),
-          metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
-          investmentStrategy: settings.investmentStrategy,
-          userFocus: settings.userFocus || "both",
-          activeModules: settings.activeModules || {
-            investimentos: true,
-            economia: true,
-            objetivos: true,
-            transacoes: true,
-            cartoes: true,
-          },
+      try {
+        const rawJson = JSON.parse(event.target?.result as string)
+
+        if (rawJson._app !== "valore") {
+          setConfirmState({
+            isOpen: true,
+            title: "Arquivo Inválido",
+            description: "Este arquivo não parece ser um backup válido do Valore.",
+            confirmLabel: "Entendi",
+            variant: "default",
+            action: () => { }
+          })
+          return
+        }
+
+        const migratedData = migrateBackup(rawJson, rawJson._version || 1)
+        const validation = appStorageSchema.safeParse(migratedData)
+
+        if (!validation.success) {
+          setConfirmState({
+            isOpen: true,
+            title: "Backup Corrompido",
+            description: "O arquivo contém dados inválidos ou inconsistentes com a versão atual do Valore.",
+            confirmLabel: "Entendi",
+            variant: "destructive",
+            action: () => { }
+          })
+          console.error("Erros de validacao do backup: ", validation.error)
+          return
+        }
+
+        const validData = validation.data
+
+        setConfirmState({
+          isOpen: true,
+          title: "Substituição de Dados",
+          description: `Este backup contém ${validData.assets.length} ativos, ${validData.goals.length} objetivos e ${validData.transactions.length} transações exportados em ${rawJson._exportedAt ? new Date(rawJson._exportedAt).toLocaleDateString("pt-BR") : "data antiga"}. Deseja substituir TODOS os seus dados atuais?`,
+          confirmLabel: "Sim, importar",
+          variant: "destructive",
+          action: () => {
+            importData(validData)
+            setLocalSettings({
+              nome: validData.settings.nome,
+              rendaMensal: validData.settings.rendaMensal.toString(),
+              capitalInvestido: validData.settings.capitalInvestido.toString(),
+              metaReservaEmergencia: validData.settings.metaReservaEmergencia.toString(),
+              investmentStrategy: validData.settings.investmentStrategy,
+              userFocus: validData.settings.userFocus || "both",
+              activeModules: validData.settings.activeModules || {
+                investimentos: true,
+                economia: true,
+                objetivos: true,
+                transacoes: true,
+                cartoes: true,
+              },
+            })
+            toast({ title: "Backup importado com sucesso!" })
+          }
         })
-        setSaveStatus("import")
-        setTimeout(() => setSaveStatus(null), 2000)
-      } else {
-        alert("Erro ao importar dados. Verifique o arquivo.")
+      } catch (err) {
+        setConfirmState({
+          isOpen: true,
+          title: "Erro de Leitura",
+          description: "O arquivo selecionado não é um JSON válido ou está corrompido.",
+          confirmLabel: "Entendi",
+          variant: "destructive",
+          action: () => { }
+        })
       }
     }
     reader.readAsText(file)
+    e.target.value = ""
   }
 
   const openAddBankDialog = () => {
@@ -345,6 +398,7 @@ export default function ConfiguracoesPage() {
               </div>
             </div>
           </header>
+          <DemoBanner />
 
           <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -640,24 +694,16 @@ export default function ConfiguracoesPage() {
                       <Label className="text-foreground/80 text-xs sm:text-sm">Exportar Dados</Label>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Button
-                          onClick={() => exportData("json")}
+                          onClick={() => exportData()}
                           variant="outline"
                           className="border-border text-foreground/80 hover:bg-muted hover:text-foreground bg-transparent text-xs sm:text-sm flex-1"
                         >
-                          <FileJson className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                          JSON
-                        </Button>
-                        <Button
-                          onClick={() => exportData("csv")}
-                          variant="outline"
-                          className="border-border text-foreground/80 hover:bg-muted hover:text-foreground bg-transparent text-xs sm:text-sm flex-1"
-                        >
-                          <FileSpreadsheet className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                          CSV
+                          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                          Baixar JSON
                         </Button>
                       </div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        JSON: backup completo para reimportar | CSV: visualizar em planilhas
+                        JSON: backup completo para restaurar seus dados a qualquer momento
                       </p>
                     </div>
 
@@ -1026,7 +1072,8 @@ export default function ConfiguracoesPage() {
         onOpenChange={(open) => setConfirmState(prev => ({ ...prev, isOpen: open }))}
         title={confirmState.title}
         description={confirmState.description}
-        variant="destructive"
+        variant={confirmState.variant || "destructive"}
+        confirmLabel={confirmState.confirmLabel}
         onConfirm={() => {
           confirmState.action()
           setConfirmState(prev => ({ ...prev, isOpen: false }))

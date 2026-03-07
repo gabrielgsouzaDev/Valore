@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { useApp } from "@/contexts/app-context"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -209,6 +210,7 @@ export default function CartoesPage() {
               </div>
             </div>
           </header>
+          <DemoBanner />
 
           <div className="p-4 sm:p-6 lg:p-8">
             {/* Summary Cards */}

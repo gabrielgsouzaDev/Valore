@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { getEconomyBarColor } from "@/lib/services"
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
@@ -114,6 +115,7 @@ export default function EconomiaPage() {
             </div>
           </div>
         </header>
+        <DemoBanner />
 
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">

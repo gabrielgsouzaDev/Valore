@@ -83,6 +83,7 @@ export type Settings = {
     activeGuideStep: number | null
     showGuide: boolean
     activeModules?: Record<string, boolean>
+    isDemoMode?: boolean
 }
 
 export type ScheduledTransaction = {

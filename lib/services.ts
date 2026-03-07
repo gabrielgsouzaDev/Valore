@@ -310,3 +310,25 @@ export function getDashboardAssetColor(assets: Asset[], totalNetWorth: number): 
     if (assetColors.includes("var(--warning)")) return "var(--warning)"
     return "var(--success)"
 }
+
+/**
+ * Migra dados de backup de versões anteriores para a versão atual.
+ * @param data Dados brutos lidos do JSON
+ * @param fromVersion A versão original dos dados
+ * @returns Os dados migrados
+ */
+export function migrateBackup(data: any, fromVersion: number): any {
+    let migrated = { ...data }
+
+    // Exemplo de estrutura de migração sequencial
+    if (fromVersion < 2) {
+        // Migração de v1 -> v2 (Atualmente não há mudanças estruturais que quebrem, 
+        // mas a estrutura está pronta para futuras migrações)
+        migrated = {
+            ...migrated,
+            _version: 2
+        }
+    }
+
+    return migrated
+}

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Sidebar } from "@/components/sidebar"
+import { DemoBanner } from "@/components/demo-banner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   TrendingUp, Wallet, Target, Receipt, CreditCard, LayoutDashboard,
@@ -82,6 +83,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </header>
+        <DemoBanner />
 
         <div className="p-4 sm:p-6 lg:p-8">
           {/* Patrimônio em destaque */}

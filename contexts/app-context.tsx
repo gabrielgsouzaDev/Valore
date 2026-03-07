@@ -144,8 +144,8 @@ type AppContextType = {
   isLoaded: boolean
 
   // Utilitários de Dados
-  exportData: (format: "json" | "csv") => void
-  importData: (data: string) => boolean
+  exportData: () => void
+  importData: (parsedData: any) => void
   clearAllData: () => void
   loadExampleData: () => void
 }
@@ -567,56 +567,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setTheme])
 
   // --- Backup e Restauração ---
-  const exportData = useCallback((format: "json" | "csv" = "json") => {
+  const exportData = useCallback(() => {
+    const safeSettings = { ...settings, isDemoMode: false }
     const dataToExport = {
-      assets, categories, goals, settings, transactions,
+      _app: "valore",
+      _version: 2,
+      _exportedAt: new Date().toISOString(),
+      assets, categories, goals, settings: safeSettings, transactions,
       creditCards, cardExpenses, banks, patrimonialHistory,
-      exportedAt: new Date().toISOString(),
-      version: "1.2.0-clean",
     }
 
-    if (format === "json") {
-      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `investment-dashboard-backup-${new Date().toISOString().split("T")[0]}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-    } else {
-      let csv = "Tipo,Detalhes\n"
-      assets.forEach((a: Asset) => csv += `Ativo,${a.name},${a.currentValue}\n`)
-      banks.forEach((b: Bank) => csv += `Banco,${b.name},${b.balance}\n`)
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `investment-dashboard-simple-${new Date().toISOString().split("T")[0]}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
-    }
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `valore-backup-${new Date().toISOString().split("T")[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
   }, [assets, categories, goals, settings, transactions, creditCards, cardExpenses, banks, patrimonialHistory])
 
-  const importData = useCallback((dataString: string): boolean => {
-    try {
-      const parsed = JSON.parse(dataString)
-      if (parsed.assets) setAssetsState(parsed.assets)
-      if (parsed.categories) setCategoriesState(parsed.categories)
-      if (parsed.goals) setGoalsState(parsed.goals)
-      if (parsed.settings) {
-        setSettingsState(parsed.settings)
-        // Se houver tema salvo, aplica. Senão, 'paper'
-        setTheme(parsed.settings.themeId || "paper")
-      }
-      if (parsed.transactions) setTransactionsState(parsed.transactions)
-      if (parsed.creditCards) setCreditCardsState(parsed.creditCards)
-      if (parsed.cardExpenses) setCardExpensesState(parsed.cardExpenses)
-      if (parsed.banks) setBanksState(parsed.banks)
-      if (parsed.patrimonialHistory) setPatrimonialHistory(parsed.patrimonialHistory)
-      return true
-    } catch {
-      return false
+  const importData = useCallback((parsed: any) => {
+    if (parsed.assets) setAssetsState(parsed.assets)
+    if (parsed.categories) setCategoriesState(parsed.categories)
+    if (parsed.goals) setGoalsState(parsed.goals)
+    if (parsed.settings) {
+      setSettingsState(parsed.settings)
+      setTheme(parsed.settings.themeId || "paper")
     }
+    if (parsed.transactions) setTransactionsState(parsed.transactions)
+    if (parsed.creditCards) setCreditCardsState(parsed.creditCards)
+    if (parsed.cardExpenses) setCardExpensesState(parsed.cardExpenses)
+    if (parsed.banks) setBanksState(parsed.banks)
+    if (parsed.patrimonialHistory) setPatrimonialHistory(parsed.patrimonialHistory)
   }, [setTheme])
 
   const loadExampleData = useCallback(() => {
@@ -625,10 +607,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...exampleData,
       settings: {
         ...exampleData.settings,
-        nome: currentName || exampleData.settings.nome
+        nome: currentName || exampleData.settings.nome,
+        isDemoMode: true
       }
     }
-    importData(JSON.stringify(dataWithUserContext))
+    importData(dataWithUserContext)
   }, [importData, settings.nome])
 
   const clearAllData = useCallback(() => {
