@@ -608,11 +608,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       settings: {
         ...exampleData.settings,
         nome: currentName || exampleData.settings.nome,
+        onboardingCompleted: settings.onboardingCompleted,
+        showGuide: false,
+        activeGuideStep: null,
         isDemoMode: true
       }
     }
     importData(dataWithUserContext)
-  }, [importData, settings.nome])
+  }, [importData, settings.nome, settings.onboardingCompleted])
 
   const clearAllData = useCallback(() => {
     if (typeof window !== "undefined") {
