@@ -736,9 +736,16 @@ export default function ConfiguracoesPage() {
                           variant="secondary"
                           className="bg-primary/20 text-primary hover:bg-primary/30 text-xs sm:text-sm flex-1 border border-primary/20"
                           onClick={() => {
-                            if (confirm("Isso carregará dados fictícios para demonstração. Deseja continuar?")) {
-                              loadExampleData()
-                            }
+                            setConfirmState({
+                              isOpen: true,
+                              title: "Entrar no Modo Demo",
+                              description: "Isso carregará dados fictícios para demonstração. Deseja continuar?",
+                              confirmLabel: "Sim, ativar Modo Demo",
+                              variant: "default",
+                              action: () => {
+                                loadExampleData()
+                              }
+                            })
                           }}
                         >
                           <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />

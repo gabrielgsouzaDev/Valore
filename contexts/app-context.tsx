@@ -615,12 +615,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [importData, settings.nome])
 
   const clearAllData = useCallback(() => {
-    if (typeof window !== "undefined" && confirm("Tem certeza que deseja apagar todos os dados?")) {
+    if (typeof window !== "undefined") {
       window.localStorage.removeItem(STORAGE_KEY)
       setAssetsState([])
       setCategoriesState([])
       setGoalsState([])
-      setSettingsState(defaultSettings)
+      setSettingsState({
+        ...defaultSettings,
+        nome: settings.nome, // Previne que o nome seja limpo
+        onboardingCompleted: settings.onboardingCompleted, // Previne volta ao onboarding
+        showGuide: false,
+        activeGuideStep: null
+      })
       setTransactionsState([])
       setCreditCardsState([])
       setCardExpensesState([])
@@ -628,7 +634,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setPatrimonialHistory([])
       setTheme("paper")
     }
-  }, [setTheme])
+  }, [setTheme, settings.nome, settings.onboardingCompleted])
 
   const value = useMemo(() => ({
     assets, setAssets, addAsset, updateAsset, deleteAsset,

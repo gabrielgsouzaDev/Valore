@@ -19,7 +19,7 @@ export function DemoBanner() {
 
     return (
         <>
-            <div className="w-full bg-warning/15 border-b border-warning/30 py-2.5 px-4 sticky top-0 z-50 flex items-center justify-between">
+            <div className="w-full bg-warning/15 border-b border-warning/30 py-2.5 px-4 relative z-20 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-warning">
                     <FlaskConical className="h-4 w-4 shrink-0" />
                     <p className="text-xs font-medium sm:text-sm">
@@ -28,9 +28,9 @@ export function DemoBanner() {
                     </p>
                 </div>
                 <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
-                    className="h-7 text-xs sm:h-8 border-warning/50 text-warning hover:bg-warning/20 bg-transparent"
+                    className="h-7 text-xs sm:h-8 bg-warning hover:bg-warning/90 text-warning-foreground"
                     onClick={() => setConfirmOpen(true)}
                 >
                     <span className="inline sm:hidden">Limpar</span>
