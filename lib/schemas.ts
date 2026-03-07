@@ -52,7 +52,7 @@ export const goalSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
     target: z.number().positive("O valor alvo deve ser positivo"),
     current: z.number().min(0),
-    deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (AAAA-MM-DD)"),
+    deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/, "Data inválida (AAAA-MM-DD)"),
     monthlyContribution: z.number().min(0),
     priority: z.enum(["alta", "média", "baixa"]),
     category: z.string(),
@@ -68,7 +68,7 @@ export const transactionSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
     amount: z.number().positive("O valor deve ser positivo"),
     type: z.enum(["pagamento", "ganho"]),
-    dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (AAAA-MM-DD)"),
+    dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/, "Data inválida (AAAA-MM-DD)"),
     recurrence: z.enum(["unico", "semanal", "mensal", "anual"]),
     categoryId: z.number().optional(),
     status: z.enum(["pendente", "pago", "atrasado"]),
@@ -111,7 +111,7 @@ export const bankWithIdSchema = bankSchema.merge(idSchema)
  * Esquema de validação para Histórico Patrimonial
  */
 export const patrimonialSnapshotSchema = z.object({
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/),
     totalNetWorth: z.number(),
 })
 
@@ -143,7 +143,7 @@ export const cardExpenseSchema = z.object({
     description: z.string().min(2),
     totalAmount: z.number().positive(),
     installments: z.number().min(1),
-    purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/),
     paidInstallments: z.number().min(0).default(0),
 })
 
