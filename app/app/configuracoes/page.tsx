@@ -227,7 +227,7 @@ export default function ConfiguracoesPage() {
           activeGuideStep: null,
           showGuide: false
         })
-        window.location.href = "/"
+        window.location.href = "/app"
       }
     })
   }
