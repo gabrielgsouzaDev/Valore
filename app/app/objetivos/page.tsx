@@ -1,21 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/sidebar"
 import { Plus, Target, TrendingUp, Calendar, DollarSign, Pencil, Trash2, PlusCircle } from "lucide-react"
 import { GoalDialog } from "@/components/goal-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useApp } from "@/contexts/app-context"
+import { useToast } from "@/hooks/use-toast"
 import { getGoalBarColor } from "@/lib/services"
 import type { Goal } from "@/lib/types"
 
 export default function ObjetivosPage() {
   const { goals, addGoal, updateGoal, deleteGoal, addContributionToGoal, availableForInvestment } = useApp()
+  const { toast } = useToast()
 
   const [goalDialogOpen, setGoalDialogOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [contributionAmount, setContributionAmount] = useState<{ [key: number]: string }>({})
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [goalToDelete, setGoalToDelete] = useState<number | null>(null)
 
   const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0)
   const totalCurrent = goals.reduce((sum, goal) => sum + goal.current, 0)
@@ -141,9 +146,8 @@ export default function ObjetivosPage() {
                             </Button>
                             <Button
                               onClick={() => {
-                                if (confirm("Tem certeza que deseja excluir este objetivo?")) {
-                                  deleteGoal(goal.id)
-                                }
+                                setGoalToDelete(goal.id)
+                                setConfirmOpen(true)
                               }}
                               variant="ghost"
                               size="icon"
@@ -379,10 +383,26 @@ export default function ObjetivosPage() {
           if (editingGoal) {
             updateGoal(editingGoal.id, data)
             setEditingGoal(null)
+            toast({ title: "Objetivo atualizado" })
           } else {
             addGoal(data)
+            toast({ title: "Objetivo adicionado" })
           }
           setGoalDialogOpen(false)
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir objetivo"
+        description="Esta ação não pode ser desfeita."
+        variant="destructive"
+        onConfirm={() => {
+          if (goalToDelete !== null) {
+            deleteGoal(goalToDelete)
+            setGoalToDelete(null)
+          }
         }}
       />
     </div>

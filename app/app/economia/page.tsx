@@ -8,7 +8,9 @@ import { getEconomyBarColor } from "@/lib/services"
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useApp } from "@/contexts/app-context"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import type { Category, Subcategory } from "@/lib/types"
 
@@ -36,6 +38,9 @@ export default function EconomiaPage() {
     categoryId: number
     subcategory: Subcategory | null
   } | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "category"; id: number } | { type: "subcategory"; categoryId: number; id: number } | null>(null)
+  const { toast } = useToast()
 
   const handleAddCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
     addCategory(categoryData)
@@ -50,9 +55,8 @@ export default function EconomiaPage() {
   }
 
   const handleDeleteCategory = (id: number) => {
-    if (confirm("Tem certeza que deseja excluir esta categoria?")) {
-      deleteCategory(id)
-    }
+    setDeleteTarget({ type: "category", id })
+    setConfirmOpen(true)
   }
 
   const openEditCategoryDialog = (category: Category) => {
@@ -79,9 +83,8 @@ export default function EconomiaPage() {
   }
 
   const handleDeleteSubcategory = (categoryId: number, subcategoryId: number) => {
-    if (confirm("Tem certeza que deseja excluir esta subcategoria?")) {
-      deleteSubcategory(categoryId, subcategoryId)
-    }
+    setDeleteTarget({ type: "subcategory", categoryId, id: subcategoryId })
+    setConfirmOpen(true)
   }
 
   const formatCurrency = (value: number) =>
@@ -361,8 +364,10 @@ export default function EconomiaPage() {
           if (editingCategory) {
             updateCategory(editingCategory.id, data)
             setEditingCategory(null)
+            toast({ title: "Categoria atualizada" })
           } else {
             handleAddCategory(data)
+            toast({ title: "Categoria adicionada" })
           }
           setCategoryDialogOpen(false)
         }}
@@ -375,11 +380,29 @@ export default function EconomiaPage() {
         onSave={(data) => {
           if (editingSubcategory?.subcategory) {
             updateSubcategory(editingSubcategory.categoryId, editingSubcategory.subcategory.id, data)
+            toast({ title: "Subcategoria atualizada" })
           } else {
             addSubcategory(editingSubcategory?.categoryId || 0, data)
+            toast({ title: "Subcategoria adicionada" })
           }
           setSubcategoryDialogOpen(false)
           setEditingSubcategory(null)
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={deleteTarget?.type === "category" ? "Excluir categoria" : "Excluir subcategoria"}
+        description="Esta ação não pode ser desfeita."
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget?.type === "category") {
+            deleteCategory(deleteTarget.id)
+          } else if (deleteTarget?.type === "subcategory") {
+            deleteSubcategory(deleteTarget.categoryId, deleteTarget.id)
+          }
+          setDeleteTarget(null)
         }}
       />
     </div>

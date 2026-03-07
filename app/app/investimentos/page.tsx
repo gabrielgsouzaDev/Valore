@@ -9,8 +9,10 @@ import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
 import { Sidebar } from "@/components/sidebar"
 import { AssetDialog } from "@/components/asset-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
+import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import type { Asset } from "@/lib/types"
@@ -21,14 +23,18 @@ const HistoryChart = dynamic(() => import("@/components/history-chart").then(mod
 
 export default function InvestimentosPage() {
     const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
+    const { toast } = useToast()
     const [dialogOpen, setDialogOpen] = useState(false)
     const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+    const [confirmOpen, setConfirmOpen] = useState(false)
+    const [assetToDelete, setAssetToDelete] = useState<number | null>(null)
 
     const totalCardDebt = getTotalCardDebt()
 
     const handleAddAsset = (assetData: Omit<Asset, "id" | "currentValue">) => {
         addAsset(assetData)
         setDialogOpen(false)
+        toast({ title: "Ativo adicionado" })
     }
 
     const handleEditAsset = (assetData: Omit<Asset, "id" | "currentValue">) => {
@@ -36,12 +42,12 @@ export default function InvestimentosPage() {
         updateAsset(editingAsset.id, assetData)
         setEditingAsset(null)
         setDialogOpen(false)
+        toast({ title: "Ativo atualizado" })
     }
 
     const handleDeleteAsset = (id: number) => {
-        if (confirm("Tem certeza que deseja excluir este ativo?")) {
-            deleteAsset(id)
-        }
+        setAssetToDelete(id)
+        setConfirmOpen(true)
     }
 
     const handleUpdateAsset = (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number) => {
@@ -130,6 +136,20 @@ export default function InvestimentosPage() {
                 onOpenChange={setDialogOpen}
                 asset={editingAsset}
                 onSave={editingAsset ? handleEditAsset : handleAddAsset}
+            />
+
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Excluir ativo"
+                description="Esta ação não pode ser desfeita."
+                variant="destructive"
+                onConfirm={() => {
+                    if (assetToDelete !== null) {
+                        deleteAsset(assetToDelete)
+                        setAssetToDelete(null)
+                    }
+                }}
             />
         </div >
     )
