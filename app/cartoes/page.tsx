@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sidebar } from "@/components/sidebar"
+import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
 import { useApp } from "@/contexts/app-context"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -26,6 +27,7 @@ import {
   Building2,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -87,6 +89,7 @@ export default function CartoesPage() {
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ type: "card" | "expense", id: number } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
   const totalDebt = getTotalCardDebt()
@@ -113,9 +116,10 @@ export default function CartoesPage() {
     setCardDialogOpen(true)
   }
 
-  const handleSaveCard = () => {
+  const handleSaveCard = async () => {
     if (!cardForm.name || cardForm.limit <= 0) return
-
+    setIsSubmitting(true)
+    await new Promise(r => setTimeout(r, 300))
     if (editingCard) {
       updateCreditCard(editingCard.id, cardForm)
       toast({ title: "Cartão atualizado" })
@@ -123,6 +127,7 @@ export default function CartoesPage() {
       addCreditCard(cardForm)
       toast({ title: "Cartão adicionado" })
     }
+    setIsSubmitting(false)
     setCardDialogOpen(false)
   }
 
@@ -155,9 +160,10 @@ export default function CartoesPage() {
     setExpenseDialogOpen(true)
   }
 
-  const handleSaveExpense = () => {
+  const handleSaveExpense = async () => {
     if (!expenseForm.description || expenseForm.totalAmount <= 0 || !expenseForm.cardId) return
-
+    setIsSubmitting(true)
+    await new Promise(r => setTimeout(r, 300))
     if (editingExpense) {
       updateCardExpense(editingExpense.id, expenseForm)
       toast({ title: "Despesa atualizada" })
@@ -165,6 +171,7 @@ export default function CartoesPage() {
       addCardExpense(expenseForm)
       toast({ title: "Despesa adicionada" })
     }
+    setIsSubmitting(false)
     setExpenseDialogOpen(false)
   }
 
@@ -363,18 +370,15 @@ export default function CartoesPage() {
                   })}
 
                   {creditCards.length === 0 && (
-                    <Card className="bg-card/50 border-border border-dashed p-6 sm:p-8 col-span-full flex flex-col items-center justify-center">
-                      <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 mb-3 sm:mb-4" />
-                      <p className="text-muted-foreground text-center mb-3 sm:mb-4 text-sm">Nenhum cartão cadastrado</p>
-                      <Button
-                        onClick={openAddCardDialog}
-                        variant="outline"
-                        className="border-border bg-transparent text-sm"
-                      >
-                        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
-                        Adicionar Cartão
-                      </Button>
-                    </Card>
+                    <div className="col-span-full">
+                      <EmptyState
+                        icon={CreditCard}
+                        title="Nenhum cartão cadastrado"
+                        description="Adicione seus cartões de crédito para acompanhar limites, faturas e o melhor dia para compras."
+                        actionLabel="Cadastrar Cartão"
+                        onAction={openAddCardDialog}
+                      />
+                    </div>
                   )}
                 </div>
 
@@ -460,107 +464,120 @@ export default function CartoesPage() {
                         )
                       })}
                       {cardExpenses.length === 0 && (
-                        <p className="p-6 text-center text-muted-foreground text-sm">Nenhuma despesa parcelada</p>
+                        <div className="py-8">
+                          <EmptyState
+                            icon={ShoppingCart}
+                            title="Sem despesas parceladas"
+                            description="Todas as suas compras parceladas aparecerão aqui, organizadas por cartão e data."
+                            actionLabel="Nova Despesa"
+                            onAction={() => openAddExpenseDialog()}
+                          />
+                        </div>
                       )}
                     </div>
 
                     {/* Desktop View */}
                     <div className="hidden sm:block overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-muted/50">
-                          <tr>
-                            <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                              Descrição
-                            </th>
-                            <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                              Cartão
-                            </th>
-                            <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                              Total
-                            </th>
-                            <th className="text-center p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                              Parcelas
-                            </th>
-                            <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                              Por mês
-                            </th>
-                            <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {cardExpenses.map((expense) => {
-                            const card = creditCards.find((c) => c.id === expense.cardId)
-                            const installmentValue = expense.totalAmount / expense.installments
-
-                            return (
-                              <tr key={expense.id} className="hover:bg-muted/30 transition-colors">
-                                <td className="p-3 sm:p-4">
-                                  <span className="text-foreground font-medium text-sm">{expense.description}</span>
-                                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                                    Compra em {new Date(expense.purchaseDate).toLocaleDateString("pt-BR")}
-                                  </p>
-                                </td>
-                                <td className="p-3 sm:p-4">
-                                  <span
-                                    className={cn(
-                                      "px-2 py-1 rounded-full text-xs font-medium",
-                                      card?.color === "violet" && "bg-violet-400/20 text-violet-400",
-                                      card?.color === "orange" && "bg-orange-400/20 text-orange-400",
-                                      card?.color === "emerald" && "bg-emerald-400/20 text-emerald-400",
-                                      card?.color === "blue" && "bg-blue-400/20 text-blue-400",
-                                      card?.color === "rose" && "bg-rose-400/20 text-rose-400",
-                                      card?.color === "cyan" && "bg-cyan-400/20 text-cyan-400",
-                                      card?.color === "amber" && "bg-amber-400/20 text-amber-400",
-                                      card?.color === "slate" && "bg-slate-400/20 text-slate-400",
-                                    )}
-                                  >
-                                    {card?.name || "—"}
-                                  </span>
-                                </td>
-                                <td className="p-3 sm:p-4 text-right text-foreground text-sm">
-                                  {formatCurrency(expense.totalAmount)}
-                                </td>
-                                <td className="p-3 sm:p-4 text-center">
-                                  <span className="text-foreground text-sm">
-                                    {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
-                                  </span>
-                                </td>
-                                <td className="p-3 sm:p-4 text-right font-semibold text-success text-sm">
-                                  {formatCurrency(installmentValue)}
-                                </td>
-                                <td className="p-3 sm:p-4 text-right">
-                                  <div className="flex justify-end gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                                      onClick={() => openEditExpenseDialog(expense)}
-                                    >
-                                      <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                                      onClick={() => handleDeleteExpense(expense.id)}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                          {cardExpenses.length === 0 && (
+                      {cardExpenses.length === 0 ? (
+                        <div className="py-8">
+                          <EmptyState
+                            icon={ShoppingCart}
+                            title="Sem despesas parceladas"
+                            description="Todas as suas compras parceladas aparecerão aqui, organizadas por cartão e data."
+                            actionLabel="Nova Despesa"
+                            onAction={() => openAddExpenseDialog()}
+                          />
+                        </div>
+                      ) : (
+                        <table className="w-full">
+                          <thead className="bg-muted/50">
                             <tr>
-                              <td colSpan={6} className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
-                                Nenhuma despesa parcelada registrada
-                              </td>
+                              <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                                Descrição
+                              </th>
+                              <th className="text-left p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                                Cartão
+                              </th>
+                              <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                                Total
+                              </th>
+                              <th className="text-center p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                                Parcelas
+                              </th>
+                              <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                                Por mês
+                              </th>
+                              <th className="text-right p-3 sm:p-4 text-xs sm:text-sm font-medium text-muted-foreground">
+                              </th>
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {cardExpenses.map((expense) => {
+                              const card = creditCards.find((c) => c.id === expense.cardId)
+                              const installmentValue = expense.totalAmount / expense.installments
+
+                              return (
+                                <tr key={expense.id} className="hover:bg-muted/30 transition-colors">
+                                  <td className="p-3 sm:p-4">
+                                    <span className="text-foreground font-medium text-sm">{expense.description}</span>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                                      Compra em {new Date(expense.purchaseDate).toLocaleDateString("pt-BR")}
+                                    </p>
+                                  </td>
+                                  <td className="p-3 sm:p-4">
+                                    <span
+                                      className={cn(
+                                        "px-2 py-1 rounded-full text-xs font-medium",
+                                        card?.color === "violet" && "bg-violet-400/20 text-violet-400",
+                                        card?.color === "orange" && "bg-orange-400/20 text-orange-400",
+                                        card?.color === "emerald" && "bg-emerald-400/20 text-emerald-400",
+                                        card?.color === "blue" && "bg-blue-400/20 text-blue-400",
+                                        card?.color === "rose" && "bg-rose-400/20 text-rose-400",
+                                        card?.color === "cyan" && "bg-cyan-400/20 text-cyan-400",
+                                        card?.color === "amber" && "bg-amber-400/20 text-amber-400",
+                                        card?.color === "slate" && "bg-slate-400/20 text-slate-400",
+                                      )}
+                                    >
+                                      {card?.name || "—"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 sm:p-4 text-right text-foreground text-sm">
+                                    {formatCurrency(expense.totalAmount)}
+                                  </td>
+                                  <td className="p-3 sm:p-4 text-center">
+                                    <span className="text-foreground text-sm">
+                                      {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 sm:p-4 text-right font-semibold text-success text-sm">
+                                    {formatCurrency(installmentValue)}
+                                  </td>
+                                  <td className="p-3 sm:p-4 text-right">
+                                    <div className="flex justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
+                                        onClick={() => openEditExpenseDialog(expense)}
+                                      >
+                                        <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
+                                        onClick={() => handleDeleteExpense(expense.id)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   </Card>
                 </div>
@@ -626,223 +643,221 @@ export default function CartoesPage() {
         </main>
 
         {/* Card Dialog */}
-        <Dialog open={cardDialogOpen} onOpenChange={setCardDialogOpen}>
-          <DialogContent className="bg-card border-border text-foreground max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-base sm:text-lg">{editingCard ? "Editar Cartão" : "Novo Cartão"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Nome do Cartao</Label>
-                <Input
-                  value={cardForm.name}
-                  onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })}
-                  placeholder="Ex: Nubank, Inter..."
-                  className="bg-muted border-border text-sm"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Limite (R$)</Label>
-                <Input
-                  type="number"
-                  value={cardForm.limit || ""}
-                  onChange={(e) => setCardForm({ ...cardForm, limit: Number.parseFloat(e.target.value) || 0 })}
-                  className="bg-muted border-border text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Dia Fechamento</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={31}
-                    value={cardForm.closingDay}
-                    onChange={(e) =>
-                      setCardForm({
-                        ...cardForm,
-                        closingDay: Math.min(31, Math.max(1, Number.parseInt(e.target.value) || 1)),
-                      })
-                    }
-                    className="bg-muted border-border text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Dia Vencimento</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={31}
-                    value={cardForm.dueDay}
-                    onChange={(e) =>
-                      setCardForm({
-                        ...cardForm,
-                        dueDay: Math.min(31, Math.max(1, Number.parseInt(e.target.value) || 1)),
-                      })
-                    }
-                    className="bg-muted border-border text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Banco (opcional)</Label>
-                <Select
-                  value={cardForm.bankId?.toString() || "none"}
-                  onValueChange={(v) =>
-                    setCardForm({ ...cardForm, bankId: v === "none" ? undefined : Number.parseInt(v) })
-                  }
-                >
-                  <SelectTrigger className="bg-muted border-border text-sm">
-                    <SelectValue placeholder="Selecione um banco" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="none">Sem banco vinculado</SelectItem>
-                    {banks.map((bank) => (
-                      <SelectItem key={bank.id} value={bank.id.toString()}>
-                        <span className="flex items-center gap-2">
-                          <Building2 className="h-3.5 w-3.5" />
-                          {bank.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Cor do Cartao</Label>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                  {cardColors.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() => setCardForm({ ...cardForm, color: color.value })}
-                      className={cn(
-                        "w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br transition-all",
-                        color.class,
-                        cardForm.color === color.value && "ring-2 ring-white ring-offset-2 ring-offset-card",
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="gap-2 sm:gap-0">
-              <DialogClose asChild>
-                <Button variant="outline" className="border-border bg-transparent text-xs sm:text-sm">
-                  Cancelar
-                </Button>
-              </DialogClose>
-              <Button onClick={handleSaveCard} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">
+        <ResponsiveDialog
+          open={cardDialogOpen}
+          onOpenChange={setCardDialogOpen}
+          title={editingCard ? "Editar Cartão" : "Novo Cartão"}
+          footer={
+            <div className="flex justify-end gap-2 w-full">
+              <Button variant="outline" onClick={() => setCardDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveCard} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {editingCard ? "Salvar" : "Adicionar"}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          }
+        >
+          <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Nome do Cartao</Label>
+              <Input
+                value={cardForm.name}
+                onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })}
+                placeholder="Ex: Nubank, Inter..."
+                className="bg-muted border-border text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Limite (R$)</Label>
+              <Input
+                type="number"
+                value={cardForm.limit || ""}
+                onChange={(e) => setCardForm({ ...cardForm, limit: Number.parseFloat(e.target.value) || 0 })}
+                className="bg-muted border-border text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs sm:text-sm">Dia Fechamento</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={cardForm.closingDay}
+                  onChange={(e) =>
+                    setCardForm({
+                      ...cardForm,
+                      closingDay: Math.min(31, Math.max(1, Number.parseInt(e.target.value) || 1)),
+                    })
+                  }
+                  className="bg-muted border-border text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs sm:text-sm">Dia Vencimento</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={cardForm.dueDay}
+                  onChange={(e) =>
+                    setCardForm({
+                      ...cardForm,
+                      dueDay: Math.min(31, Math.max(1, Number.parseInt(e.target.value) || 1)),
+                    })
+                  }
+                  className="bg-muted border-border text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Banco (opcional)</Label>
+              <Select
+                value={cardForm.bankId?.toString() || "none"}
+                onValueChange={(v) =>
+                  setCardForm({ ...cardForm, bankId: v === "none" ? undefined : Number.parseInt(v) })
+                }
+              >
+                <SelectTrigger className="bg-muted border-border text-sm">
+                  <SelectValue placeholder="Selecione um banco" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="none">Sem banco vinculado</SelectItem>
+                  {banks.map((bank) => (
+                    <SelectItem key={bank.id} value={bank.id.toString()}>
+                      <span className="flex items-center gap-2">
+                        <Building2 className="h-3.5 w-3.5" />
+                        {bank.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Cor do Cartao</Label>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {cardColors.map((color) => (
+                  <button
+                    key={color.value}
+                    onClick={() => setCardForm({ ...cardForm, color: color.value })}
+                    className={cn(
+                      "w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br transition-all",
+                      color.class,
+                      cardForm.color === color.value && "ring-2 ring-white ring-offset-2 ring-offset-card",
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </ResponsiveDialog>
 
         {/* Expense Dialog */}
-        <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
-          <DialogContent className="bg-card border-border text-foreground max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-base sm:text-lg">
-                {editingExpense ? "Editar Despesa" : "Nova Despesa"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+        <ResponsiveDialog
+          open={expenseDialogOpen}
+          onOpenChange={setExpenseDialogOpen}
+          title={editingExpense ? "Editar Despesa" : "Nova Despesa"}
+          footer={
+            <div className="flex justify-end gap-2 w-full">
+              <Button variant="outline" onClick={() => setExpenseDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveExpense} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingExpense ? "Salvar" : "Adicionar"}
+              </Button>
+            </div>
+          }
+        >
+          <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Cartao</Label>
+              <Select
+                value={expenseForm.cardId.toString()}
+                onValueChange={(v) => setExpenseForm({ ...expenseForm, cardId: Number.parseInt(v) })}
+              >
+                <SelectTrigger className="bg-muted border-border text-sm">
+                  <SelectValue placeholder="Selecione um cartao" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {creditCards.map((card) => (
+                    <SelectItem key={card.id} value={card.id.toString()}>
+                      {card.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Descricao</Label>
+              <Input
+                value={expenseForm.description}
+                onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                placeholder="Ex: TV 55', Geladeira..."
+                className="bg-muted border-border text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Cartao</Label>
+                <Label className="text-xs sm:text-sm">Valor Total (R$)</Label>
+                <Input
+                  type="number"
+                  value={expenseForm.totalAmount || ""}
+                  onChange={(e) =>
+                    setExpenseForm({ ...expenseForm, totalAmount: Number.parseFloat(e.target.value) || 0 })
+                  }
+                  className="bg-muted border-border text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs sm:text-sm">Parcelas</Label>
                 <Select
-                  value={expenseForm.cardId.toString()}
-                  onValueChange={(v) => setExpenseForm({ ...expenseForm, cardId: Number.parseInt(v) })}
+                  value={expenseForm.installments.toString()}
+                  onValueChange={(v) => setExpenseForm({ ...expenseForm, installments: Number.parseInt(v) })}
                 >
                   <SelectTrigger className="bg-muted border-border text-sm">
-                    <SelectValue placeholder="Selecione um cartao" />
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    {creditCards.map((card) => (
-                      <SelectItem key={card.id} value={card.id.toString()}>
-                        {card.name}
+                  <SelectContent className="bg-card border-border max-h-48">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                      <SelectItem key={n} value={n.toString()}>
+                        {n === 1 ? "A vista" : `${n}x`}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Descricao</Label>
-                <Input
-                  value={expenseForm.description}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                  placeholder="Ex: TV 55', Geladeira..."
-                  className="bg-muted border-border text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Valor Total (R$)</Label>
-                  <Input
-                    type="number"
-                    value={expenseForm.totalAmount || ""}
-                    onChange={(e) =>
-                      setExpenseForm({ ...expenseForm, totalAmount: Number.parseFloat(e.target.value) || 0 })
-                    }
-                    className="bg-muted border-border text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Parcelas</Label>
-                  <Select
-                    value={expenseForm.installments.toString()}
-                    onValueChange={(v) => setExpenseForm({ ...expenseForm, installments: Number.parseInt(v) })}
-                  >
-                    <SelectTrigger className="bg-muted border-border text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border max-h-48">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                        <SelectItem key={n} value={n.toString()}>
-                          {n === 1 ? "A vista" : `${n}x`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm">Data da Compra</Label>
-                <Input
-                  type="date"
-                  value={expenseForm.purchaseDate}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, purchaseDate: e.target.value })}
-                  className="bg-muted border-border text-sm"
-                />
-              </div>
-
-              {expenseForm.totalAmount > 0 && expenseForm.installments > 1 && (
-                <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Valor da parcela:</p>
-                  <p className="text-lg sm:text-xl font-bold text-emerald-400">
-                    {formatCurrency(expenseForm.totalAmount / expenseForm.installments)}
-                  </p>
-                </div>
-              )}
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
-              <DialogClose asChild>
-                <Button variant="outline" className="border-border bg-transparent text-xs sm:text-sm">
-                  Cancelar
-                </Button>
-              </DialogClose>
-              <Button onClick={handleSaveExpense} className="bg-violet-500 hover:bg-violet-600 text-xs sm:text-sm">
-                {editingExpense ? "Salvar" : "Adicionar"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs sm:text-sm">Data da Compra</Label>
+              <Input
+                type="date"
+                value={expenseForm.purchaseDate}
+                onChange={(e) => setExpenseForm({ ...expenseForm, purchaseDate: e.target.value })}
+                className="bg-muted border-border text-sm"
+              />
+            </div>
+
+            {expenseForm.totalAmount > 0 && expenseForm.installments > 1 && (
+              <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                <p className="text-xs sm:text-sm text-muted-foreground">Valor da parcela:</p>
+                <p className="text-lg sm:text-xl font-bold text-success">
+                  {formatCurrency(expenseForm.totalAmount / expenseForm.installments)}
+                </p>
+              </div>
+            )}
+          </div>
+        </ResponsiveDialog>
       </div>
 
       <ConfirmDialog

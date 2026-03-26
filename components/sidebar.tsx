@@ -12,12 +12,12 @@ import { useApp } from "@/contexts/app-context"
 
 // Definição centralizada de todos os módulos
 const ALL_MODULES = [
-  { key: "dashboard", name: "Dashboard", href: "/app", icon: LayoutDashboard, alwaysOn: true },
-  { key: "investimentos", name: "Investimentos", href: "/app/investimentos", icon: TrendingUp },
-  { key: "economia", name: "Economia", href: "/app/economia", icon: Wallet },
-  { key: "objetivos", name: "Objetivos", href: "/app/objetivos", icon: Target },
-  { key: "transacoes", name: "Transações", href: "/app/transacoes", icon: Receipt },
-  { key: "cartoes", name: "Cartões", href: "/app/cartoes", icon: CreditCard },
+  { key: "dashboard", name: "Dashboard", href: "/", icon: LayoutDashboard, alwaysOn: true },
+  { key: "investimentos", name: "Investimentos", href: "/investimentos", icon: TrendingUp },
+  { key: "economia", name: "Economia", href: "/economia", icon: Wallet },
+  { key: "objetivos", name: "Objetivos", href: "/objetivos", icon: Target },
+  { key: "transacoes", name: "Transações", href: "/transacoes", icon: Receipt },
+  { key: "cartoes", name: "Cartões", href: "/cartoes", icon: CreditCard },
 ]
 
 // 4 slots fixos visíveis no bottom nav (não inclui dashboard que pode estar no "home" do nav)
@@ -50,7 +50,7 @@ export function Sidebar() {
     : []
 
   const isActive = (href: string) =>
-    href === "/app" ? pathname === "/app" : pathname === href || pathname.startsWith(href + "/")
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/")
 
   const drawerHasActive = drawerModules.some((m) => isActive(m.href))
 
@@ -88,10 +88,10 @@ export function Sidebar() {
 
         <div className="p-4 border-t border-border">
           <Link
-            href="/app/configuracoes"
+            href="/configuracoes"
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium min-h-[44px]",
-              pathname === "/app/configuracoes"
+              pathname === "/configuracoes"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
@@ -154,16 +154,16 @@ export function Sidebar() {
           */}
           {!hasDrawer && (
             <Link
-              href="/app/configuracoes"
+              href="/configuracoes"
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-[44px] min-h-[56px] flex-1",
-                pathname === "/app/configuracoes" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                pathname === "/configuracoes" ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <div className={cn("p-1.5 rounded-lg transition-all", pathname === "/app/configuracoes" ? "bg-primary/15" : "bg-transparent")}>
+              <div className={cn("p-1.5 rounded-lg transition-all", pathname === "/configuracoes" ? "bg-primary/15" : "bg-transparent")}>
                 <Settings className="h-5 w-5" />
               </div>
-              <span className={cn("text-[10px] font-semibold tracking-tight", pathname === "/app/configuracoes" ? "text-primary" : "text-muted-foreground")}>
+              <span className={cn("text-[10px] font-semibold tracking-tight", pathname === "/configuracoes" ? "text-primary" : "text-muted-foreground")}>
                 Ajustes
               </span>
             </Link>
@@ -214,16 +214,16 @@ export function Sidebar() {
               })}
 
               <Link
-                href="/app/configuracoes"
+                href="/configuracoes"
                 onClick={() => setDrawerOpen(false)}
                 className={cn(
                   "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all",
-                  pathname === "/app/configuracoes"
+                  pathname === "/configuracoes"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <div className={cn("p-2 rounded-xl", pathname === "/app/configuracoes" ? "bg-primary/15" : "bg-muted")}>
+                <div className={cn("p-2 rounded-xl", pathname === "/configuracoes" ? "bg-primary/15" : "bg-muted")}>
                   <Settings className="h-5 w-5" />
                 </div>
                 <span className="font-semibold text-sm">Configurações</span>

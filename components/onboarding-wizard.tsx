@@ -1,40 +1,71 @@
 "use client"
 
 import { useState } from "react"
-import { useApp } from "@/contexts/app-context"
+import { useApp, applyThemeVariables } from "@/contexts/app-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Wallet, TrendingUp, Sparkles, ArrowRight, User, Rocket } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { User, Activity, Palette, ArrowRight, Loader2, Rocket, Receipt, Wallet, TrendingUp, Target, CreditCard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { themePresets } from "@/lib/constants"
+import type { ThemePreset } from "@/lib/types"
+
+const modulesInfo = [
+    { id: "economia", name: "Economia & Orçamento", icon: Wallet, desc: "Controle de despesas, metas de gastos" },
+    { id: "investimentos", name: "Investimentos", icon: TrendingUp, desc: "Ações, FIIs, Cripto e Renda Fixa" },
+    { id: "transacoes", name: "Transações", icon: Receipt, desc: "Fluxo de caixa diário (receitas/despesas)" },
+    { id: "cartoes", name: "Cartões de Crédito", icon: CreditCard, desc: "Gestão de limites e faturas" },
+    { id: "objetivos", name: "Objetivos de Vida", icon: Target, desc: "Reserva de emergência e metas longas" },
+]
 
 export function OnboardingWizard() {
-    const { settings, updateSettings } = useApp()
+    const { updateSettings } = useApp()
     const router = useRouter()
     const [step, setStep] = useState(1)
-    const [name, setName] = useState("")
-    const [focus, setFocus] = useState<"finances" | "investments" | "both" | null>(null)
-    const [isFinishing, setIsFinishing] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const handleNext = () => setStep((prev) => prev + 1)
+    const [nome, setNome] = useState("")
+    const [activeModules, setActiveModules] = useState<Record<string, boolean>>({
+        economia: true, investimentos: true, transacoes: true, cartoes: true, objetivos: true
+    })
+    const [themeId, setThemeId] = useState("paper")
 
-    const completeOnboarding = () => {
-        setIsFinishing(true)
-        setTimeout(() => {
-            updateSettings({
-                nome: name.trim(),
-                userFocus: focus || "both",
-                onboardingCompleted: true,
-                showGuide: true,
-                activeGuideStep: 0,
-            })
+    const handleSkip = () => {
+        setIsSubmitting(true)
+        updateSettings({
+            nome: "Usuário",
+            onboardingCompleted: true,
+            activeModules: { economia: true, investimentos: true, transacoes: true, cartoes: true, objetivos: true }
+        })
+        const paperTheme = themePresets.find(t => t.id === "paper")
+        if (paperTheme) applyThemeVariables(paperTheme)
+        setTimeout(() => router.push("/"), 500)
+    }
 
-            if (focus === "finances") {
-                router.push("/app/economia")
-            }
-        }, 1500)
+    const completeOnboarding = async () => {
+        setIsSubmitting(true)
+        // Simulate a small loading to feel premium
+        await new Promise(r => setTimeout(r, 600))
+        updateSettings({
+            nome: nome.trim() || "Usuário",
+            activeModules,
+            themeId,
+            onboardingCompleted: true,
+        })
+
+        // Find which module is active to redirect
+        const firstActive = Object.keys(activeModules).find(k => activeModules[k])
+        if (firstActive === "investimentos") router.push("/investimentos")
+        else if (firstActive === "economia") router.push("/economia")
+        else router.push("/")
+    }
+
+    const handleThemeSelect = (theme: ThemePreset) => {
+        setThemeId(theme.id)
+        applyThemeVariables(theme) // Instant preview
     }
 
     const renderContent = () => {
@@ -42,124 +73,115 @@ export function OnboardingWizard() {
             case 1:
                 return (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500">
-                        <div className="flex justify-center">
-                            <div className="bg-primary/10 p-4 sm:p-5 rounded-3xl ring-8 ring-primary/5">
-                                <User className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-                            </div>
-                        </div>
                         <div className="text-center space-y-2">
-                            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Boas-vindas ao Valore</h1>
-                            <p className="text-muted-foreground text-base sm:text-lg">Para começarmos a sua jornada personalizada, como devemos chamar você?</p>
-                        </div>
-                        <div className="space-y-4 sm:space-y-5 pt-2 sm:pt-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="text-xs sm:text-sm font-bold uppercase tracking-widest text-muted-foreground">Seu Primeiro Nome</Label>
-                                <Input
-                                    id="name"
-                                    placeholder=""
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="bg-muted/30 h-12 sm:h-14 text-lg sm:text-xl font-medium focus-visible:ring-primary border-2 border-border/50 focus:border-primary transition-all rounded-2xl"
-                                    autoFocus
-                                />
+                            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <User className="h-6 w-6 text-primary" />
                             </div>
-                            <Button
-                                onClick={handleNext}
-                                disabled={!name.trim()}
-                                className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold rounded-2xl group shadow-lg shadow-primary/20"
-                            >
-                                Continuar
-                                <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6 transition-transform group-hover:translate-x-1" />
-                            </Button>
+                            <h1 className="text-2xl font-extrabold tracking-tight">Como podemos chamar você?</h1>
+                            <p className="text-sm text-muted-foreground">Isso personalizará sua experiência.</p>
+                        </div>
+                        <div className="space-y-4 pt-2">
+                            <Input
+                                placeholder="Seu nome"
+                                value={nome}
+                                onChange={(e) => setNome(e.target.value)}
+                                className="h-12 text-lg text-center font-medium bg-muted/30 focus-visible:ring-primary rounded-xl"
+                                autoFocus
+                            />
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    onClick={() => setStep(2)}
+                                    disabled={!nome.trim()}
+                                    className="w-full h-12 text-base font-bold rounded-xl"
+                                >
+                                    Continuar <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" onClick={handleSkip} className="text-muted-foreground w-full">
+                                    Pular configuração
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 )
 
             case 2:
                 return (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
+                    <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
                         <div className="text-center space-y-2">
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Qual o seu foco agora?</h2>
-                            <p className="text-muted-foreground text-base sm:text-lg">Não se preocupe, o Valore é completo e você terá acesso a tudo.</p>
+                            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <Activity className="h-6 w-6 text-primary" />
+                            </div>
+                            <h2 className="text-2xl font-extrabold tracking-tight">O que você vai usar?</h2>
+                            <p className="text-sm text-muted-foreground">Ative apenas o que faz sentido para você.</p>
                         </div>
-                        <div className="grid gap-3 sm:gap-4 pt-2 sm:pt-4">
-                            <button
-                                onClick={() => { setFocus("finances"); handleNext(); }}
-                                className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-2xl border-2 border-border/50 hover:border-primary bg-card hover:bg-primary/5 transition-all text-left group relative overflow-hidden"
-                            >
-                                <div className="bg-warning/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
-                                    <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-warning" />
+                        <div className="space-y-3 pt-2 max-h-[40vh] overflow-y-auto pr-2">
+                            {modulesInfo.map((mod) => (
+                                <div key={mod.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:border-primary/50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-muted rounded-lg">
+                                            <mod.icon className="h-4 w-4 text-foreground" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-foreground">{mod.name}</p>
+                                            <p className="text-[10px] sm:text-xs text-muted-foreground">{mod.desc}</p>
+                                        </div>
+                                    </div>
+                                    <Switch
+                                        checked={activeModules[mod.id] || false}
+                                        onCheckedChange={(checked) => setActiveModules(prev => ({ ...prev, [mod.id]: checked }))}
+                                    />
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-base sm:text-lg">Gastos e Dívidas</h3>
-                                    <p className="text-xs sm:text-sm text-muted-foreground">Foco em cartões, bancos e fluxo de caixa.</p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-                            </button>
-
-                            <button
-                                onClick={() => { setFocus("investments"); handleNext(); }}
-                                className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-2xl border-2 border-border/50 hover:border-primary bg-card hover:bg-primary/5 transition-all text-left group relative overflow-hidden"
-                            >
-                                <div className="bg-success/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
-                                    <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-success" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-base sm:text-lg">Multiplicar Patrimônio</h3>
-                                    <p className="text-xs sm:text-sm text-muted-foreground">Foco em ativos e estratégias de investimento.</p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-                            </button>
-
-                            <button
-                                onClick={() => { setFocus("both"); handleNext(); }}
-                                className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-2xl border-2 border-border/50 hover:border-primary bg-card hover:bg-primary/5 transition-all text-left group relative overflow-hidden"
-                            >
-                                <div className="bg-primary/10 p-3 sm:p-4 rounded-xl group-hover:scale-110 transition-transform">
-                                    <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-base sm:text-lg">Controle Total</h3>
-                                    <p className="text-xs sm:text-sm text-muted-foreground">Tudo o que o Valore oferece para você.</p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-                            </button>
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setStep(1)} className="flex-1 rounded-xl">Voltar</Button>
+                            <Button onClick={() => setStep(3)} className="flex-1 rounded-xl">Continuar <ArrowRight className="ml-2 h-4 w-4" /></Button>
                         </div>
                     </div>
                 )
 
             case 3:
                 return (
-                    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-                        <div className="flex justify-center">
-                            <div className="bg-primary/10 p-5 sm:p-6 rounded-full relative">
-                                <Rocket className="h-12 w-12 sm:h-14 sm:w-14 text-primary animate-bounce" />
-                                <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping -z-10" />
+                    <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
+                        <div className="text-center space-y-2">
+                            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <Palette className="h-6 w-6 text-primary" />
                             </div>
+                            <h2 className="text-2xl font-extrabold tracking-tight">Sua identidade</h2>
+                            <p className="text-sm text-muted-foreground">Escolha o tema que mais te agrada.</p>
                         </div>
-                        <div className="text-center space-y-2 sm:space-y-3">
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                                Decolagem autorizada, {name}!
-                            </h2>
-                            <p className="text-muted-foreground text-base sm:text-lg">
-                                Configuramos seu painel com foco em
-                                <span className="text-primary font-bold"> {focus === "finances" ? "Gestão Financeira" : focus === "investments" ? "Investimentos" : "Gestão 360°"}</span>.
-                            </p>
+                        <div className="grid grid-cols-2 gap-2 max-h-[40vh] overflow-y-auto pr-2 pt-2">
+                            {themePresets.map((theme) => {
+                                const isSelected = themeId === theme.id
+                                return (
+                                    <button
+                                        key={theme.id}
+                                        onClick={() => handleThemeSelect(theme)}
+                                        className={cn(
+                                            "flex flex-col items-center p-3 rounded-xl border-2 transition-all",
+                                            isSelected ? "border-primary bg-primary/5 scale-[1.02]" : "border-border/50 hover:border-primary/50 bg-card"
+                                        )}
+                                    >
+                                        <div
+                                            className="w-full h-12 rounded-lg mb-2 border border-border/30 overflow-hidden flex flex-col"
+                                            style={{ background: `rgb(${theme.colors.background})` }}
+                                        >
+                                            <div className="h-3 w-full" style={{ background: `rgb(${theme.colors.card})` }} />
+                                            <div className="flex-1 flex items-center justify-center px-2">
+                                                <div className="h-2 w-full rounded-full" style={{ background: `rgb(${theme.colors.primary})` }} />
+                                            </div>
+                                        </div>
+                                        <p className="text-xs font-bold truncate w-full text-foreground">{theme.name}</p>
+                                    </button>
+                                )
+                            })}
                         </div>
-
-                        <div className="bg-muted/20 p-4 sm:p-6 rounded-2xl border border-border/50 space-y-2 text-center">
-                            <p className="text-xs sm:text-sm font-medium text-foreground">
-                                O Valore agora conta com um <span className="text-primary font-bold">Guia Interativo</span> que aparecerá no canto da tela para te ajudar nos primeiros passos.
-                            </p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setStep(2)} disabled={isSubmitting} className="flex-1 rounded-xl">Voltar</Button>
+                            <Button onClick={completeOnboarding} disabled={isSubmitting} className="flex-1 rounded-xl bg-primary text-primary-foreground">
+                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> Concluir</>}
+                            </Button>
                         </div>
-
-                        <Button
-                            onClick={completeOnboarding}
-                            disabled={isFinishing}
-                            className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold rounded-2xl shadow-xl shadow-primary/20"
-                        >
-                            {isFinishing ? "Preparando Valore..." : "Entrar no Dashboard"}
-                        </Button>
                     </div>
                 )
 
@@ -169,40 +191,15 @@ export function OnboardingWizard() {
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-xl p-4 overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none opacity-20">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[128px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px]" />
-            </div>
-
-            <Card className="w-full max-w-xl p-6 sm:p-12 shadow-[0_0_50px_-12px_rgba(var(--theme-primary),0.2)] border-primary/20 bg-card/80 backdrop-blur-sm relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem]">
-                {/* Progress bar */}
-                <div className="absolute top-0 left-0 h-2 bg-muted/30 w-full overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-xl p-4">
+            <Card className="w-full max-w-sm p-6 sm:p-8 shadow-2xl border-border bg-card/90 backdrop-blur-md relative overflow-hidden rounded-[2rem]">
+                <div className="absolute top-0 left-0 h-1.5 bg-muted w-full overflow-hidden">
                     <div
-                        className="h-full transition-all duration-700 ease-in-out"
-                        style={{
-                            width: `${(step / 3) * 100}%`,
-                            backgroundColor: 'var(--primary)',
-                            boxShadow: '0 0 10px rgba(var(--theme-primary), 0.5)'
-                        }}
+                        className="h-full transition-all duration-500 ease-out bg-primary"
+                        style={{ width: `${(step / 3) * 100}%` }}
                     />
                 </div>
-
                 {renderContent()}
-
-                <div className="mt-10 flex justify-center">
-                    <div className="flex gap-2">
-                        {[1, 2, 3].map((i) => (
-                            <div
-                                key={i}
-                                className={cn(
-                                    "h-1.5 rounded-full transition-all duration-500",
-                                    i === step ? "w-10 bg-primary" : i < step ? "w-4 bg-primary/30" : "w-4 bg-muted"
-                                )}
-                            />
-                        ))}
-                    </div>
-                </div>
             </Card>
         </div>
     )

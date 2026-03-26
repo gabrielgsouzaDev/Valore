@@ -128,11 +128,11 @@ export const settingsSchema = z.object({
     proximidadeAlerta: z.number().default(10),
     investmentStrategy: z.enum(["rebalance", "proportional", "waterfall", "ceiling"]).default("rebalance"),
     onboardingCompleted: z.boolean().default(false),
-    userFocus: z.enum(["finances", "investments", "both"]).optional(),
-    activeGuideStep: z.number().nullable().default(null),
-    showGuide: z.boolean().default(true),
     activeModules: z.record(z.boolean()).optional(),
     isDemoMode: z.boolean().optional(),
+    userFocus: z.enum(["invest", "save", "both"]).optional(),
+    showGuide: z.boolean().optional(),
+    activeGuideStep: z.number().nullable().optional(),
 })
 
 /**
@@ -153,7 +153,7 @@ export const cardExpenseWithIdSchema = cardExpenseSchema.merge(idSchema)
  * Esquema de validação para o Armazenamento Completo (localStorage)
  */
 export const appStorageSchema = z.object({
-    _version: z.number().default(1),
+    _version: z.number().default(2),
     assets: z.array(assetWithIdSchema).default([]),
     categories: z.array(categoryWithIdSchema).default([]),
     goals: z.array(goalWithIdSchema).default([]),

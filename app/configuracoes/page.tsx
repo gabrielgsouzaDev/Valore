@@ -41,6 +41,9 @@ import {
   Zap,
   Download,
   RefreshCcw,
+  Tags,
+  FolderPlus,
+  Loader2,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { themePresets } from "@/lib/constants"
@@ -130,6 +133,10 @@ export default function ConfiguracoesPage() {
     updateSettings,
     exportData,
     importData,
+    categories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
     banks,
     addBank,
     updateBank,
@@ -171,6 +178,44 @@ export default function ConfiguracoesPage() {
   const [bankDialogOpen, setBankDialogOpen] = useState(false)
   const [editingBank, setEditingBank] = useState<Bank | null>(null)
   const [expandedBank, setExpandedBank] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [catDialogOpen, setCatDialogOpen] = useState(false)
+  const [editingCat, setEditingCat] = useState<any | null>(null)
+  const [catForm, setCatForm] = useState({ name: "", color: "slate" })
+
+  const openAddCatDialog = () => {
+    setEditingCat(null)
+    setCatForm({ name: "", color: "slate" })
+    setCatDialogOpen(true)
+  }
+
+  const openEditCatDialog = (cat: any) => {
+    setEditingCat(cat)
+    setCatForm({ name: cat.name, color: cat.color || "slate" })
+    setCatDialogOpen(true)
+  }
+
+  const handleSaveCat = () => {
+    if (!catForm.name) return
+    if (editingCat) {
+      updateCategory(editingCat.id, { name: catForm.name, percentage: editingCat.percentage, color: catForm.color })
+      toast({ title: "Categoria atualizada" })
+    } else {
+      addCategory({ name: catForm.name, percentage: 0, budgeted: 0, color: catForm.color })
+      toast({ title: "Categoria criada" })
+    }
+    setCatDialogOpen(false)
+  }
+
+  const handleDeleteCat = (id: number) => {
+    setConfirmState({
+      isOpen: true,
+      title: "Excluir Categoria",
+      description: "Tem certeza? Transacoes associadas ficarao sem categoria (nao serao excluidas).",
+      action: () => deleteCategory(id)
+    })
+  }
 
   const [bankForm, setBankForm] = useState({
     name: "",
@@ -181,25 +226,37 @@ export default function ConfiguracoesPage() {
     notes: "",
   })
 
-  const handleSalvarPerfil = () => {
-    updateSettings({
-      nome: localSettings.nome,
-      rendaMensal: Number.parseFloat(localSettings.rendaMensal) || 0,
-      investmentStrategy: localSettings.investmentStrategy as InvestmentStrategy,
-    })
-    setSaveStatus("perfil")
-    toast({ title: "Perfil salvo" })
-    setTimeout(() => setSaveStatus(null), 2000)
+  const handleSalvarPerfil = async () => {
+    setIsSubmitting(true)
+    try {
+      await new Promise(r => setTimeout(r, 600))
+      updateSettings({
+        nome: localSettings.nome,
+        rendaMensal: Number.parseFloat(localSettings.rendaMensal) || 0,
+        investmentStrategy: localSettings.investmentStrategy as InvestmentStrategy,
+      })
+      setSaveStatus("perfil")
+      toast({ title: "Perfil salvo" })
+      setTimeout(() => setSaveStatus(null), 2000)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleSalvarPortfolio = () => {
-    updateSettings({
-      capitalInvestido: Number.parseFloat(localSettings.capitalInvestido) || 0,
-      metaReservaEmergencia: Number.parseFloat(localSettings.metaReservaEmergencia) || 6,
-    })
-    setSaveStatus("portfolio")
-    toast({ title: "Portfolio salvo" })
-    setTimeout(() => setSaveStatus(null), 2000)
+  const handleSalvarPortfolio = async () => {
+    setIsSubmitting(true)
+    try {
+      await new Promise(r => setTimeout(r, 600))
+      updateSettings({
+        capitalInvestido: Number.parseFloat(localSettings.capitalInvestido) || 0,
+        metaReservaEmergencia: Number.parseFloat(localSettings.metaReservaEmergencia) || 6,
+      })
+      setSaveStatus("portfolio")
+      toast({ title: "Portfolio salvo" })
+      setTimeout(() => setSaveStatus(null), 2000)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleLimparDados = () => {
@@ -227,7 +284,7 @@ export default function ConfiguracoesPage() {
           activeGuideStep: null,
           showGuide: false
         })
-        window.location.href = "/app"
+        window.location.href = "/"
       }
     })
   }
@@ -441,9 +498,12 @@ export default function ConfiguracoesPage() {
 
                     <Button
                       onClick={handleSalvarPerfil}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
+                      disabled={isSubmitting}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm min-w-[120px]"
                     >
-                      {saveStatus === "perfil" ? (
+                      {isSubmitting && saveStatus === "perfil" ? (
+                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                      ) : saveStatus === "perfil" ? (
                         <>
                           <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           Salvo!
@@ -554,9 +614,12 @@ export default function ConfiguracoesPage() {
 
                     <Button
                       onClick={handleSalvarPortfolio}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
+                      disabled={isSubmitting}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm min-w-[120px]"
                     >
-                      {saveStatus === "portfolio" ? (
+                      {isSubmitting && saveStatus === "portfolio" ? (
+                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                      ) : saveStatus === "portfolio" ? (
                         <>
                           <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           Salvo!
@@ -970,6 +1033,52 @@ export default function ConfiguracoesPage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card className="bg-card border-border mt-4 sm:mt-6">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-foreground text-base sm:text-lg">
+                          <Tags className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Categorias Globais
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">Classifique suas transacoes livremente</CardDescription>
+                      </div>
+                      <Button onClick={openAddCatDialog} size="sm" className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">
+                        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                        <span className="hidden sm:inline">Nova</span>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+                    <div className="space-y-2 max-h-96 sm:max-h-[500px] overflow-y-auto pr-1">
+                      {categories.map((cat) => (
+                        <div key={cat.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30 gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded flex-shrink-0 flex items-center justify-center ${getColorClass(cat.color || "slate")}`}>
+                              <Tags className="h-4 w-4 text-white" />
+                            </div>
+                            <span className="font-medium text-sm text-foreground">{cat.name}</span>
+                          </div>
+                          <div className="flex gap-1 justify-end">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-md" onClick={() => openEditCatDialog(cat)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors rounded-md" onClick={() => handleDeleteCat(cat.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      {categories.length === 0 && (
+                        <div className="text-center py-6">
+                          <p className="text-sm text-muted-foreground">Nenhuma categoria criada.</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
               </div>
             </div>
           </div>
@@ -1072,6 +1181,37 @@ export default function ConfiguracoesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={catDialogOpen} onOpenChange={setCatDialogOpen}>
+          <DialogContent className="bg-card border-border text-foreground max-w-sm mx-4 sm:mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-base sm:text-lg">{editingCat ? "Editar Categoria" : "Nova Categoria"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-xs sm:text-sm">Nome da Categoria</Label>
+                <Input value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} placeholder="Ex: Mercado, Streaming" className="bg-muted border-border text-sm" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs sm:text-sm">Cor</Label>
+                <div className="flex flex-wrap gap-2">
+                  {bankColors.map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => setCatForm({ ...catForm, color: color.value })}
+                      className={`w-8 h-8 rounded transition-all ${color.class} ${catForm.color === color.value ? "ring-2 ring-foreground ring-offset-2 ring-offset-card scale-110" : ""}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCatDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm">Cancelar</Button>
+              <Button onClick={handleSaveCat} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">{editingCat ? "Salvar" : "Criar"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       <ConfirmDialog

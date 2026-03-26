@@ -686,6 +686,7 @@ export const defaultSettings: Settings = {
     investmentStrategy: "waterfall",
     activeGuideStep: null,
     showGuide: false,
+    userFocus: "both",
     activeModules: {
         investimentos: true,
         economia: true,

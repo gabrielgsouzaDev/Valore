@@ -5,6 +5,8 @@ import { AppProvider, useApp } from "@/contexts/app-context"
 import { InstallPrompt } from "@/components/install-prompt"
 import { OnboardingWrapper } from "@/components/onboarding-wrapper"
 import { LoadingScreen } from "@/components/loading-screen"
+import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/next"
 
 /**
  * AppContent - Componente intermediário para acessar o contexto useApp
@@ -13,7 +15,6 @@ import { LoadingScreen } from "@/components/loading-screen"
 function AppContent({ children }: { children: React.ReactNode }) {
     const { isLoaded } = useApp()
 
-    // Garantimos que a tela de carregamento só suma quando o sistema estiver 100% pronto
     if (!isLoaded) {
         return <LoadingScreen />
     }
@@ -21,11 +22,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>
 }
 
-export default function AppLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode
-}>) {
+/**
+ * AppShell - Shell client-side que envolve toda a aplicação com
+ * AppProvider, LoadingScreen, OnboardingWrapper e InstallPrompt.
+ * Extraído como componente separado porque o root layout precisa
+ * permanecer Server Component para exportar metadata/viewport.
+ */
+export function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <AppProvider>
             <AppContent>
@@ -33,6 +36,8 @@ export default function AppLayout({
             </AppContent>
             <OnboardingWrapper />
             <InstallPrompt />
+            <Toaster />
+            <Analytics />
         </AppProvider>
     )
 }

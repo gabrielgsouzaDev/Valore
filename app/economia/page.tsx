@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/sidebar"
+import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
-import { getEconomyBarColor } from "@/lib/services"
+import { getEconomyBarColor, formatCurrency } from "@/lib/services"
 import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
@@ -41,6 +42,7 @@ export default function EconomiaPage() {
   } | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ type: "category"; id: number } | { type: "subcategory"; categoryId: number; id: number } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
   const handleAddCategory = (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
@@ -88,8 +90,6 @@ export default function EconomiaPage() {
     setConfirmOpen(true)
   }
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -144,141 +144,151 @@ export default function EconomiaPage() {
                 </div>
 
                 <div className="space-y-2 sm:space-y-3">
-                  {categories.map((category) => (
-                    <Card key={category.id} className="bg-card border-border overflow-hidden">
-                      <div className="p-3 sm:p-5">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                            <button
-                              onClick={() => toggleCategory(category.id)}
-                              className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                            >
-                              {category.expanded ? (
-                                <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                              )}
-                            </button>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
-                                {category.name}
-                              </h4>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
-                                {category.percentage}% do orçamento
-                              </p>
+                  {categories.length === 0 ? (
+                    <EmptyState
+                      icon={Wallet}
+                      title="Nenhuma categoria de orçamento"
+                      description="Crie categorias como 'Moradia', 'Alimentação' e 'Lazer' para distribuir sua renda mensal e ter controle total dos seus gastos."
+                      actionLabel="Criar Primeira Categoria"
+                      onAction={openAddCategoryDialog}
+                    />
+                  ) : (
+                    categories.map((category) => (
+                      <Card key={category.id} className="bg-card border-border overflow-hidden">
+                        <div className="p-3 sm:p-5">
+                          <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                              <button
+                                onClick={() => toggleCategory(category.id)}
+                                className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                              >
+                                {category.expanded ? (
+                                  <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                                )}
+                              </button>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                                  {category.name}
+                                </h4>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  {category.percentage}% do orçamento
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 sm:gap-4">
+                              <div className="text-right hidden sm:block">
+                                <p className="font-semibold text-foreground text-sm sm:text-base">
+                                  {formatCurrency(category.spent)}
+                                </p>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  de {formatCurrency(category.budgeted)}
+                                </p>
+                              </div>
+                              <div className="flex gap-0.5 sm:gap-1">
+                                <Button
+                                  onClick={() => openEditCategoryDialog(category)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  onClick={() => handleDeleteCategory(category.id)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 sm:gap-4">
-                            <div className="text-right hidden sm:block">
-                              <p className="font-semibold text-foreground text-sm sm:text-base">
-                                {formatCurrency(category.spent)}
-                              </p>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
-                                de {formatCurrency(category.budgeted)}
-                              </p>
-                            </div>
-                            <div className="flex gap-0.5 sm:gap-1">
-                              <Button
-                                onClick={() => openEditCategoryDialog(category)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteCategory(category.id)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+
+                          <div className="sm:hidden mb-2 text-right">
+                            <p className="font-semibold text-foreground text-sm">
+                              {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                            </p>
                           </div>
-                        </div>
 
-                        <div className="sm:hidden mb-2 text-right">
-                          <p className="font-semibold text-foreground text-sm">
-                            {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
-                          </p>
-                        </div>
+                          <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
+                                backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
+                              }}
+                            />
+                          </div>
 
-                        <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
-                              backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
-                            }}
-                          />
-                        </div>
-
-                        {/* Subcategories */}
-                        {category.expanded && (
-                          <div className="mt-3 sm:mt-4 pl-4 sm:pl-8 space-y-2 sm:space-y-3 border-l-2 border-border">
-                            {category.subcategories?.map((sub) => (
-                              <div key={sub.id} className="space-y-1.5 sm:space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                    <span
-                                      className={cn(
-                                        "text-[10px] sm:text-xs font-medium",
-                                        sub.spent > sub.budgeted ? "text-danger" : "text-success",
-                                      )}
-                                    >
-                                      {formatCurrency(sub.spent)}
-                                    </span>
-                                    <Button
-                                      onClick={() => {
-                                        setEditingSubcategory({ categoryId: category.id, subcategory: sub })
-                                        setSubcategoryDialogOpen(true)
+                          {/* Subcategories */}
+                          {category.expanded && (
+                            <div className="mt-3 sm:mt-4 pl-4 sm:pl-8 space-y-2 sm:space-y-3 border-l-2 border-border">
+                              {category.subcategories?.map((sub) => (
+                                <div key={sub.id} className="space-y-1.5 sm:space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
+                                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                      <span
+                                        className={cn(
+                                          "text-[10px] sm:text-xs font-medium",
+                                          sub.spent > sub.budgeted ? "text-danger" : "text-success",
+                                        )}
+                                      >
+                                        {formatCurrency(sub.spent)}
+                                      </span>
+                                      <Button
+                                        onClick={() => {
+                                          setEditingSubcategory({ categoryId: category.id, subcategory: sub })
+                                          setSubcategoryDialogOpen(true)
+                                        }}
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleDeleteSubcategory(category.id, sub.id)}
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full transition-all duration-500"
+                                      style={{
+                                        width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
+                                        backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
                                       }}
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      onClick={() => handleDeleteSubcategory(category.id, sub.id)}
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    />
                                   </div>
                                 </div>
-                                <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full transition-all duration-500"
-                                    style={{
-                                      width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
-                                      backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                            <Button
-                              onClick={() => {
-                                setEditingSubcategory({ categoryId: category.id, subcategory: null })
-                                setSubcategoryDialogOpen(true)
-                              }}
-                              variant="ghost"
-                              size="sm"
-                              className="text-accent hover:text-accent/80 text-xs h-7"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              Subcategoria
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
+                              ))}
+                              <Button
+                                onClick={() => {
+                                  setEditingSubcategory({ categoryId: category.id, subcategory: null })
+                                  setSubcategoryDialogOpen(true)
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className="text-accent hover:text-accent/80 text-xs h-7"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Subcategoria
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

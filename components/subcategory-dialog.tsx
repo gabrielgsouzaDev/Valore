@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Loader2 } from "lucide-react"
 
 interface Subcategory {
   id: number
@@ -35,6 +36,7 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
     budgeted: "",
     spent: "",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (subcategory) {
@@ -52,14 +54,20 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
     }
   }, [subcategory, open])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave({
-      name: formData.name,
-      budgeted: Number.parseFloat(formData.budgeted),
-      spent: Number.parseFloat(formData.spent),
-    })
-    setFormData({ name: "", budgeted: "", spent: "0" })
+    setIsSubmitting(true)
+    try {
+      await new Promise(r => setTimeout(r, 400))
+      onSave({
+        name: formData.name,
+        budgeted: Number.parseFloat(formData.budgeted) || 0,
+        spent: Number.parseFloat(formData.spent) || 0,
+      })
+      setFormData({ name: "", budgeted: "", spent: "0" })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -112,11 +120,11 @@ export function SubcategoryDialog({ open, onOpenChange, subcategory, onSave }: S
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              {subcategory ? "Salvar" : "Adicionar"}
+            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[100px]">
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (subcategory ? "Salvar" : "Adicionar")}
             </Button>
           </DialogFooter>
         </form>

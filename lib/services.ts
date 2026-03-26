@@ -82,6 +82,20 @@ export function formatCurrency(value: number): string {
 }
 
 /**
+ * Formata uma string de data ISO para o padrão brasileiro (dd/mm/aaaa).
+ */
+export function formatDate(dateString: string): string {
+    try {
+        const date = new Date(dateString)
+        return new Intl.NumberFormat("pt-BR", { minimumIntegerDigits: 2 }).format(date.getDate()) + "/" +
+            new Intl.NumberFormat("pt-BR", { minimumIntegerDigits: 2 }).format(date.getMonth() + 1) + "/" +
+            date.getFullYear()
+    } catch (e) {
+        return dateString
+    }
+}
+
+/**
  * Gera um novo ID sequencial para uma lista de itens.
  */
 export function generateId<T extends { id: number }>(items: T[]): number {

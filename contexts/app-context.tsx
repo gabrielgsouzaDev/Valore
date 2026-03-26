@@ -27,7 +27,7 @@ import "jspdf-autotable"
  * Aplica o tema visual ao documento via variáveis CSS.
  * Esta função acessa a API do browser (document) por necessidade técnica.
  */
-function applyThemeVariables(theme: ThemePreset) {
+export function applyThemeVariables(theme: ThemePreset) {
   if (typeof document === "undefined") return
 
   const root = document.documentElement
@@ -236,19 +236,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoaded(true)
   }, [initialTheme])
 
+  // --- Persistência Segura (safeSave com Debounce & Zod) ---
   useEffect(() => {
     if (!isLoaded) return
-    try {
-      const dataToSave = {
-        _version: 1,
-        assets, categories, goals, settings, transactions,
-        creditCards, cardExpenses, banks, patrimonialHistory,
-        lastUpdated: new Date().toISOString(),
+
+    const saveTimeout = setTimeout(() => {
+      try {
+        const dataToSave = {
+          _version: 1,
+          assets, categories, goals, settings, transactions,
+          creditCards, cardExpenses, banks, patrimonialHistory,
+          lastUpdated: new Date().toISOString(),
+        }
+
+        // Validação estrita antes de gravar no disco
+        const validation = appStorageSchema.safeParse(dataToSave)
+
+        if (validation.success) {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(validation.data))
+        } else {
+          console.error("⛔ Falha Crítica: Tentativa de salvar dados inválidos bloqueada pelo Zod.", validation.error)
+          // Em um app real, poderíamos despachar um evento pra UI mostrar um Toast aqui
+          // "Erro ao salvar dados. Por favor, recarregue a página."
+        }
+      } catch (error) {
+        console.warn("Storage cheio ou indisponível:", error)
       }
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-    } catch (error) {
-      console.warn("Storage cheio ou indisponível:", error)
-    }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(saveTimeout)
   }, [assets, categories, goals, settings, transactions, creditCards, cardExpenses, banks, patrimonialHistory, isLoaded])
 
   // --- Histórico Patrimonial ---
@@ -330,6 +346,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteCategory = useCallback((id: number) => {
     setCategoriesState((prev: Category[]) => prev.filter((cat: Category) => cat.id !== id))
+    // Desvincular transações órfãs (Evita falha de integridade referencial)
+    setTransactionsState((prev: ScheduledTransaction[]) =>
+      prev.map((t: ScheduledTransaction) => t.categoryId === id ? { ...t, categoryId: undefined } : t)
+    )
   }, [])
 
   const addSubcategory = useCallback((categoryId: number, subcategoryData: Omit<Subcategory, "id">) => {
@@ -480,6 +500,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteCreditCard = useCallback((id: number) => {
     setCreditCardsState((prev: CreditCard[]) => prev.filter((card: CreditCard) => card.id !== id))
+    // Remove despesas vinculadas (Cascade Delete)
     setCardExpensesState((prev: CardExpense[]) => prev.filter((expense: CardExpense) => expense.cardId !== id))
   }, [])
 
@@ -609,8 +630,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...exampleData.settings,
         nome: currentName || exampleData.settings.nome,
         onboardingCompleted: settings.onboardingCompleted,
-        showGuide: false,
-        activeGuideStep: null,
         isDemoMode: true
       }
     }
@@ -626,9 +645,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSettingsState({
         ...defaultSettings,
         nome: settings.nome, // Previne que o nome seja limpo
-        onboardingCompleted: settings.onboardingCompleted, // Previne volta ao onboarding
-        showGuide: false,
-        activeGuideStep: null
+        onboardingCompleted: settings.onboardingCompleted // Previne volta ao onboarding
       })
       setTransactionsState([])
       setCreditCardsState([])

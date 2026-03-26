@@ -8,6 +8,7 @@ import { AssetCard } from "@/components/asset-card"
 import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
 import { Sidebar } from "@/components/sidebar"
+import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
 import { AssetDialog } from "@/components/asset-dialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -104,9 +105,21 @@ export default function InvestimentosPage() {
                                     </Button>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                    {assets.map((asset) => (
-                                        <AssetCard key={asset.id} asset={asset} totalNetWorth={totalNetWorth} onEdit={() => openEditDialog(asset)} onDelete={() => handleDeleteAsset(asset.id)} />
-                                    ))}
+                                    {assets.length === 0 ? (
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                icon={TrendingUp}
+                                                title="Sua carteira está vazia"
+                                                description="Comece a montar seu patrimônio adicionando seus ativos (Ações, FIIs, Tesouro, etc) para acompanhar rentabilidade e alocação."
+                                                actionLabel="Adicionar Meu Primeiro Ativo"
+                                                onAction={openAddDialog}
+                                            />
+                                        </div>
+                                    ) : (
+                                        assets.map((asset) => (
+                                            <AssetCard key={asset.id} asset={asset} totalNetWorth={totalNetWorth} onEdit={() => openEditDialog(asset)} onDelete={() => handleDeleteAsset(asset.id)} />
+                                        ))
+                                    )}
                                 </div>
                             </div>
 

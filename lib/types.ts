@@ -79,11 +79,11 @@ export type Settings = {
     proximidadeAlerta?: number
     investmentStrategy: InvestmentStrategy
     onboardingCompleted: boolean
-    userFocus?: "finances" | "investments" | "both"
-    activeGuideStep: number | null
-    showGuide: boolean
     activeModules?: Record<string, boolean>
     isDemoMode?: boolean
+    userFocus?: "invest" | "save" | "both"
+    showGuide?: boolean
+    activeGuideStep?: number | null
 }
 
 export type ScheduledTransaction = {

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"
 
 interface Category {
   id: number
@@ -38,6 +39,7 @@ export function CategoryDialog({ open, onOpenChange, category, onSave }: Categor
     budgeted: "",
     color: "emerald",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (category) {
@@ -57,15 +59,21 @@ export function CategoryDialog({ open, onOpenChange, category, onSave }: Categor
     }
   }, [category, open])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave({
-      name: formData.name,
-      percentage: Number.parseFloat(formData.percentage),
-      budgeted: Number.parseFloat(formData.budgeted),
-      color: formData.color,
-    })
-    setFormData({ name: "", percentage: "", budgeted: "", color: "emerald" })
+    setIsSubmitting(true)
+    try {
+      await new Promise(r => setTimeout(r, 400)) // Mimic saving
+      onSave({
+        name: formData.name,
+        percentage: Number.parseFloat(formData.percentage) || 0,
+        budgeted: Number.parseFloat(formData.budgeted) || 0,
+        color: formData.color,
+      })
+      setFormData({ name: "", percentage: "", budgeted: "", color: "emerald" })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -137,15 +145,15 @@ export function CategoryDialog({ open, onOpenChange, category, onSave }: Categor
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              {category ? "Salvar" : "Adicionar"}
+            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[100px]">
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (category ? "Salvar" : "Adicionar")}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   )
 }
