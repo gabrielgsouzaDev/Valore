@@ -8,7 +8,7 @@ import { Sparkles, ArrowRight } from "lucide-react"
 import { calculateInvestmentDistribution } from "@/lib/services"
 import { useApp } from "@/contexts/app-context"
 import { cn } from "@/lib/utils"
-
+import NumberTicker from "@/components/ui/number-ticker"
 import type { Asset } from "@/lib/types"
 
 interface ContributionWidgetProps {
@@ -81,10 +81,7 @@ export function ContributionWidget({ assets, totalNetWorth }: ContributionWidget
                     )}
                   >
                     {rec.amount > 0 ? "+" : ""}
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(rec.amount)}
+                    <NumberTicker value={rec.amount} currency isPrivate={settings.isPrivate} />
                   </span>
                   {rec.amount > 0 && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
                 </div>

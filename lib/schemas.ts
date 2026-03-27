@@ -19,6 +19,8 @@ export const assetSchema = z.object({
     price: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
     bankId: z.number().optional(),
     currentValue: z.number(),
+    ceilingPrice: z.number().optional(),
+    priority: z.number().optional(),
     lastUpdated: z.string().optional(),
 })
 
@@ -39,7 +41,7 @@ export const categorySchema = z.object({
     percentage: z.number().min(0).max(100),
     budgeted: z.number().min(0),
     spent: z.number().min(0),
-    color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Cor inválida"),
+    color: z.string().default("slate"),
     subcategories: z.array(subcategoryWithIdSchema).optional(),
     expanded: z.boolean().optional(),
 })
@@ -87,7 +89,7 @@ export const creditCardSchema = z.object({
     limit: z.number().positive("O limite deve ser positivo"),
     closingDay: z.number().min(1).max(31),
     dueDay: z.number().min(1).max(31),
-    color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Cor inválida"),
+    color: z.string().default("slate"),
     bankId: z.number().optional(),
 })
 
@@ -98,8 +100,8 @@ export const creditCardWithIdSchema = creditCardSchema.merge(idSchema)
  */
 export const bankSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-    type: z.enum(["conta_corrente", "poupanca", "carteira_digital", "corretora", "banco_digital", "outro"]),
-    color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Cor inválida"),
+    type: z.enum(["conta_corrente", "poupanca", "carteira_digital", "corretora", "banco_digital", "banco_tradicional", "outro"]),
+    color: z.string().default("slate"),
     balance: z.number(),
     isMain: z.boolean(),
     notes: z.string().optional(),
@@ -134,6 +136,7 @@ export const settingsSchema = z.object({
     userFocus: z.enum(["invest", "save", "both"]).optional(),
     showGuide: z.boolean().optional(),
     activeGuideStep: z.number().nullable().optional(),
+    isPrivate: z.boolean().optional(),
 })
 
 /**

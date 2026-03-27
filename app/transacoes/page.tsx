@@ -44,6 +44,9 @@ import type { ScheduledTransaction } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { formatCurrency, formatDate } from "@/lib/services"
+import NumberTicker from "@/components/ui/number-ticker"
+import { motion, AnimatePresence } from "framer-motion"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 type TransactionForm = Omit<ScheduledTransaction, "id" | "status">
 
@@ -124,12 +127,31 @@ export default function TransacoesPage() {
         return t
     })
 
-    const agendadasTransactions = processedTransactions.filter(t => t.status === "pendente")
+    const agendadasTransactions = processedTransactions.filter(t => t.status === "pendente" || t.status === "atrasado")
 
     const filteredTransactions = agendadasTransactions
         .filter((t) => filter === "todos" || t.status === filter)
         .filter((t) => typeFilter === "todos" || t.type === typeFilter)
         .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+
+    // Agrupamento temporal inteligente
+    const getGroup = (dueDateStr: string) => {
+        const d = new Date(dueDateStr)
+        d.setHours(0, 0, 0, 0)
+        const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (diffDays === 0) return "hoje"
+        if (diffDays > 0 && diffDays <= 7) return "semana"
+        if (diffDays > 7 && diffDays <= 15) return "quinzena"
+        return "futuro"
+    }
+
+    const groupedTransactions = {
+        hoje: filteredTransactions.filter(t => getGroup(t.dueDate) === "hoje"),
+        semana: filteredTransactions.filter(t => getGroup(t.dueDate) === "semana"),
+        quinzena: filteredTransactions.filter(t => getGroup(t.dueDate) === "quinzena"),
+        futuro: filteredTransactions.filter(t => getGroup(t.dueDate) === "futuro"),
+    }
 
     // ── Resumo Financeiro Agendadas ──
     const agendadasIncome = filteredTransactions.filter(t => t.type === "ganho").reduce((sum, t) => sum + t.amount, 0)
@@ -137,6 +159,23 @@ export default function TransacoesPage() {
     const agendadasBalance = agendadasIncome - agendadasExpenses
 
     // ── ABA HISTÓRICO ─────────────────────────────────────────────
+    // ── PROJEÇÃO DE FLUXO DE CAIXA (30 DIAS) ──────────────────────
+    const projectionData = Array.from({ length: 30 }).map((_, i) => {
+        const date = new Date(today)
+        date.setDate(today.getDate() + i)
+        const dateStr = date.toISOString().split("T")[0]
+
+        // Saldo base (considerando pendentes e atrasados acumulados)
+        const dayTransactions = filteredTransactions.filter(t => (t.status === "pendente" || t.status === "atrasado") && t.dueDate <= dateStr)
+        const balance = dayTransactions.reduce((acc, t) => acc + (t.type === "ganho" ? t.amount : -t.amount), 0)
+
+        return {
+            name: date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+            saldo: balance,
+            originalDate: dateStr
+        }
+    })
+
     const getPeriodMs = (): number => {
         if (periodFilter === "7d") return 7 * 24 * 60 * 60 * 1000
         if (periodFilter === "30d") return 30 * 24 * 60 * 60 * 1000
@@ -246,16 +285,22 @@ export default function TransacoesPage() {
     }
 
     // ── TRANSACTION CARD (reaproveitado nas 2 abas) ───────────────
-    const TransactionRow = ({ transaction, }: { transaction: ScheduledTransaction & { status: "pendente" | "pago" | "atrasado" } }) => {
+    const TransactionRow = ({ transaction, index }: { transaction: ScheduledTransaction & { status: "pendente" | "pago" | "atrasado" }, index?: number }) => {
         const bank = transaction.bankId ? getBankById(transaction.bankId) : null
         const categoryName = getCategoryName(transaction.categoryId)
+        const isAtrasado = transaction.status === "atrasado"
+
         return (
-            <div
+            <motion.div
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: (index || 0) * 0.05 }}
                 className={cn(
                     "flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border transition-all gap-3",
-                    transaction.status === "atrasado"
-                        ? "bg-muted/80 border-border"
-                        : "bg-muted/40 border-border/50 hover:border-border"
+                    isAtrasado
+                        ? "bg-danger/5 border-danger/20 animate-pulse-critical"
+                        : "bg-card border-border/50 hover:border-primary/30"
                 )}
             >
                 <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
@@ -267,37 +312,37 @@ export default function TransacoesPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-foreground text-sm truncate">{transaction.name}</span>
+                            <span className="font-bold text-foreground text-sm sm:text-base truncate tracking-tight">{transaction.name}</span>
                             {transaction.recurrence !== "unico" && (
-                                <span className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                     <Repeat className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                     {getRecurrenceLabel(transaction.recurrence)}
                                 </span>
                             )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-muted-foreground">{formatDate(transaction.dueDate)}</span>
+                            <span className="text-xs text-muted-foreground font-medium">{formatDate(transaction.dueDate)}</span>
                             {bank && (
-                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-muted rounded text-accent flex items-center gap-1">
+                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-accent/10 rounded text-accent flex items-center gap-1 font-semibold">
                                     <Building2 className="h-2.5 w-2.5" />{bank.name}
                                 </span>
                             )}
                             {categoryName && (
-                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{categoryName}</span>
+                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground font-medium">{categoryName}</span>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
-                    <div className="flex items-center gap-2">
-                        <span className={cn("text-sm sm:text-base font-bold",
+                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-6 border-t sm:border-t-0 border-border/10 pt-2 sm:pt-0">
+                    <div className="flex items-center gap-3">
+                        <span className={cn("text-base sm:text-lg font-black tracking-tighter",
                             transaction.type === "ganho" ? "text-success" : "text-danger",
                             settings.isPrivate && "blur-md select-none pointer-events-none opacity-40"
                         )}>
                             {transaction.type === "ganho" ? "+" : "-"}{formatCurrency(transaction.amount)}
                         </span>
-                        <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full capitalize", getStatusColor(transaction.status))}>
+                        <span className={cn("text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full capitalize font-bold tracking-widest uppercase", getStatusColor(transaction.status))}>
                             {transaction.status}
                         </span>
                     </div>
@@ -305,20 +350,20 @@ export default function TransacoesPage() {
                     {showActions && (
                         <div className="flex gap-1">
                             {transaction.status !== "pago" && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-success transition-colors duration-150 rounded-md" onClick={() => markAsPaid(transaction.id)}>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-success/20 hover:text-success transition-all rounded-xl" onClick={() => markAsPaid(transaction.id)}>
                                     <Check className="h-4 w-4" />
                                 </Button>
                             )}
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md" onClick={() => handleEdit(transaction)}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-primary/20 hover:text-primary transition-all rounded-xl" onClick={() => handleEdit(transaction)}>
                                 <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md" onClick={() => { setTransactionToDelete(transaction.id); setConfirmOpen(true) }}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-danger/20 hover:text-danger transition-all rounded-xl" onClick={() => { setTransactionToDelete(transaction.id); setConfirmOpen(true) }}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         )
     }
 
@@ -429,53 +474,60 @@ export default function TransacoesPage() {
 
             <div className="p-4 sm:p-6 lg:p-8">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                    <Card className="bg-card border-border">
-                        <CardContent className="p-3 sm:p-4">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                    <Card className="bg-card border-border border-l-4 border-l-success shadow-sm overflow-hidden group">
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-success/10 rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
+                                </div>
                                 <div className="min-w-0">
-                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                                         {activeTab === "agendadas" ? "Entradas Previstas" : "Entradas Realizadas"}
                                     </p>
-                                    <p className={cn("text-sm sm:text-xl font-bold text-success truncate", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                                        {formatCurrency(activeTab === "agendadas" ? agendadasIncome : historyIncome)}
-                                    </p>
+                                    <div className={cn("text-lg sm:text-2xl font-black text-success flex items-baseline gap-1", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        <span className="text-sm font-bold opacity-60">R$</span>
+                                        <NumberTicker value={activeTab === "agendadas" ? agendadasIncome : historyIncome} />
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-card border-border">
-                        <CardContent className="p-3 sm:p-4">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" /></div>
+                    <Card className="bg-card border-border border-l-4 border-l-danger shadow-sm overflow-hidden group">
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-danger/10 rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 text-danger" />
+                                </div>
                                 <div className="min-w-0">
-                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                                         {activeTab === "agendadas" ? "Saídas Previstas" : "Saídas Realizadas"}
                                     </p>
-                                    <p className={cn("text-sm sm:text-xl font-bold text-danger truncate", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                                        {formatCurrency(activeTab === "agendadas" ? agendadasExpenses : historyExpenses)}
-                                    </p>
+                                    <div className={cn("text-lg sm:text-2xl font-black text-danger flex items-baseline gap-1", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        <span className="text-sm font-bold opacity-60">R$</span>
+                                        <NumberTicker value={activeTab === "agendadas" ? agendadasExpenses : historyExpenses} />
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="bg-card border-border">
-                        <CardContent className="p-3 sm:p-4">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"}>
-                                    <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-danger"} />
+                    <Card className="bg-card border-border border-l-4 border-l-primary shadow-sm overflow-hidden group">
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                                <div className={cn("p-3 rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "bg-success/10" : "bg-danger/10")}>
+                                    <Calendar className={cn("h-5 w-5 sm:h-6 sm:w-6", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-danger")} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                                         {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
                                     </p>
-                                    <p className={cn("text-sm sm:text-xl font-bold truncate",
+                                    <div className={cn("text-lg sm:text-2xl font-black flex items-baseline gap-1",
                                         (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-danger",
                                         settings.isPrivate && "blur-md select-none pointer-events-none opacity-40"
                                     )}>
-                                        {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
-                                    </p>
+                                        <span className="text-sm font-bold opacity-60">R$</span>
+                                        <NumberTicker value={activeTab === "agendadas" ? agendadasBalance : historyBalance} />
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -538,6 +590,59 @@ export default function TransacoesPage() {
                             </div>
                         </div>
 
+                        {/* Projeção de Fluxo de Caixa */}
+                        <Card className="bg-card/50 backdrop-blur-sm border-border overflow-hidden">
+                            <CardContent className="p-4 sm:p-6">
+                                <div className="mb-4">
+                                    <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                        <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                                        Projeção de Fluxo (30 dias)
+                                    </h3>
+                                    <p className="text-[10px] text-muted-foreground mt-1 font-medium italic opacity-70">
+                                        *Considerando apenas transações pendentes e agendadas.
+                                    </p>
+                                </div>
+                                <div className="h-[120px] w-full mt-4">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={projectionData}>
+                                            <defs>
+                                                <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <Tooltip
+                                                content={(props) => {
+                                                    const { active, payload } = props
+                                                    if (active && payload && payload.length) {
+                                                        const val = (payload[0].value ?? 0) as number
+                                                        const label = (payload[0].payload as { name: string }).name
+                                                        return (
+                                                            <div className="bg-card border border-border p-2 rounded-lg shadow-xl text-[10px] font-bold">
+                                                                <p className="text-muted-foreground">{label}</p>
+                                                                <p className={val >= 0 ? "text-success" : "text-danger"}>
+                                                                    {formatCurrency(val)}
+                                                                </p>
+                                                            </div>
+                                                        )
+                                                    }
+                                                    return null
+                                                }}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="saldo"
+                                                stroke="var(--color-primary)"
+                                                strokeWidth={3}
+                                                fillOpacity={1}
+                                                fill="url(#colorSaldo)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         {filteredTransactions.length === 0 ? (
                             <EmptyState
                                 icon={ListTodo}
@@ -547,10 +652,32 @@ export default function TransacoesPage() {
                                 onAction={() => setDialogOpen(true)}
                             />
                         ) : (
-                            <div className="space-y-2 sm:space-y-3">
-                                {filteredTransactions.map((transaction) => (
-                                    <TransactionRow key={transaction.id} transaction={transaction} />
-                                ))}
+                            <div className="space-y-8">
+                                <AnimatePresence mode="popLayout">
+                                    {Object.entries(groupedTransactions).map(([key, groupItems]) => {
+                                        if (groupItems.length === 0) return null;
+                                        const labels = { hoje: "Hoje", semana: "Esta Semana", quinzena: "Próxima Quinzena", futuro: "Futuro" };
+                                        return (
+                                            <div key={key} className="space-y-3">
+                                                <div className="flex items-center gap-2 px-1">
+                                                    <span className="relative flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                    </span>
+                                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground">
+                                                        {labels[key as keyof typeof labels]}
+                                                    </h3>
+                                                    <div className="h-px bg-border/40 flex-1 ml-2"></div>
+                                                </div>
+                                                <div className="space-y-2 sm:space-y-3">
+                                                    {groupItems.map((transaction, idx) => (
+                                                        <TransactionRow key={transaction.id} transaction={transaction} index={idx} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </AnimatePresence>
                             </div>
                         )}
                     </div>
@@ -585,21 +712,49 @@ export default function TransacoesPage() {
                             </Select>
                         </div>
 
-                        {/* Resumo do período */}
+                        {/* Resumo do período Bento */}
                         {historyTransactions.length > 0 && (
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-success/5 border border-success/20 rounded-xl p-3 sm:p-4">
-                                    <p className="text-xs text-muted-foreground mb-1">Entradas no período</p>
-                                    <p className={cn("text-base sm:text-xl font-bold text-success", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                                        {formatCurrency(historyIncome)}
-                                    </p>
-                                </div>
-                                <div className="bg-danger/5 border border-danger/20 rounded-xl p-3 sm:p-4">
-                                    <p className="text-xs text-muted-foreground mb-1">Saídas no período</p>
-                                    <p className={cn("text-base sm:text-xl font-bold text-danger", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                                        {formatCurrency(historyExpenses)}
-                                    </p>
-                                </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <Card className="sm:col-span-2 bg-success/5 border-success/20">
+                                    <CardContent className="p-4 flex flex-col justify-between h-full">
+                                        <p className="text-xs font-bold text-success/70 uppercase tracking-widest mb-4">Entradas no período</p>
+                                        <div className={cn("text-2xl sm:text-3xl font-black text-success flex items-baseline gap-1", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                            <span className="text-base font-bold opacity-60">R$</span>
+                                            <NumberTicker value={historyIncome} />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="sm:col-span-2 bg-danger/5 border-danger/20">
+                                    <CardContent className="p-4 flex flex-col justify-between h-full">
+                                        <p className="text-xs font-bold text-danger/70 uppercase tracking-widest mb-4">Saídas no período</p>
+                                        <div className={cn("text-2xl sm:text-3xl font-black text-danger flex items-baseline gap-1", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                            <span className="text-base font-bold opacity-60">R$</span>
+                                            <NumberTicker value={historyExpenses} />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="bg-card border-border sm:col-span-1">
+                                    <CardContent className="p-4">
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Qtd. Transações</p>
+                                        <p className="text-xl font-black">{historyTransactions.length}</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="bg-card border-border sm:col-span-3">
+                                    <CardContent className="p-4 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Saldo Líquido</p>
+                                            <p className={cn("text-xl font-black", historyBalance >= 0 ? "text-success" : "text-danger")}>
+                                                {formatCurrency(historyBalance)}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Média por Transação</p>
+                                            <p className="text-sm font-bold opacity-80">
+                                                {formatCurrency(historyTransactions.length > 0 ? historyIncome / historyTransactions.length : 0)}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         )}
 

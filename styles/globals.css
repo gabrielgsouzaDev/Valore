@@ -115,11 +115,22 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+@layer utilities {
+  .animate-pulse-critical {
+    animation: pulse-critical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  @keyframes pulse-critical {
+
+    0%,
+    100% {
+      opacity: 1;
+      filter: drop-shadow(0 0 0px var(--color-danger));
+    }
+
+    50% {
+      opacity: 0.8;
+      filter: drop-shadow(0 0 8px var(--color-danger));
+    }
   }
 }

@@ -29,6 +29,7 @@ import {
   Loader2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import NumberTicker from "@/components/ui/number-ticker"
 
 const cardColors = [
   { value: "violet", label: "Roxo", class: "from-violet-600 to-violet-800" },
@@ -226,12 +227,11 @@ export default function CartoesPage() {
           </div>
           <div className="text-left sm:text-right flex flex-col justify-center">
             <p className="text-xs sm:text-sm text-muted-foreground font-medium">Dívida Total</p>
-            <p className={cn("text-xl sm:text-3xl font-bold tracking-tight",
-              totalDebt > 0 ? "text-danger" : "text-success",
-              settings.isPrivate && "blur-xl select-none pointer-events-none opacity-40"
+            <div className={cn("text-xl sm:text-3xl font-bold tracking-tight",
+              totalDebt > 0 ? "text-danger" : "text-success"
             )}>
-              {formatCurrency(totalDebt)}
-            </p>
+              <NumberTicker value={totalDebt} currency isPrivate={settings.isPrivate} />
+            </div>
           </div>
         </div>
       </header>
@@ -259,9 +259,9 @@ export default function CartoesPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Fatura Atual</p>
-                <p className={cn("text-sm sm:text-xl font-bold text-danger", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                  {formatCurrency(currentMonthInvoice)}
-                </p>
+                <div className={cn("text-sm sm:text-xl font-bold text-danger")}>
+                  <NumberTicker value={currentMonthInvoice} currency isPrivate={settings.isPrivate} />
+                </div>
               </div>
             </div>
           </Card>
@@ -273,9 +273,9 @@ export default function CartoesPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Próxima Fatura</p>
-                <p className={cn("text-sm sm:text-xl font-bold text-warning", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                  {formatCurrency(nextMonthInvoice)}
-                </p>
+                <div className={cn("text-sm sm:text-xl font-bold text-warning")}>
+                  <NumberTicker value={nextMonthInvoice} currency isPrivate={settings.isPrivate} />
+                </div>
               </div>
             </div>
           </Card>
@@ -480,7 +480,7 @@ export default function CartoesPage() {
                               {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
                             </span>
                           </div>
-                          <span className="text-sm font-semibold text-success">
+                          <span className={cn("text-sm font-semibold text-success", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
                             {formatCurrency(installmentValue)}/mes
                           </span>
                         </div>
@@ -565,7 +565,7 @@ export default function CartoesPage() {
                                   {card?.name || "—"}
                                 </span>
                               </td>
-                              <td className="p-3 sm:p-4 text-right text-foreground text-sm">
+                              <td className={cn("p-3 sm:p-4 text-right text-foreground text-sm", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
                                 {formatCurrency(expense.totalAmount)}
                               </td>
                               <td className="p-3 sm:p-4 text-center">
@@ -573,7 +573,7 @@ export default function CartoesPage() {
                                   {expense.installments === 1 ? "À vista" : `${expense.installments}x`}
                                 </span>
                               </td>
-                              <td className="p-3 sm:p-4 text-right font-semibold text-success text-sm">
+                              <td className={cn("p-3 sm:p-4 text-right font-semibold text-success text-sm", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
                                 {formatCurrency(installmentValue)}
                               </td>
                               <td className="p-3 sm:p-4 text-right">
@@ -643,7 +643,7 @@ export default function CartoesPage() {
                           <div key={i} className="text-xs sm:text-sm">
                             <div className="flex justify-between gap-2">
                               <span className="text-muted-foreground truncate flex-1 mr-2">{exp.description}</span>
-                              <span className="text-foreground font-medium flex-shrink-0">
+                              <span className={cn("text-foreground font-medium flex-shrink-0", settings.isPrivate && "blur-sm select-none pointer-events-none opacity-40")}>
                                 {formatCurrency(exp.amount)}
                               </span>
                             </div>

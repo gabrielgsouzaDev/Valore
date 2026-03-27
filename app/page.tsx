@@ -154,7 +154,9 @@ export default function DashboardPage() {
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40">
                         <div>
                           <p className="text-[9px] text-muted-foreground font-bold uppercase">Liquidez Imediata</p>
-                          <p className="text-sm font-bold text-foreground">{fmt(totalNetWorth * 0.15)}</p>
+                          <div className={cn("text-sm font-bold text-foreground")}>
+                            <NumberTicker value={totalNetWorth * 0.15} currency isPrivate={isPrivate} />
+                          </div>
                         </div>
                         <div>
                           <p className="text-[9px] text-muted-foreground font-bold uppercase">Diversificação</p>
@@ -219,9 +221,9 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-[9px] text-muted-foreground font-bold uppercase">Saldo</p>
-                            <p className={cn("text-xs font-bold", balance >= 0 ? "text-success" : "text-danger")}>
-                              {fmt(balance)}
-                            </p>
+                            <div className={cn("text-xs font-bold", balance >= 0 ? "text-success" : "text-danger")}>
+                              <NumberTicker value={balance} currency isPrivate={isPrivate} />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -333,7 +335,11 @@ export default function DashboardPage() {
                         {upcomingTransactions.slice(0, 2).map((t) => (
                           <div key={t.id} className="flex items-center justify-between gap-2 overflow-hidden">
                             <span className="text-[10px] font-medium text-muted-foreground truncate flex-1">{t.name}</span>
-                            <span className={`text-[10px] font-bold ${t.type === "ganho" ? "text-success" : "text-danger"}`}>
+                            <span className={cn(
+                              "text-[10px] font-bold",
+                              t.type === "ganho" ? "text-success" : "text-danger",
+                              isPrivate && "blur-sm select-none pointer-events-none opacity-40"
+                            )}>
                               {fmt(t.amount)}
                             </span>
                           </div>

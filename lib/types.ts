@@ -129,7 +129,7 @@ export type InvoiceProjection = {
     expenses: { description: string; amount: number; installment: string }[]
 }
 
-export type BankType = "conta_corrente" | "poupanca" | "carteira_digital" | "corretora" | "banco_digital" | "outro"
+export type BankType = "conta_corrente" | "poupanca" | "carteira_digital" | "corretora" | "banco_digital" | "banco_tradicional" | "outro"
 
 export type Bank = {
     id: number

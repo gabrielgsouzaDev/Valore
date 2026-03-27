@@ -8,6 +8,7 @@ import { TrendingUp, AlertTriangle, Pencil, Trash2 } from "lucide-react"
 
 import { getAssetBarColor } from "@/lib/services"
 import { cn } from "@/lib/utils"
+import NumberTicker from "@/components/ui/number-ticker"
 import type { Asset } from "@/lib/types"
 
 interface AssetCardProps {
@@ -112,12 +113,9 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
         <div className="space-y-4">
           <div className="flex items-baseline justify-between">
             <div>
-              <p className={cn("text-3xl font-bold text-foreground", isPrivate && "blur-xl select-none pointer-events-none opacity-40")}>
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(asset.currentValue)}
-              </p>
+              <div className={cn("text-3xl font-bold text-foreground")}>
+                <NumberTicker value={asset.currentValue} currency isPrivate={isPrivate} />
+              </div>
               <p className={cn("text-sm text-muted-foreground mt-1", isPrivate && "blur-sm select-none pointer-events-none opacity-60")}>
                 {asset.quantity} {asset.name === "Bitcoin" ? "BTC" : "cotas"} ×{" "}
                 {new Intl.NumberFormat("pt-BR", {

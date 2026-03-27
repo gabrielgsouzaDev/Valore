@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import NumberTicker from "@/components/ui/number-ticker"
 import type { Category, Subcategory } from "@/lib/types"
 
 export default function EconomiaPage() {
@@ -105,12 +106,11 @@ export default function EconomiaPage() {
           </div>
           <div className="text-left sm:text-right flex flex-col justify-center">
             <p className="text-xs sm:text-sm text-muted-foreground font-medium">Saldo Restante</p>
-            <p className={cn("text-xl sm:text-3xl font-bold tracking-tight",
-              remaining >= 0 ? "text-success" : "text-danger",
-              settings.isPrivate && "blur-xl select-none pointer-events-none opacity-40"
+            <div className={cn("text-xl sm:text-3xl font-bold tracking-tight",
+              remaining >= 0 ? "text-success" : "text-danger"
             )}>
-              {formatCurrency(remaining)}
-            </p>
+              <NumberTicker value={remaining} currency isPrivate={settings.isPrivate} />
+            </div>
           </div>
         </div>
       </header>
@@ -123,9 +123,9 @@ export default function EconomiaPage() {
             {/* Income Card */}
             <Card className="bg-card border-border p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-4">Renda Mensal</h3>
-              <p className={cn("text-2xl sm:text-4xl font-bold text-primary", settings.isPrivate && "blur-xl select-none pointer-events-none opacity-40")}>
-                {formatCurrency(settings.rendaMensal)}
-              </p>
+              <div className="text-2xl sm:text-4xl font-bold text-primary">
+                <NumberTicker value={settings.rendaMensal} currency isPrivate={settings.isPrivate} />
+              </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">Ajuste nas configurações</p>
             </Card>
 
