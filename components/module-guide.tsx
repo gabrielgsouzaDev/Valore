@@ -209,7 +209,7 @@ export function ModuleGuide() {
                                     onClick={handleNext}
                                     className={cn(
                                         "flex-1 bg-primary hover:bg-primary/90 font-bold group shadow-lg shadow-primary/20",
-                                        currentStep === content.steps.length - 1 && "bg-success hover:bg-success/90"
+                                        currentStep === content.steps.length - 1 && "bg-success text-white hover:bg-success/90"
                                     )}
                                 >
                                     {currentStep === content.steps.length - 1 ? (
