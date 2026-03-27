@@ -35,12 +35,32 @@ const cardColors = [
   { value: "violet", label: "Roxo", class: "from-violet-600 to-violet-800" },
   { value: "orange", label: "Laranja", class: "from-orange-500 to-orange-700" },
   { value: "emerald", label: "Verde", class: "from-emerald-500 to-emerald-700" },
-  { value: "blue", label: "Azul", class: "from-blue-500 to-blue-700" },
+  { value: "blue", label: "Azul Marine", class: "from-blue-600 to-blue-900" },
   { value: "rose", label: "Rosa", class: "from-rose-500 to-rose-700" },
   { value: "cyan", label: "Ciano", class: "from-cyan-500 to-cyan-700" },
-  { value: "amber", label: "Ambar", class: "from-amber-500 to-amber-700" },
-  { value: "slate", label: "Cinza", class: "from-slate-600 to-slate-800" },
+  { value: "amber", label: "Gold Premium", class: "from-amber-400 via-amber-600 to-amber-700" },
+  { value: "slate", label: "Silver Metal", class: "from-slate-300 via-slate-500 to-slate-600" },
+  { value: "zinc", label: "Obsidian Black", class: "from-zinc-800 via-zinc-900 to-black" },
+  { value: "indigo", label: "Indigo Deep", class: "from-indigo-600 to-indigo-900" },
 ]
+
+const CardChip = () => (
+  <div className="w-10 h-8 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-500 relative overflow-hidden border border-white/20 shadow-inner">
+    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-0.5 opacity-30">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div key={i} className="border-[0.5px] border-black/40" />
+      ))}
+    </div>
+    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-black/20" />
+    <div className="absolute top-0 left-1/2 w-[1px] h-full bg-black/20" />
+  </div>
+)
+
+const ContactlessIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5 opacity-60 fill-current" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.06 16.5a.5.5 0 01-.1-.7 7 7 0 010-9.6.5.5 0 11.7.7 6 6 0 000 8.2.5.5 0 01-.6.7zm2.47-1.41a.5.5 0 01-.06-.7 5 5 0 010-6.78.5.5 0 11.7.7 4 4 0 000 5.38.5.5 0 01-.64.7zm2.48-1.42a.5.5 0 01-.02-.7 3 3 0 010-3.94.5.5 0 11.71.7 2 2 0 000 2.54.5.5 0 01-.69.7zM15 12a1 1 0 11-2 0 1 1 0 012 0z" />
+  </svg>
+)
 
 const getColorClass = (color: string) => {
   return cardColors.find((c) => c.value === color)?.class || "from-slate-600 to-slate-800"
@@ -298,16 +318,18 @@ export default function CartoesPage() {
                       <div
                         key={card.id}
                         className={cn(
-                          "relative rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gradient-to-br text-white overflow-hidden",
+                          "relative rounded-2xl p-5 sm:p-7 bg-gradient-to-br text-white overflow-hidden shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98] group/card",
                           getColorClass(card.color),
                         )}
                       >
-                        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 w-8 sm:w-10 h-6 sm:h-8 rounded bg-amber-300/80" />
+                        {/* Realistic Card Texture */}
+                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
-                        <div className="relative z-10">
-                          <div className="flex items-center justify-between mb-4 sm:mb-6">
-                            <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 opacity-80" />
-                            <div className="flex gap-1">
+                        <div className="relative z-10 h-full flex flex-col">
+                          <div className="flex items-center justify-between mb-8">
+                            <CardChip />
+                            <div className="flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -327,36 +349,34 @@ export default function CartoesPage() {
                             </div>
                           </div>
 
-                          <h4 className="text-base sm:text-xl font-bold mb-1 truncate">{card.name}</h4>
-                          <div className="flex items-center gap-2 mb-3 sm:mb-4 flex-wrap">
-                            <p className="text-xs sm:text-sm opacity-70">
-                              Fecha dia {card.closingDay} | Vence dia {card.dueDay}
-                            </p>
-                            {bank && (
-                              <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-white/20 rounded flex items-center gap-1">
-                                <Building2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                {bank.name}
-                              </span>
-                            )}
+                          <div className="mb-8">
+                            <h4 className="text-xl sm:text-2xl font-bold tracking-widest mb-1 truncate uppercase">
+                              {card.name}
+                            </h4>
+                            <div className="flex items-center gap-4">
+                              <p className="text-[10px] font-mono opacity-60 tracking-[0.2em]">•••• •••• •••• 4022</p>
+                              <ContactlessIcon />
+                            </div>
                           </div>
 
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <div className="flex justify-between text-xs sm:text-sm">
-                              <span className="opacity-70">Limite usado</span>
-                              <span className="font-semibold">{usedPercent.toFixed(0)}%</span>
+                          <div className="mt-auto space-y-3">
+                            <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                              <span className="opacity-60 uppercase tracking-widest font-bold">Vence em</span>
+                              <span className="opacity-60 uppercase tracking-widest font-bold">Limite Disponível</span>
                             </div>
-                            <div className="h-1.5 sm:h-2 bg-black/20 rounded-full overflow-hidden">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-black">DIA {card.dueDay}</span>
+                              <span className="text-lg font-black">{formatCurrency(available)}</span>
+                            </div>
+
+                            <div className="h-1 bg-black/20 rounded-full overflow-hidden">
                               <div
                                 className={cn(
-                                  "h-full rounded-full transition-all",
-                                  usedPercent > 80 ? "bg-rose-400" : "bg-white/80",
+                                  "h-full rounded-full transition-all duration-1000",
+                                  usedPercent > 80 ? "bg-rose-400" : "bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]",
                                 )}
                                 style={{ width: `${Math.min(usedPercent, 100)}%` }}
                               />
-                            </div>
-                            <div className="flex justify-between text-xs sm:text-sm">
-                              <span className="opacity-70">Disponivel</span>
-                              <span className="font-bold">{formatCurrency(available)}</span>
                             </div>
                           </div>
 

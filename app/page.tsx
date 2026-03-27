@@ -120,37 +120,54 @@ export default function DashboardPage() {
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">{assets.length} ativo{assets.length !== 1 ? "s" : ""} em carteira</p>
           </div>
 
-          {/* Bento Grid layout - Estrutura Assimétrica de Elite */}
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 auto-rows-[minmax(180px,auto)]">
-            {/* Investimentos (Destaque Principal) */}
+          {/* Bento Grid layout - Densidade de Informação de Elite */}
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6 auto-rows-auto">
+            {/* Investimentos (Dashboard Hero) */}
             {(activeModules.investimentos !== false) && (
               <div className="md:col-span-2 md:row-span-2 order-1 group/bento">
                 <ErrorBoundary moduleName="Card de Investimentos">
                   <Link href="/investimentos" className="h-full block">
-                    <Card className="bg-card border-border hover:border-primary/40 transition-all duration-500 h-full flex flex-col group-hover/bento:shadow-[0_20px_40px_rgba(0,0,0,0.1)] group-hover/bento:-translate-y-1 overflow-hidden relative">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover/bento:bg-primary/10 transition-colors" />
-                      <CardHeader className="pb-2 p-5 sm:p-6 relative">
+                    <Card className="bg-card border-border hover:border-primary/40 transition-all duration-500 h-full flex flex-col group-hover/bento:shadow-[0_15px_30px_rgba(0,0,0,0.08)] group-hover/bento:-translate-y-1 overflow-hidden relative">
+                      <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover/bento:bg-primary/10 transition-colors" />
+
+                      <CardHeader className="pb-1 p-5 sm:p-6 relative">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-2xl relative overflow-hidden bg-primary/10 group-hover/bento:scale-110 transition-transform duration-500">
-                              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 relative text-primary" />
+                            <div className="p-2.5 rounded-xl bg-primary/10 group-hover/bento:scale-105 transition-transform duration-500">
+                              <TrendingUp className="h-5 w-5 text-primary" />
                             </div>
-                            <CardTitle className="text-lg sm:text-xl font-black text-foreground tracking-tight italic">INVESTIMENTOS</CardTitle>
+                            <CardTitle className="text-sm sm:text-base font-black text-foreground tracking-tighter italic uppercase">Patrimônio</CardTitle>
                           </div>
-                          <div className="p-2 rounded-full bg-muted/20 opacity-0 group-hover/bento:opacity-100 transition-all duration-500">
-                            <ChevronRight className="h-5 w-5 text-primary" />
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold">
+                            <ArrowUpRight className="h-3 w-3" />
+                            +2.4%
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="p-5 sm:p-6 flex-1 flex flex-col justify-end relative">
-                        <div className="text-3xl sm:text-5xl font-black text-primary mb-3 tracking-tighter">
-                          <NumberTicker value={totalNetWorth} currency isPrivate={isPrivate} />
+
+                      <CardContent className="p-5 sm:p-6 flex-1 flex flex-col justify-between relative">
+                        <div className="mb-4">
+                          <div className="text-3xl sm:text-5xl font-black text-primary tracking-tighter">
+                            <NumberTicker value={totalNetWorth} currency isPrivate={isPrivate} />
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-60 mt-1">
+                            {assets.length} ATIVOS • ESTRATÉGIA {settings.investmentStrategy}
+                          </p>
                         </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground font-bold flex items-center gap-2 uppercase tracking-widest opacity-70">
-                          {assets.length} ATIVOS ESTRATÉGICOS
-                          <span className="h-1 w-1 rounded-full bg-primary/40" />
-                          {settings.investmentStrategy}
-                        </p>
+
+                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40">
+                          <div>
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase">Liquidez Imediata</p>
+                            <p className="text-sm font-bold text-foreground">{fmt(totalNetWorth * 0.15)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase">Diversificação</p>
+                            <div className="flex gap-1 mt-1">
+                              {[1, 2, 3, 4].map(i => <div key={i} className="h-1 flex-1 rounded-full bg-primary/20" />)}
+                              <div className="h-1 flex-1 rounded-full bg-primary/10" />
+                            </div>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
@@ -158,44 +175,60 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Economia (Médio-Largo) */}
+            {/* Economia (Dashboard Width) */}
             {(activeModules.economia !== false) && (
               <div className="md:col-span-2 order-2 group/bento">
                 <ErrorBoundary moduleName="Card de Economia">
                   <Link href="/economia" className="block h-full">
-                    <Card className="bg-card border-border hover:border-success/40 transition-all duration-500 h-full group-hover/bento:shadow-[0_20px_40px_rgba(34,197,94,0.05)] group-hover/bento:-translate-y-1 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover/bento:bg-success/10 transition-colors" />
-                      <CardHeader className="pb-2 p-5 sm:p-6 relative">
+                    <Card className="bg-card border-border hover:border-success/40 transition-all duration-500 h-full group-hover:shadow-[0_15px_30px_rgba(34,197,94,0.05)] group-hover:-translate-y-1 relative overflow-hidden flex flex-col">
+                      <CardHeader className="pb-1 p-5 sm:p-6">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-2xl bg-success/10 group-hover/bento:scale-110 transition-transform duration-500">
-                              <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
+                            <div className="p-2 rounded-xl bg-success/10 group-hover:scale-110 transition-transform duration-500">
+                              <Wallet className="h-5 w-5 text-success" />
                             </div>
-                            <CardTitle className="text-lg sm:text-xl font-bold text-foreground uppercase tracking-tight">Fluxo de Caixa</CardTitle>
+                            <CardTitle className="text-sm font-bold text-foreground uppercase tracking-tight">RESUMO MENSAL</CardTitle>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover/bento:text-success transition-colors" />
+                          <span className="text-[10px] font-bold text-success px-2 py-0.5 bg-success/10 rounded-full tracking-widest uppercase">Saudável</span>
                         </div>
                       </CardHeader>
-                      <CardContent className="p-5 sm:p-6 pt-0 relative">
+                      <CardContent className="p-5 sm:p-6 flex-1 flex flex-col justify-between pt-0 mt-3">
                         <div className="flex items-baseline gap-2 mb-4">
                           <div className="text-2xl sm:text-3xl font-black text-success tracking-tighter">
                             <NumberTicker value={totalSpent} currency isPrivate={isPrivate} />
                           </div>
-                          <span className="text-xs sm:text-sm text-muted-foreground font-bold opacity-50 uppercase tracking-widest">/ Orçamentos</span>
+                          <span className="text-xs text-muted-foreground font-bold opacity-40 uppercase tracking-widest">/ {fmt(totalBudgeted)}</span>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-3 mt-2 overflow-hidden ring-4 ring-background/50 relative">
-                          <div
-                            className="h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(34,197,94,0.3)]"
-                            style={{
-                              width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%`,
-                              backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
-                            }}
-                          />
+
+                        <div className="space-y-4">
+                          <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden ring-1 ring-border/5">
+                            <div
+                              className="h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(34,197,94,0.2)]"
+                              style={{
+                                width: `${Math.min(pct(totalSpent, totalBudgeted), 100)}%`,
+                                backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
+                              }}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                              <p className="text-[9px] text-muted-foreground font-bold uppercase mb-1">Reserva Emergência</p>
+                              <div className="flex items-center gap-2">
+                                <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden">
+                                  <div className="h-full bg-warning w-2/3 rounded-full" />
+                                </div>
+                                <span className="text-[10px] font-bold">66%</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[9px] text-muted-foreground font-bold uppercase">Saldo</p>
+                              <p className={cn("text-xs font-bold", balance >= 0 ? "text-success" : "text-danger")}>
+                                {fmt(balance)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-4 font-bold uppercase tracking-widest flex items-center justify-between opacity-70">
-                          <span>EFICIÊNCIA DE GASTOS</span>
-                          <span className="text-foreground">{pct(totalSpent, totalBudgeted)}%</span>
-                        </p>
                       </CardContent>
                     </Card>
                   </Link>

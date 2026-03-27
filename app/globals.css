@@ -21,6 +21,9 @@
   --theme-warning: 190 120 30;
   --theme-danger: 185 50 50;
 
+  --success: rgb(var(--theme-success));
+  --success-foreground: rgb(var(--theme-success-foreground));
+
   /* Fallbacks baseados no tema Paper */
   --fallback-success: 76 140 74;
   --fallback-warning: 190 120 30;
@@ -86,7 +89,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-success: var(--theme-success);
+  --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--theme-warning);
   --color-danger: var(--theme-danger);
