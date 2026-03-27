@@ -6,12 +6,7 @@ import { OnboardingWizard } from "./onboarding-wizard"
 
 export function OnboardingWrapper() {
     const { settings } = useApp()
-    const pathname = usePathname()
-
-    // Ocultar wrapper na Landing Page
-    if (pathname === "/") {
-        return null
-    }
+    // O Wizard será exibido em qualquer rota que não tenha sido completada
 
     // Se o onboarding não foi completado, mostra o Wizard
     if (!settings.onboardingCompleted) {

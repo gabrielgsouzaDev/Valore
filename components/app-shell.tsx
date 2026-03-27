@@ -4,6 +4,7 @@ import type React from "react"
 import { AppProvider, useApp } from "@/contexts/app-context"
 import { InstallPrompt } from "@/components/install-prompt"
 import { OnboardingWrapper } from "@/components/onboarding-wrapper"
+import { ModuleGuide } from "@/components/module-guide"
 import { LoadingScreen } from "@/components/loading-screen"
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/next"
@@ -35,6 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {children}
             </AppContent>
             <OnboardingWrapper />
+            <ModuleGuide />
             <InstallPrompt />
             <Toaster />
             <Analytics />

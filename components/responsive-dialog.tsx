@@ -26,6 +26,7 @@ interface ResponsiveDialogProps {
     description?: string
     children: React.ReactNode
     footer?: React.ReactNode
+    trigger?: React.ReactNode
 }
 
 export function ResponsiveDialog({
@@ -35,12 +36,14 @@ export function ResponsiveDialog({
     description,
     children,
     footer,
+    trigger,
 }: ResponsiveDialogProps) {
     const isMobile = useIsMobile()
 
     if (isMobile) {
         return (
             <Drawer open={open} onOpenChange={onOpenChange}>
+                {trigger && <div onClick={() => onOpenChange(true)}>{trigger}</div>}
                 <DrawerContent className="bg-background border-border text-foreground max-h-[90vh]">
                     <DrawerHeader className="text-left border-b border-border/50 pb-4">
                         <DrawerTitle className="text-lg">{title}</DrawerTitle>
@@ -57,6 +60,7 @@ export function ResponsiveDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
+            {trigger && <div onClick={() => onOpenChange(true)}>{trigger}</div>}
             <DialogContent className="bg-card border-border text-foreground mx-auto max-h-[90vh] overflow-y-auto sm:max-w-md md:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>

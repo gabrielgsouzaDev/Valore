@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { DemoBanner } from "@/components/demo-banner"
 import { useToast } from "@/hooks/use-toast"
@@ -128,6 +129,7 @@ export default function ConfiguracoesPage() {
     action: () => { },
   })
 
+  const router = useRouter()
   const {
     settings,
     updateSettings,
@@ -284,7 +286,7 @@ export default function ConfiguracoesPage() {
           activeGuideStep: null,
           showGuide: false
         })
-        window.location.href = "/"
+        router.push("/")
       }
     })
   }
