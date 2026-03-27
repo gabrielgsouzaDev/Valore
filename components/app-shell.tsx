@@ -7,7 +7,6 @@ import { OnboardingWrapper } from "@/components/onboarding-wrapper"
 import { ModuleGuide } from "@/components/module-guide"
 import { LoadingScreen } from "@/components/loading-screen"
 import { Toaster } from "@/components/ui/toaster"
-import { Analytics } from "@vercel/analytics/next"
 import { motion, AnimatePresence } from "framer-motion"
 import { usePathname } from "next/navigation"
 
@@ -45,7 +44,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {children}
             </AppContent>
             <Toaster />
-            <Analytics />
         </>
     )
 }
