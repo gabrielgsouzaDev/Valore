@@ -16,6 +16,7 @@ export type ThemePreset = {
         muted: string
         mutedForeground: string
         success: string
+        successForeground: string
         warning: string
         danger: string
     }

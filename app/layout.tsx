@@ -55,8 +55,8 @@ export default function RootLayout({
                   const saved = localStorage.getItem('valore-app-data-v1');
                   const themeId = saved ? JSON.parse(saved).settings?.themeId || 'paper' : 'paper';
                   const themePresets = [
-                    { id: 'paper', colors: { background: '250 247 240', card: '255 252 248', border: '220 210 195', primary: '124 73 20', accent: '180 100 40', muted: '238 228 215', mutedForeground: '130 110 85', success: '76 140 74', warning: '190 120 30', danger: '185 50 50' }, mode: 'light' },
-                    { id: 'midnight', colors: { background: '15 23 42', card: '30 41 59', border: '51 65 85', primary: '52 211 153', accent: '34 211 238', muted: '71 85 105', mutedForeground: '160 174 192', success: '52 211 153', warning: '251 191 36', danger: '248 113 113' }, mode: 'dark' }
+                    { id: 'paper', colors: { background: '250 247 240', card: '255 252 248', border: '220 210 195', primary: '124 73 20', accent: '180 100 40', muted: '238 228 215', mutedForeground: '130 110 85', success: '76 140 74', successForeground: '255 255 255', warning: '190 120 30', danger: '185 50 50' }, mode: 'light' },
+                    { id: 'midnight', colors: { background: '15 23 42', card: '30 41 59', border: '51 65 85', primary: '52 211 153', accent: '34 211 238', muted: '71 85 105', mutedForeground: '160 174 192', success: '52 211 153', successForeground: '15 23 42', warning: '251 191 36', danger: '248 113 113' }, mode: 'dark' }
                   ];
                   const theme = themePresets.find(t => t.id === themeId) || themePresets[0];
                   const root = document.documentElement;

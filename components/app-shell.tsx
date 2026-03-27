@@ -8,7 +8,7 @@ import { ModuleGuide } from "@/components/module-guide"
 import { LoadingScreen } from "@/components/loading-screen"
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/next"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { usePathname } from "next/navigation"
 
 function AppContent({ children }: { children: React.ReactNode }) {
@@ -20,16 +20,21 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="flex-1"
-        >
-            {children}
-        </motion.div>
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="flex-1 flex flex-col"
+            >
+                {children}
+                <OnboardingWrapper />
+                <ModuleGuide />
+                <InstallPrompt />
+            </motion.div>
+        </AnimatePresence>
     )
 }
 
@@ -39,9 +44,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <AppContent>
                 {children}
             </AppContent>
-            <OnboardingWrapper />
-            <ModuleGuide />
-            <InstallPrompt />
             <Toaster />
             <Analytics />
         </>

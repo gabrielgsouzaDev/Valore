@@ -26,8 +26,8 @@ export default function NumberTicker({
     const ref = useRef<HTMLSpanElement>(null)
     const motionValue = useMotionValue(direction === "down" ? value : 0)
     const springValue = useSpring(motionValue, {
-        damping: 60,
-        stiffness: 100,
+        damping: 40,
+        stiffness: 80,
     })
     const isInView = useInView(ref, { once: true, margin: "0px" })
 
@@ -57,8 +57,8 @@ export default function NumberTicker({
     return (
         <span
             className={cn(
-                "inline-block tabular-nums text-black dark:text-white tracking-tighter transition-all duration-300",
-                isPrivate && "blur-md select-none pointer-events-none opacity-50",
+                "inline-block tabular-nums text-black dark:text-white tracking-tighter transition-all duration-700",
+                isPrivate && "blur-xl select-none pointer-events-none opacity-40 scale-[0.98]",
                 className,
             )}
             ref={ref}

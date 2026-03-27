@@ -17,6 +17,7 @@
   --theme-muted: 238 228 215;
   --theme-muted-foreground: 130 110 85;
   --theme-success: 76 140 74;
+  --theme-success-foreground: 255 255 255;
   --theme-warning: 190 120 30;
   --theme-danger: 185 50 50;
 
@@ -33,6 +34,7 @@
   --popover: rgb(var(--theme-card));
   --popover-foreground: oklch(0.145 0 0);
   --success: rgb(var(--theme-success));
+  --success-foreground: rgb(var(--theme-success-foreground));
   --warning: rgb(var(--theme-warning));
   --danger: rgb(var(--theme-danger));
   --primary: rgb(var(--theme-primary));
@@ -85,6 +87,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-success: var(--theme-success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--theme-warning);
   --color-danger: var(--theme-danger);
   --color-primary: var(--primary);

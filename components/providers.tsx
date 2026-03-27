@@ -7,7 +7,6 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import { AppProvider } from "@/contexts/app-context"
 import { ThemeProvider } from "./theme-provider"
 import { STORAGE_KEY } from "@/lib/constants"
-import { AnimatePresence } from "framer-motion"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -33,9 +32,7 @@ export function Providers({ children }: { children: ReactNode }) {
         >
             <AppProvider>
                 <ThemeProvider attribute="class" defaultTheme="paper" enableSystem>
-                    <AnimatePresence mode="wait">
-                        {children}
-                    </AnimatePresence>
+                    {children}
                 </ThemeProvider>
             </AppProvider>
         </PersistQueryClientProvider>

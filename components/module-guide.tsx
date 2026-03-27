@@ -11,6 +11,14 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
+// Textos globais para o sistema de guia (Concierge)
+const GUIDE_LABELS = {
+    FINISH: "Entendido",
+    NEXT: "Próximo Passo",
+    DISMISS: "Desativar Concierge",
+    BOAS_VINDAS: "Boas-vindas"
+}
+
 // Conteúdo dos guias por rota - Tom Profissional e de Valor
 const GUIDE_CONTENT: Record<string, { title: string; subtitle: string; icon: any; steps: { text: string; label?: string }[] }> = {
     "/": {
@@ -209,17 +217,17 @@ export function ModuleGuide() {
                                     onClick={handleNext}
                                     className={cn(
                                         "flex-1 bg-primary hover:bg-primary/90 font-bold group shadow-lg shadow-primary/20",
-                                        currentStep === content.steps.length - 1 && "bg-success text-white hover:bg-success/90"
+                                        currentStep === content.steps.length - 1 && "bg-success text-success-foreground hover:bg-success/90"
                                     )}
                                 >
                                     {currentStep === content.steps.length - 1 ? (
                                         <>
-                                            Entendido
+                                            {GUIDE_LABELS.FINISH}
                                             <CheckCircle2 className="ml-2 h-4 w-4" />
                                         </>
                                     ) : (
                                         <>
-                                            Próximo Passo
+                                            {GUIDE_LABELS.NEXT}
                                             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
@@ -231,7 +239,7 @@ export function ModuleGuide() {
                                     onClick={handleDismissForever}
                                     className="text-[10px] text-muted-foreground hover:text-danger hover:underline transition-colors font-medium"
                                 >
-                                    Desativar Concierge
+                                    {GUIDE_LABELS.DISMISS}
                                 </button>
                                 <div className="flex gap-1">
                                     {content.steps.map((_, i) => (

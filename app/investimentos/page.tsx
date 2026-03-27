@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
+import NumberTicker from "@/components/ui/number-ticker"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import type { Asset } from "@/lib/types"
@@ -85,9 +86,9 @@ export default function InvestimentosPage() {
                         </div>
                         <div className="text-left sm:text-right flex flex-col justify-center">
                             <p className="text-xs sm:text-sm text-muted-foreground font-medium">Patrimônio Total</p>
-                            <p className="text-xl sm:text-3xl font-bold tracking-tight text-primary">
-                                {formatCurrency(totalNetWorth)}
-                            </p>
+                            <div className="text-xl sm:text-3xl font-bold tracking-tight text-primary">
+                                <NumberTicker value={totalNetWorth} currency isPrivate={settings.isPrivate} />
+                            </div>
                         </div>
                     </div>
                 </header>
