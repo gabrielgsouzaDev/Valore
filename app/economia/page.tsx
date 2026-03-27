@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Sidebar } from "@/components/sidebar"
 import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
 import { getEconomyBarColor, formatCurrency } from "@/lib/services"
@@ -92,281 +91,289 @@ export default function EconomiaPage() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Sidebar />
-
-      <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
-        <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
-          <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-              <div className="flex flex-col justify-center">
-                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                  Orçamento • Alocação de capital
-                </p>
-              </div>
-            </div>
-            <div className="text-left sm:text-right flex flex-col justify-center">
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Saldo Restante</p>
-              <p className={cn("text-xl sm:text-3xl font-bold tracking-tight", remaining >= 0 ? "text-success" : "text-danger")}>
-                {formatCurrency(remaining)}
+    <>
+      <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
+        <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+            <div className="flex flex-col justify-center">
+              <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
+                Orçamento • Alocação de capital
               </p>
             </div>
           </div>
-        </header>
-        <DemoBanner />
+          <div className="text-left sm:text-right flex flex-col justify-center">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Saldo Restante</p>
+            <p className={cn("text-xl sm:text-3xl font-bold tracking-tight",
+              remaining >= 0 ? "text-success" : "text-danger",
+              settings.isPrivate && "blur-xl select-none pointer-events-none opacity-40"
+            )}>
+              {formatCurrency(remaining)}
+            </p>
+          </div>
+        </div>
+      </header>
+      <DemoBanner />
 
-        <div className="p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-            {/* Main Content */}
-            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-              {/* Income Card */}
-              <Card className="bg-card border-border p-4 sm:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-4">Renda Mensal</h3>
-                <p className="text-2xl sm:text-4xl font-bold text-primary">{formatCurrency(settings.rendaMensal)}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">Ajuste nas configurações</p>
-              </Card>
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+          {/* Main Content */}
+          <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+            {/* Income Card */}
+            <Card className="bg-card border-border p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-4">Renda Mensal</h3>
+              <p className={cn("text-2xl sm:text-4xl font-bold text-primary", settings.isPrivate && "blur-xl select-none pointer-events-none opacity-40")}>
+                {formatCurrency(settings.rendaMensal)}
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">Ajuste nas configurações</p>
+            </Card>
 
-              {/* Categories */}
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base sm:text-lg font-semibold text-foreground">Categorias</h3>
-                  <Button
-                    onClick={openAddCategoryDialog}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
-                  >
-                    <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Nova Categoria</span>
-                    <span className="sm:hidden">Nova</span>
-                  </Button>
-                </div>
+            {/* Categories */}
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">Categorias</h3>
+                <Button
+                  onClick={openAddCategoryDialog}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
+                >
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Nova Categoria</span>
+                  <span className="sm:hidden">Nova</span>
+                </Button>
+              </div>
 
-                <div className="space-y-2 sm:space-y-3">
-                  {categories.length === 0 ? (
-                    <EmptyState
-                      icon={Wallet}
-                      title="Nenhuma categoria de orçamento"
-                      description="Crie categorias como 'Moradia', 'Alimentação' e 'Lazer' para distribuir sua renda mensal e ter controle total dos seus gastos."
-                      actionLabel="Criar Primeira Categoria"
-                      onAction={openAddCategoryDialog}
-                    />
-                  ) : (
-                    categories.map((category) => (
-                      <Card key={category.id} className="bg-card border-border overflow-hidden">
-                        <div className="p-3 sm:p-5">
-                          <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                              <button
-                                onClick={() => toggleCategory(category.id)}
-                                className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                              >
-                                {category.expanded ? (
-                                  <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                                )}
-                              </button>
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
-                                  {category.name}
-                                </h4>
-                                <p className="text-xs sm:text-sm text-muted-foreground">
-                                  {category.percentage}% do orçamento
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 sm:gap-4">
-                              <div className="text-right hidden sm:block">
-                                <p className="font-semibold text-foreground text-sm sm:text-base">
-                                  {formatCurrency(category.spent)}
-                                </p>
-                                <p className="text-xs sm:text-sm text-muted-foreground">
-                                  de {formatCurrency(category.budgeted)}
-                                </p>
-                              </div>
-                              <div className="flex gap-0.5 sm:gap-1">
-                                <Button
-                                  onClick={() => openEditCategoryDialog(category)}
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  onClick={() => handleDeleteCategory(category.id)}
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+              <div className="space-y-2 sm:space-y-3">
+                {categories.length === 0 ? (
+                  <EmptyState
+                    icon={Wallet}
+                    title="Nenhuma categoria de orçamento"
+                    description="Crie categorias como 'Moradia', 'Alimentação' e 'Lazer' para distribuir sua renda mensal e ter controle total dos seus gastos."
+                    actionLabel="Criar Primeira Categoria"
+                    onAction={openAddCategoryDialog}
+                  />
+                ) : (
+                  categories.map((category) => (
+                    <Card key={category.id} className="bg-card border-border overflow-hidden">
+                      <div className="p-3 sm:p-5">
+                        <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                            <button
+                              onClick={() => toggleCategory(category.id)}
+                              className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                            >
+                              {category.expanded ? (
+                                <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                              )}
+                            </button>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                                {category.name}
+                              </h4>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                {category.percentage}% do orçamento
+                              </p>
                             </div>
                           </div>
-
-                          <div className="sm:hidden mb-2 text-right">
-                            <p className="font-semibold text-foreground text-sm">
-                              {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
-                            </p>
-                          </div>
-
-                          <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{
-                                width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
-                                backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
-                              }}
-                            />
-                          </div>
-
-                          {/* Subcategories */}
-                          {category.expanded && (
-                            <div className="mt-3 sm:mt-4 pl-4 sm:pl-8 space-y-2 sm:space-y-3 border-l-2 border-border">
-                              {category.subcategories?.map((sub) => (
-                                <div key={sub.id} className="space-y-1.5 sm:space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
-                                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                      <span
-                                        className={cn(
-                                          "text-[10px] sm:text-xs font-medium",
-                                          sub.spent > sub.budgeted ? "text-danger" : "text-success",
-                                        )}
-                                      >
-                                        {formatCurrency(sub.spent)}
-                                      </span>
-                                      <Button
-                                        onClick={() => {
-                                          setEditingSubcategory({ categoryId: category.id, subcategory: sub })
-                                          setSubcategoryDialogOpen(true)
-                                        }}
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        onClick={() => handleDeleteSubcategory(category.id, sub.id)}
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
-                                    <div
-                                      className="h-full rounded-full transition-all duration-500"
-                                      style={{
-                                        width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
-                                        backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
+                          <div className="flex items-center gap-2 sm:gap-4">
+                            <div className="text-right hidden sm:block">
+                              <p className={cn("font-semibold text-foreground text-sm sm:text-base", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                {formatCurrency(category.spent)}
+                              </p>
+                              <p className={cn("text-xs sm:text-sm text-muted-foreground", settings.isPrivate && "blur-sm select-none pointer-events-none opacity-60")}>
+                                de {formatCurrency(category.budgeted)}
+                              </p>
+                            </div>
+                            <div className="flex gap-0.5 sm:gap-1">
                               <Button
-                                onClick={() => {
-                                  setEditingSubcategory({ categoryId: category.id, subcategory: null })
-                                  setSubcategoryDialogOpen(true)
-                                }}
+                                onClick={() => openEditCategoryDialog(category)}
                                 variant="ghost"
-                                size="sm"
-                                className="text-accent hover:text-accent/80 text-xs h-7"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                               >
-                                <Plus className="h-3 w-3 mr-1" />
-                                Subcategoria
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteCategory(category.id)}
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {/* Summary Sidebar */}
-            <div className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-6">
-                {/* Overview Card */}
-                <Card className="bg-card border-border p-4 sm:p-6">
-                  <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Resumo do Mês</h3>
-                  <div className="space-y-3 sm:space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                        <span className="text-xs sm:text-sm text-muted-foreground">Orçado</span>
-                        <span className="font-semibold text-foreground text-sm sm:text-base">
-                          {formatCurrency(totalBudgeted)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                        <span className="text-xs sm:text-sm text-muted-foreground">Gasto</span>
-                        <span className="font-semibold text-foreground text-sm sm:text-base">
-                          {formatCurrency(totalSpent)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
-                        <span className="text-xs sm:text-sm font-medium text-foreground/80">Restante</span>
-                        <p
-                          className="text-lg sm:text-2xl font-bold transition-all duration-300"
-                          style={{ color: remaining >= 0 ? "var(--success)" : "var(--danger)" }}
-                        >
-                          {formatCurrency(remaining)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="w-full bg-muted rounded-full h-2 sm:h-3 mt-2 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${totalBudgeted > 0 ? Math.min((totalSpent / totalBudgeted) * 100, 100) : 0}%`,
-                          backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
-                        }}
-                      />
-                    </div>
-
-                    <p className="text-xs text-muted-foreground text-center">
-                      {totalBudgeted > 0 ? ((totalSpent / totalBudgeted) * 100).toFixed(1) : "0.0"}% utilizado
-                    </p>
-                  </div>
-                </Card>
-
-                {/* Fixed Expenses */}
-                <Card className="bg-card border-border p-4 sm:p-6">
-                  <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Gastos Fixos</h3>
-                  <div className="space-y-2 sm:space-y-3">
-                    {categories
-                      .find((c) => c.name === "Moradia")
-                      ?.subcategories?.map((sub) => (
-                        <div key={sub.id} className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm text-foreground/80 truncate mr-2">{sub.name}</span>
-                          <span className="font-semibold text-foreground text-sm flex-shrink-0">
-                            {formatCurrency(sub.spent)}
-                          </span>
+                        <div className={cn("sm:hidden mb-2 text-right", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                          <p className="font-semibold text-foreground text-sm">
+                            {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                          </p>
                         </div>
-                      ))}
-                    <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
-                      <span className="text-xs sm:text-sm font-medium text-foreground/80">Total</span>
-                      <span className="font-bold text-primary text-sm sm:text-base">
-                        {formatCurrency(categories.find((c) => c.name === "Moradia")?.spent || 0)}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
+
+                        <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
+                              backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
+                            }}
+                          />
+                        </div>
+
+                        {/* Subcategories */}
+                        {category.expanded && (
+                          <div className="mt-3 sm:mt-4 pl-4 sm:pl-8 space-y-2 sm:space-y-3 border-l-2 border-border">
+                            {category.subcategories?.map((sub) => (
+                              <div key={sub.id} className="space-y-1.5 sm:space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
+                                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                    <span
+                                      className={cn(
+                                        "text-[10px] sm:text-xs font-medium",
+                                        sub.spent > sub.budgeted ? "text-danger" : "text-success",
+                                        settings.isPrivate && "blur-sm select-none pointer-events-none opacity-40"
+                                      )}
+                                    >
+                                      {formatCurrency(sub.spent)}
+                                    </span>
+                                    <Button
+                                      onClick={() => {
+                                        setEditingSubcategory({ categoryId: category.id, subcategory: sub })
+                                        setSubcategoryDialogOpen(true)
+                                      }}
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleDeleteSubcategory(category.id, sub.id)}
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
+                                      backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                            <Button
+                              onClick={() => {
+                                setEditingSubcategory({ categoryId: category.id, subcategory: null })
+                                setSubcategoryDialogOpen(true)
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="text-accent hover:text-accent/80 text-xs h-7"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Subcategoria
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           </div>
+
+          {/* Summary Sidebar */}
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-6">
+              {/* Overview Card */}
+              <Card className="bg-card border-border p-4 sm:p-6">
+                <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Resumo do Mês</h3>
+                <div className="space-y-3 sm:space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Orçado</span>
+                      <span className={cn("font-semibold text-foreground text-sm sm:text-base", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                        {formatCurrency(totalBudgeted)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Gasto</span>
+                      <span className={cn("font-semibold text-foreground text-sm sm:text-base", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                        {formatCurrency(totalSpent)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+                      <span className="text-xs sm:text-sm font-medium text-foreground/80">Restante</span>
+                      <p
+                        className="text-lg sm:text-2xl font-bold transition-all duration-300"
+                        style={{
+                          color: remaining >= 0 ? "var(--success)" : "var(--danger)",
+                          filter: settings.isPrivate ? "blur(12px)" : "none",
+                          opacity: settings.isPrivate ? 0.4 : 1,
+                          userSelect: settings.isPrivate ? "none" : "auto",
+                          pointerEvents: settings.isPrivate ? "none" : "auto"
+                        }}
+                      >
+                        {formatCurrency(remaining)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-muted rounded-full h-2 sm:h-3 mt-2 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${totalBudgeted > 0 ? Math.min((totalSpent / totalBudgeted) * 100, 100) : 0}%`,
+                        backgroundColor: getEconomyBarColor(totalSpent, totalBudgeted)
+                      }}
+                    />
+                  </div>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    {totalBudgeted > 0 ? ((totalSpent / totalBudgeted) * 100).toFixed(1) : "0.0"}% utilizado
+                  </p>
+                </div>
+              </Card>
+
+              {/* Fixed Expenses */}
+              <Card className="bg-card border-border p-4 sm:p-6">
+                <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">Gastos Fixos</h3>
+                <div className="space-y-2 sm:space-y-3">
+                  {categories
+                    .find((c) => c.name === "Moradia")
+                    ?.subcategories?.map((sub) => (
+                      <div key={sub.id} className="flex items-center justify-between">
+                        <span className="text-xs sm:text-sm text-foreground/80 truncate mr-2">{sub.name}</span>
+                        <span className={cn("font-semibold text-foreground text-sm flex-shrink-0", settings.isPrivate && "blur-sm select-none pointer-events-none opacity-40")}>
+                          {formatCurrency(sub.spent)}
+                        </span>
+                      </div>
+                    ))}
+                  <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+                    <span className="text-xs sm:text-sm font-medium text-foreground/80">Total</span>
+                    <span className={cn("font-bold text-primary text-sm sm:text-base", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                      {formatCurrency(categories.find((c) => c.name === "Moradia")?.spent || 0)}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
 
       <CategoryDialog
         open={categoryDialogOpen}
@@ -417,6 +424,6 @@ export default function EconomiaPage() {
           setDeleteTarget(null)
         }}
       />
-    </div>
+    </>
   )
 }

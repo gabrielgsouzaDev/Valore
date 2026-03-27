@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { TrendingUp, AlertTriangle, Pencil, Trash2 } from "lucide-react"
 
 import { getAssetBarColor } from "@/lib/services"
+import { cn } from "@/lib/utils"
 import type { Asset } from "@/lib/types"
 
 interface AssetCardProps {
@@ -14,9 +15,10 @@ interface AssetCardProps {
   totalNetWorth: number
   onEdit?: () => void
   onDelete?: () => void
+  isPrivate?: boolean
 }
 
-export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit, onDelete }: AssetCardProps) {
+export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit, onDelete, isPrivate = false }: AssetCardProps) {
   const currentPercentage = (asset.currentValue / totalNetWorth) * 100
   const difference = currentPercentage - asset.targetPercentage
   const progressValue = (currentPercentage / asset.targetPercentage) * 100
@@ -110,13 +112,13 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
         <div className="space-y-4">
           <div className="flex items-baseline justify-between">
             <div>
-              <p className="text-3xl font-bold text-foreground">
+              <p className={cn("text-3xl font-bold text-foreground", isPrivate && "blur-xl select-none pointer-events-none opacity-40")}>
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",
                   currency: "BRL",
                 }).format(asset.currentValue)}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className={cn("text-sm text-muted-foreground mt-1", isPrivate && "blur-sm select-none pointer-events-none opacity-60")}>
                 {asset.quantity} {asset.name === "Bitcoin" ? "BTC" : "cotas"} ×{" "}
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useApp } from "@/contexts/app-context"
 import {
     X, ArrowRight, ArrowLeft, TrendingUp, Wallet, Target, Receipt, CreditCard, LayoutDashboard,
-    HelpCircle, Sparkles, CheckCircle2, Zap
+    HelpCircle, Sparkles, CheckCircle2, Zap, Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -79,6 +79,16 @@ const GUIDE_CONTENT: Record<string, { title: string; subtitle: string; icon: any
             { text: "Metas quantificáveis com prazos definidos são a única forma de garantir a realização dos seus projetos.", label: "Planejamento" },
             { text: "Priorize sua 'Reserva de Emergência'. Ela é a fundação que permite investimentos com tranquilidade.", label: "Fundação" },
             { text: "Monitore o progresso percentual. Cada aporte é uma compra direta da sua liberdade e projetos futuros.", label: "Acompanhamento" }
+        ]
+    },
+    "/configuracoes": {
+        title: "Personalização Elite",
+        subtitle: "Configurações do Sistema",
+        icon: Settings,
+        steps: [
+            { text: "Este é o centro de comando do Valore. Aqui você molda a experiência para o seu perfil profissional.", label: "Personalização" },
+            { text: "Experimente os 23 temas disponíveis. Cada um foi projetado com harmonia cromática para reduzir a fadiga visual.", label: "Interface" },
+            { text: "Gerencie seus dados e a visibilidade dos módulos. O Valore é modular e se adapta ao seu foco financeiro atual.", label: "Dados" }
         ]
     }
 }

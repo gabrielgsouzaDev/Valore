@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Sidebar } from "@/components/sidebar"
 import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
 import { Card, CardContent } from "@/components/ui/card"
@@ -75,6 +74,7 @@ export default function TransacoesPage() {
         addCategory,
         monthlyScheduledIncome,
         monthlyScheduledExpenses,
+        settings,
     } = useApp()
 
     const [activeTab, setActiveTab] = useState<Tab>("agendadas")
@@ -291,7 +291,10 @@ export default function TransacoesPage() {
 
                 <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                     <div className="flex items-center gap-2">
-                        <span className={cn("text-sm sm:text-base font-bold", transaction.type === "ganho" ? "text-success" : "text-danger")}>
+                        <span className={cn("text-sm sm:text-base font-bold",
+                            transaction.type === "ganho" ? "text-success" : "text-danger",
+                            settings.isPrivate && "blur-md select-none pointer-events-none opacity-40"
+                        )}>
                             {transaction.type === "ganho" ? "+" : "-"}{formatCurrency(transaction.amount)}
                         </span>
                         <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full capitalize", getStatusColor(transaction.status))}>
@@ -321,301 +324,301 @@ export default function TransacoesPage() {
 
     return (
         <>
-            <div className="min-h-screen bg-background text-foreground">
-                <Sidebar />
+            {/* Header */}
+            <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30">
+                <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Receipt className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                        <div className="flex flex-col justify-center">
+                            <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Transações</h2>
+                            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Fluxo de caixa • Histórico</p>
+                        </div>
+                    </div>
 
-                <main className="lg:ml-64 transition-all duration-300 pb-20 lg:pb-0">
-                    {/* Header */}
-                    <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30">
-                        <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <Receipt className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-                                <div className="flex flex-col justify-center">
-                                    <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Transações</h2>
-                                    <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Fluxo de caixa • Histórico</p>
-                                </div>
+
+                    <ResponsiveDialog
+                        open={dialogOpen}
+                        onOpenChange={handleOpenChange}
+                        trigger={
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nova Transação
+                            </Button>
+                        }
+                        title={editingId ? "Editar Transação" : "Nova Transação"}
+                        footer={
+                            <div className="flex justify-end gap-2 w-full">
+                                <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">Cancelar</Button>
+                                <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {editingId ? "Salvar" : "Criar"}
+                                </Button>
                             </div>
+                        }
+                    >
 
-
-                            <ResponsiveDialog
-                                open={dialogOpen}
-                                onOpenChange={handleOpenChange}
-                                trigger={
-                                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Nova Transação
-                                    </Button>
-                                }
-                                title={editingId ? "Editar Transação" : "Nova Transação"}
-                                footer={
-                                    <div className="flex justify-end gap-2 w-full">
-                                        <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">Cancelar</Button>
-                                        <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
-                                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            {editingId ? "Salvar" : "Criar"}
-                                        </Button>
-                                    </div>
-                                }
-                            >
-
-                                <div className="space-y-1.5">
-                                    <Label className="text-muted-foreground text-xs sm:text-sm">Nome</Label>
-                                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex: Salário, Aluguel..." className="bg-muted border-border text-foreground text-sm" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-muted-foreground text-xs sm:text-sm">Tipo</Label>
-                                        <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "pagamento" | "ganho" })}>
-                                            <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="bg-card border-border">
-                                                <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
-                                                <SelectItem value="pagamento"><span className="flex items-center gap-2 text-muted-foreground"><ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento</span></SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-muted-foreground text-xs sm:text-sm">Valor (R$)</Label>
-                                        <Input type="number" value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number.parseFloat(e.target.value) || 0 })} className="bg-muted border-border text-foreground text-sm" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-muted-foreground text-xs sm:text-sm">Vencimento</Label>
-                                        <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="bg-muted border-border text-foreground text-sm" />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-muted-foreground text-xs sm:text-sm">Recorrência</Label>
-                                        <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as "unico" | "semanal" | "mensal" | "anual" })}>
-                                            <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="bg-card border-border">
-                                                <SelectItem value="unico">Único</SelectItem>
-                                                <SelectItem value="semanal">Semanal</SelectItem>
-                                                <SelectItem value="mensal">Mensal</SelectItem>
-                                                <SelectItem value="anual">Anual</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-muted-foreground text-xs sm:text-sm">Banco / Conta</Label>
-                                    <Select value={form.bankId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, bankId: v === "none" ? undefined : Number.parseInt(v) })}>
-                                        <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione um banco" /></SelectTrigger>
-                                        <SelectContent className="bg-card border-border">
-                                            <SelectItem value="none">Sem banco vinculado</SelectItem>
-                                            {banks.map((bank) => (<SelectItem key={bank.id} value={bank.id.toString()}><span className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{bank.name}</span></SelectItem>))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {form.type === "pagamento" && (
-                                    <div className="space-y-1.5">
-                                        <Label className="text-muted-foreground text-xs sm:text-sm">Categoria (opcional)</Label>
-                                        <Select value={form.categoryId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? undefined : Number.parseInt(v) })}>
-                                            <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger>
-                                            <SelectContent className="bg-card border-border">
-                                                <SelectItem value="none">Sem categoria</SelectItem>
-                                                <div className="px-2 py-1.5 mt-1 border-t border-border/50"><Button variant="ghost" className="w-full justify-start text-xs h-8 text-primary hover:bg-primary/10" onClick={(e) => { e.preventDefault(); setCatDialogOpen(true); }}><Plus className="mr-2 h-3.5 w-3.5" /> Nova Categoria Global</Button></div>
-                                                {categories.map((cat) => (<SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-                                <div className="space-y-1.5">
-                                    <Label className="text-muted-foreground text-xs sm:text-sm">Observações (opcional)</Label>
-                                    <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anotações..." className="bg-muted border-border text-foreground text-sm" />
-                                </div>
-                            </ResponsiveDialog>
+                        <div className="space-y-1.5">
+                            <Label className="text-muted-foreground text-xs sm:text-sm">Nome</Label>
+                            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex: Salário, Aluguel..." className="bg-muted border-border text-foreground text-sm" />
                         </div>
-                    </header>
-                    <DemoBanner />
-
-                    <div className="p-4 sm:p-6 lg:p-8">
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                            <Card className="bg-card border-border">
-                                <CardContent className="p-3 sm:p-4">
-                                    <div className="flex items-center gap-2 sm:gap-3">
-                                        <div className="p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" /></div>
-                                        <div className="min-w-0">
-                                            <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
-                                                {activeTab === "agendadas" ? "Entradas Previstas" : "Entradas Realizadas"}
-                                            </p>
-                                            <p className="text-sm sm:text-xl font-bold text-success truncate">
-                                                {formatCurrency(activeTab === "agendadas" ? agendadasIncome : historyIncome)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-card border-border">
-                                <CardContent className="p-3 sm:p-4">
-                                    <div className="flex items-center gap-2 sm:gap-3">
-                                        <div className="p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" /></div>
-                                        <div className="min-w-0">
-                                            <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
-                                                {activeTab === "agendadas" ? "Saídas Previstas" : "Saídas Realizadas"}
-                                            </p>
-                                            <p className="text-sm sm:text-xl font-bold text-danger truncate">
-                                                {formatCurrency(activeTab === "agendadas" ? agendadasExpenses : historyExpenses)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-card border-border">
-                                <CardContent className="p-3 sm:p-4">
-                                    <div className="flex items-center gap-2 sm:gap-3">
-                                        <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"}>
-                                            <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-danger"} />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
-                                                {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
-                                            </p>
-                                            <p className={cn("text-sm sm:text-xl font-bold truncate", (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-danger")}>
-                                                {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Tipo</Label>
+                                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "pagamento" | "ganho" })}>
+                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
+                                        <SelectItem value="pagamento"><span className="flex items-center gap-2 text-muted-foreground"><ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento</span></SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Valor (R$)</Label>
+                                <Input type="number" value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number.parseFloat(e.target.value) || 0 })} className="bg-muted border-border text-foreground text-sm" />
+                            </div>
                         </div>
-
-                        {/* Tabs */}
-                        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl mb-4 sm:mb-6 w-full sm:w-auto sm:inline-flex">
-                            <button
-                                onClick={() => setActiveTab("agendadas")}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-none justify-center",
-                                    activeTab === "agendadas"
-                                        ? "bg-card text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <ListTodo className="h-4 w-4" />
-                                Agendadas
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("historico")}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-none justify-center",
-                                    activeTab === "historico"
-                                        ? "bg-card text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <History className="h-4 w-4" />
-                                Histórico
-                            </button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Vencimento</Label>
+                                <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="bg-muted border-border text-foreground text-sm" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Recorrência</Label>
+                                <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as "unico" | "semanal" | "mensal" | "anual" })}>
+                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        <SelectItem value="unico">Único</SelectItem>
+                                        <SelectItem value="semanal">Semanal</SelectItem>
+                                        <SelectItem value="mensal">Mensal</SelectItem>
+                                        <SelectItem value="anual">Anual</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-
-                        {/* ── ABA AGENDADAS ──────────────────────────────── */}
-                        {activeTab === "agendadas" && (
-                            <div className="space-y-4">
-                                {/* Filters */}
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="lg:hidden border-border bg-transparent text-xs">
-                                        <Filter className="h-3.5 w-3.5 mr-1" /> Filtros
-                                    </Button>
-                                    <div className={cn("flex-wrap gap-2", showFilters ? "flex" : "hidden lg:flex", "w-full lg:w-auto")}>
-                                        <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-                                            <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="bg-card border-border">
-                                                <SelectItem value="todos">Todos Status</SelectItem>
-                                                <SelectItem value="pendente">Pendentes</SelectItem>
-                                                <SelectItem value="pago">Pagos</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}>
-                                            <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="bg-card border-border">
-                                                <SelectItem value="todos">Todos Tipos</SelectItem>
-                                                <SelectItem value="ganho">Ganhos</SelectItem>
-                                                <SelectItem value="pagamento">Pagamentos</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                {filteredTransactions.length === 0 ? (
-                                    <EmptyState
-                                        icon={ListTodo}
-                                        title="Nenhuma transação agendada"
-                                        description="Organize suas finanças cadastrando seus ganhos e despesas futuras para ter uma visão clara do seu saldo."
-                                        actionLabel="Nova Transação"
-                                        onAction={() => setDialogOpen(true)}
-                                    />
-                                ) : (
-                                    <div className="space-y-2 sm:space-y-3">
-                                        {filteredTransactions.map((transaction) => (
-                                            <TransactionRow key={transaction.id} transaction={transaction} />
-                                        ))}
-                                    </div>
-                                )}
+                        <div className="space-y-1.5">
+                            <Label className="text-muted-foreground text-xs sm:text-sm">Banco / Conta</Label>
+                            <Select value={form.bankId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, bankId: v === "none" ? undefined : Number.parseInt(v) })}>
+                                <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione um banco" /></SelectTrigger>
+                                <SelectContent className="bg-card border-border">
+                                    <SelectItem value="none">Sem banco vinculado</SelectItem>
+                                    {banks.map((bank) => (<SelectItem key={bank.id} value={bank.id.toString()}><span className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{bank.name}</span></SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {form.type === "pagamento" && (
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Categoria (opcional)</Label>
+                                <Select value={form.categoryId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? undefined : Number.parseInt(v) })}>
+                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        <SelectItem value="none">Sem categoria</SelectItem>
+                                        <div className="px-2 py-1.5 mt-1 border-t border-border/50"><Button variant="ghost" className="w-full justify-start text-xs h-8 text-primary hover:bg-primary/10" onClick={(e) => { e.preventDefault(); setCatDialogOpen(true); }}><Plus className="mr-2 h-3.5 w-3.5" /> Nova Categoria Global</Button></div>
+                                        {categories.map((cat) => (<SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         )}
+                        <div className="space-y-1.5">
+                            <Label className="text-muted-foreground text-xs sm:text-sm">Observações (opcional)</Label>
+                            <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anotações..." className="bg-muted border-border text-foreground text-sm" />
+                        </div>
+                    </ResponsiveDialog>
+                </div>
+            </header>
+            <DemoBanner />
 
-                        {/* ── ABA HISTÓRICO ──────────────────────────────── */}
-                        {activeTab === "historico" && (
-                            <div className="space-y-4">
-                                {/* Period + type filters */}
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl">
-                                        {(["7d", "30d", "3m", "todos"] as PeriodFilter[]).map((p) => (
-                                            <button
-                                                key={p}
-                                                onClick={() => setPeriodFilter(p)}
-                                                className={cn(
-                                                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-                                                    periodFilter === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                                                )}
-                                            >
-                                                {p === "7d" ? "7 dias" : p === "30d" ? "30 dias" : p === "3m" ? "3 meses" : "Tudo"}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <Select value={histTypeFilter} onValueChange={(v) => setHistTypeFilter(v as typeof histTypeFilter)}>
-                                        <SelectTrigger className="w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="bg-card border-border">
-                                            <SelectItem value="todos">Todos Tipos</SelectItem>
-                                            <SelectItem value="ganho">Ganhos</SelectItem>
-                                            <SelectItem value="pagamento">Pagamentos</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+            <div className="p-4 sm:p-6 lg:p-8">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-3 sm:p-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0"><TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" /></div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                        {activeTab === "agendadas" ? "Entradas Previstas" : "Entradas Realizadas"}
+                                    </p>
+                                    <p className={cn("text-sm sm:text-xl font-bold text-success truncate", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        {formatCurrency(activeTab === "agendadas" ? agendadasIncome : historyIncome)}
+                                    </p>
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-3 sm:p-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"><TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" /></div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                        {activeTab === "agendadas" ? "Saídas Previstas" : "Saídas Realizadas"}
+                                    </p>
+                                    <p className={cn("text-sm sm:text-xl font-bold text-danger truncate", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        {formatCurrency(activeTab === "agendadas" ? agendadasExpenses : historyExpenses)}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-3 sm:p-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "p-1.5 sm:p-2 bg-success/10 rounded-lg flex-shrink-0" : "p-1.5 sm:p-2 bg-danger/10 rounded-lg flex-shrink-0"}>
+                                    <Calendar className={(activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "h-4 w-4 sm:h-5 sm:w-5 text-success" : "h-4 w-4 sm:h-5 sm:w-5 text-danger"} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] sm:text-sm text-muted-foreground truncate">
+                                        {activeTab === "agendadas" ? "Saldo Projetado" : "Saldo do Período"}
+                                    </p>
+                                    <p className={cn("text-sm sm:text-xl font-bold truncate",
+                                        (activeTab === "agendadas" ? agendadasBalance : historyBalance) >= 0 ? "text-success" : "text-danger",
+                                        settings.isPrivate && "blur-md select-none pointer-events-none opacity-40"
+                                    )}>
+                                        {formatCurrency(activeTab === "agendadas" ? agendadasBalance : historyBalance)}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                                {/* Resumo do período */}
-                                {historyTransactions.length > 0 && (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-success/5 border border-success/20 rounded-xl p-3 sm:p-4">
-                                            <p className="text-xs text-muted-foreground mb-1">Entradas no período</p>
-                                            <p className="text-base sm:text-xl font-bold text-success">{formatCurrency(historyIncome)}</p>
-                                        </div>
-                                        <div className="bg-danger/5 border border-danger/20 rounded-xl p-3 sm:p-4">
-                                            <p className="text-xs text-muted-foreground mb-1">Saídas no período</p>
-                                            <p className="text-base sm:text-xl font-bold text-danger">{formatCurrency(historyExpenses)}</p>
-                                        </div>
-                                    </div>
-                                )}
+                {/* Tabs */}
+                <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl mb-4 sm:mb-6 w-full sm:w-auto sm:inline-flex">
+                    <button
+                        onClick={() => setActiveTab("agendadas")}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-none justify-center",
+                            activeTab === "agendadas"
+                                ? "bg-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <ListTodo className="h-4 w-4" />
+                        Agendadas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("historico")}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-none justify-center",
+                            activeTab === "historico"
+                                ? "bg-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <History className="h-4 w-4" />
+                        Histórico
+                    </button>
+                </div>
 
-                                {historyTransactions.length === 0 ? (
-                                    <EmptyState
-                                        icon={History}
-                                        title="Histórico vazio"
-                                        description="Aqui aparecerão as transações que você já realizou. Marque uma transação agendada como 'paga' para vê-la aqui."
-                                    />
-                                ) : (
-                                    <div className="space-y-2 sm:space-y-3">
-                                        {historyTransactions.map((transaction) => (
-                                            <TransactionRow key={transaction.id} transaction={transaction} />
-                                        ))}
-                                    </div>
-                                )}
+                {/* ── ABA AGENDADAS ──────────────────────────────── */}
+                {activeTab === "agendadas" && (
+                    <div className="space-y-4">
+                        {/* Filters */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="lg:hidden border-border bg-transparent text-xs">
+                                <Filter className="h-3.5 w-3.5 mr-1" /> Filtros
+                            </Button>
+                            <div className={cn("flex-wrap gap-2", showFilters ? "flex" : "hidden lg:flex", "w-full lg:w-auto")}>
+                                <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+                                    <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        <SelectItem value="todos">Todos Status</SelectItem>
+                                        <SelectItem value="pendente">Pendentes</SelectItem>
+                                        <SelectItem value="pago">Pagos</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}>
+                                    <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        <SelectItem value="todos">Todos Tipos</SelectItem>
+                                        <SelectItem value="ganho">Ganhos</SelectItem>
+                                        <SelectItem value="pagamento">Pagamentos</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {filteredTransactions.length === 0 ? (
+                            <EmptyState
+                                icon={ListTodo}
+                                title="Nenhuma transação agendada"
+                                description="Organize suas finanças cadastrando seus ganhos e despesas futuras para ter uma visão clara do seu saldo."
+                                actionLabel="Nova Transação"
+                                onAction={() => setDialogOpen(true)}
+                            />
+                        ) : (
+                            <div className="space-y-2 sm:space-y-3">
+                                {filteredTransactions.map((transaction) => (
+                                    <TransactionRow key={transaction.id} transaction={transaction} />
+                                ))}
                             </div>
                         )}
                     </div>
-                </main>
-            </div>
+                )}
 
+                {/* ── ABA HISTÓRICO ──────────────────────────────── */}
+                {activeTab === "historico" && (
+                    <div className="space-y-4">
+                        {/* Period + type filters */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl">
+                                {(["7d", "30d", "3m", "todos"] as PeriodFilter[]).map((p) => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPeriodFilter(p)}
+                                        className={cn(
+                                            "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+                                            periodFilter === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
+                                        {p === "7d" ? "7 dias" : p === "30d" ? "30 dias" : p === "3m" ? "3 meses" : "Tudo"}
+                                    </button>
+                                ))}
+                            </div>
+                            <Select value={histTypeFilter} onValueChange={(v) => setHistTypeFilter(v as typeof histTypeFilter)}>
+                                <SelectTrigger className="w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9"><SelectValue /></SelectTrigger>
+                                <SelectContent className="bg-card border-border">
+                                    <SelectItem value="todos">Todos Tipos</SelectItem>
+                                    <SelectItem value="ganho">Ganhos</SelectItem>
+                                    <SelectItem value="pagamento">Pagamentos</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Resumo do período */}
+                        {historyTransactions.length > 0 && (
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-success/5 border border-success/20 rounded-xl p-3 sm:p-4">
+                                    <p className="text-xs text-muted-foreground mb-1">Entradas no período</p>
+                                    <p className={cn("text-base sm:text-xl font-bold text-success", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        {formatCurrency(historyIncome)}
+                                    </p>
+                                </div>
+                                <div className="bg-danger/5 border border-danger/20 rounded-xl p-3 sm:p-4">
+                                    <p className="text-xs text-muted-foreground mb-1">Saídas no período</p>
+                                    <p className={cn("text-base sm:text-xl font-bold text-danger", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
+                                        {formatCurrency(historyExpenses)}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {historyTransactions.length === 0 ? (
+                            <EmptyState
+                                icon={History}
+                                title="Histórico vazio"
+                                description="Aqui aparecerão as transações que você já realizou. Marque uma transação agendada como 'paga' para vê-la aqui."
+                            />
+                        ) : (
+                            <div className="space-y-2 sm:space-y-3">
+                                {historyTransactions.map((transaction) => (
+                                    <TransactionRow key={transaction.id} transaction={transaction} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
             <ResponsiveDialog
                 open={catDialogOpen}
