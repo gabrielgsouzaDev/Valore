@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { parseCurrency } from "./utils"
 
 /**
  * Esquema base para objetos com ID
@@ -13,9 +14,9 @@ const idSchema = z.object({
 export const assetSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
     type: z.enum(["Ação", "FII", "ETF", "Renda Fixa", "Cripto", "Outro"]),
-    targetPercentage: z.number().min(0).max(100),
-    quantity: z.number().min(0),
-    price: z.number().min(0),
+    targetPercentage: z.preprocess((val) => parseCurrency(val as string), z.number().min(0).max(100)),
+    quantity: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
+    price: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
     bankId: z.number().optional(),
     currentValue: z.number(),
     lastUpdated: z.string().optional(),
@@ -66,7 +67,7 @@ export const goalWithIdSchema = goalSchema.merge(idSchema)
  */
 export const transactionSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-    amount: z.number().positive("O valor deve ser positivo"),
+    amount: z.preprocess((val) => parseCurrency(val as string), z.number().positive("O valor deve ser positivo")),
     type: z.enum(["pagamento", "ganho"]),
     dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/, "Data inválida (AAAA-MM-DD)"),
     recurrence: z.enum(["unico", "semanal", "mensal", "anual"]),
@@ -141,7 +142,7 @@ export const settingsSchema = z.object({
 export const cardExpenseSchema = z.object({
     cardId: z.number(),
     description: z.string().min(2),
-    totalAmount: z.number().positive(),
+    totalAmount: z.preprocess((val) => parseCurrency(val as string), z.number().positive()),
     installments: z.number().min(1),
     purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/),
     paidInstallments: z.number().min(0).default(0),

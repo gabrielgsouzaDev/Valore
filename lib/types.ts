@@ -80,6 +80,7 @@ export type Settings = {
     investmentStrategy: InvestmentStrategy
     onboardingCompleted: boolean
     activeModules?: Record<string, boolean>
+    isPrivate?: boolean
     isDemoMode?: boolean
     userFocus?: "invest" | "save" | "both"
     showGuide?: boolean

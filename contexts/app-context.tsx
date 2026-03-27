@@ -148,6 +148,8 @@ type AppContextType = {
   importData: (parsedData: any) => void
   clearAllData: () => void
   loadExampleData: () => void
+  togglePrivacy: () => void
+  isPrivate: boolean
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -587,6 +589,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (data.themeId) setTheme(data.themeId)
   }, [setTheme])
 
+  const togglePrivacy = useCallback(() => {
+    setSettingsState((prev: Settings) => ({ ...prev, isPrivate: !prev.isPrivate }))
+  }, [])
+
+  const isPrivate = !!settings.isPrivate
+
   // --- Backup e Restauração ---
   const exportData = useCallback(() => {
     const safeSettings = { ...settings, isDemoMode: false }
@@ -672,6 +680,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
     isLoaded,
     exportData, importData, clearAllData, loadExampleData,
+    togglePrivacy, isPrivate,
   }), [
     assets, setAssets, addAsset, updateAsset, deleteAsset,
     categories, setCategories, addCategory, updateCategory, deleteCategory,
