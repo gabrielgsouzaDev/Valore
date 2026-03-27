@@ -29,10 +29,11 @@
   - [x] Passo 1 (Perfil): Input rápido de Nome.
   - [x] Passo 2 (Módulos): Lista de toggles (Switches) limpa.
   - [x] Passo 3 (Tema): Grid de preview em tempo-real.
-- [x] **3.2. Sistema de Mini-Tutoriais (`ModuleGuide`)**
-  - [x] Criar componente `ModuleGuide` com conteúdo contextual por rota.
-  - [x] Garantir visibilidade imediata no reset de tour (Removido bloqueio em `/`).
-  - [x] Implementar botão de ajuda flutuante para re-acionar o guia.
+- [x] **3.2. Sistema de Concierge Financeiro (`ModuleGuide`)**
+  - [x] Transformar dicas genéricas em Missões Interativas de alto valor.
+  - [x] Implementar navegação completa (Próximo/Voltar) e reset automático de etapas.
+  - [x] Adicionar Backdrop Premium e animações de foco visual.
+  - [x] Implementar botão de ajuda re-acionável com feedback tátil.
 - [x] **3.3. Estabilização de Navegação**
   - [x] Corrigir `handleResetOnboarding` para usar `router.push("/")` e evitar perda de estado.
 
