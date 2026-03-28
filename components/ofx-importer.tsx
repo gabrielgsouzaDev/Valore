@@ -5,7 +5,7 @@ import { Upload, FileText, CheckCircle2, AlertCircle, X, Check } from "lucide-re
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useApp } from "@/contexts/app-context"
-import { parseOFX, ParsedTransaction } from "@/lib/ofx-parser"
+import { parseStatement, ParsedTransaction } from "@/lib/ofx-parser"
 
 interface OfxImporterProps {
     open: boolean
@@ -23,14 +23,15 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
 
     const processFile = async (file: File) => {
         setError(null)
-        if (!file.name.toLowerCase().endsWith('.ofx')) {
-            setError("Por favor, envie apenas arquivos no formato OFX.")
+        const fileName = file.name.toLowerCase()
+        if (!fileName.endsWith('.ofx') && !fileName.endsWith('.csv')) {
+            setError("Por favor, envie apenas arquivos no formato OFX ou CSV.")
             return
         }
 
         try {
             const text = await file.text()
-            const data = parseOFX(text)
+            const data = parseStatement(text, fileName)
 
             if (data.length === 0) {
                 setError("Não foi possível encontrar transações válidas neste arquivo.")
@@ -38,7 +39,7 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
             }
 
             // Detect duplicates heuristically
-            const newTransactions = data.map(t => {
+            const newTransactions = data.map((t: ParsedTransaction) => {
                 const isDuplicate = transactions.some(existing =>
                     existing.amount === t.amount &&
                     existing.dueDate.split('T')[0] === t.date.toISOString().split('T')[0]
@@ -50,14 +51,14 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
 
             // Select non-duplicates by default
             const initialSelected = new Set<string>()
-            newTransactions.forEach(t => {
+            newTransactions.forEach((t: ParsedTransaction & { isDuplicate?: boolean }) => {
                 if (!t.isDuplicate) initialSelected.add(t.id)
             })
             setSelectedIds(initialSelected)
 
         } catch (err) {
             console.error(err)
-            setError("Falha ao ler o arquivo. Pode estar corrompido ou fora do padrão OFX.")
+            setError("Falha ao ler o arquivo. Certifique-se de que é um extrato válido.")
         }
     }
 
@@ -112,10 +113,10 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
             <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[85vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
-                        <Upload className="w-5 h-5" /> Importar Extrato (OFX)
+                        <Upload className="w-5 h-5" /> Importar Extrato
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground">
-                        Sincronize transações do seu banco enviando o arquivo OFX exportado pelo seu internet banking.
+                        Sincronize transações enviando o arquivo OFX ou CSV exportado pelo seu banco.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -137,7 +138,7 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
                     >
                         <input
                             type="file"
-                            accept=".ofx"
+                            accept=".ofx,.csv"
                             className="hidden"
                             ref={fileInputRef}
                             onChange={(e) => e.target.files && processFile(e.target.files[0])}
@@ -145,9 +146,9 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
                         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                             <FileText className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        <h3 className="font-medium text-lg mb-1">Clique ou Arraste o arquivo OFX</h3>
+                        <h3 className="font-medium text-lg mb-1">Clique ou Arraste o extrato</h3>
                         <p className="text-sm text-muted-foreground max-w-[250px]">
-                            Compatível com Nubank, Itaú, Inter, Caixa, BB e a maioria dos bancos.
+                            Arquivos .OFX ou .CSV do Inter, Mercado Pago, Itaú, Nubank e outros.
                         </p>
                     </div>
                 ) : (
