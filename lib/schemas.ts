@@ -13,6 +13,8 @@ const idSchema = z.object({
  */
 export const assetSchema = z.object({
     name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
+    ticker: z.string().optional(),
+    syncAvailable: z.boolean().optional(),
     type: z.enum(["Ação", "FII", "ETF", "Renda Fixa", "Cripto", "Outro"]),
     targetPercentage: z.preprocess((val) => parseCurrency(val as string), z.number().min(0).max(100)),
     quantity: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
@@ -22,6 +24,7 @@ export const assetSchema = z.object({
     ceilingPrice: z.number().optional(),
     priority: z.number().optional(),
     lastUpdated: z.string().optional(),
+    lastSync: z.string().optional(),
 })
 
 export const assetWithIdSchema = assetSchema.merge(idSchema)

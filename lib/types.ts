@@ -27,6 +27,8 @@ export type AssetType = "Ação" | "FII" | "ETF" | "Renda Fixa" | "Cripto" | "Ou
 export type Asset = {
     id: number
     name: string
+    ticker?: string
+    syncAvailable?: boolean
     type: AssetType
     targetPercentage: number
     currentValue: number
@@ -36,6 +38,7 @@ export type Asset = {
     ceilingPrice?: number
     priority?: number
     lastUpdated?: string
+    lastSync?: string
 }
 
 export type Subcategory = {

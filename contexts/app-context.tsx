@@ -118,6 +118,9 @@ type AppContextType = {
     creditCards: CreditCard[]
   }
 
+  // Ativos e Sincronização
+  syncAssetsPrices: () => Promise<void>
+
   // Histórico
   patrimonialHistory: PatrimonialSnapshot[]
   savePatrimonialSnapshot: () => void
@@ -278,9 +281,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [totalNetWorth])
 
-  // --- Snapshot Automático ---
+  // --- Sincronização Brapi ---
+  const syncAssetsPrices = useCallback(async () => {
+    const syncableAssets = assets.filter(a => a.syncAvailable && a.ticker)
+    if (syncableAssets.length === 0) return
+
+    const now = new Date()
+    // Throttling: Sincroniza apenas se a última vez foi há mais de 1 hora
+    const needsSync = syncableAssets.some(a => {
+      if (!a.lastSync) return true
+      const hoursSinceLastSync = (now.getTime() - new Date(a.lastSync).getTime()) / (1000 * 60 * 60)
+      return hoursSinceLastSync > 1
+    })
+
+    if (!needsSync) return
+
+    try {
+      const tickers = syncableAssets.map(a => a.ticker).join(',')
+      const res = await fetch(`/api/assets/sync?tickers=${tickers}`)
+      if (!res.ok) throw new Error('Falha HTTP ao sincronizar')
+
+      const { prices } = await res.json()
+
+      if (prices) {
+        setAssetsState((prev) => prev.map((asset) => {
+          if (asset.syncAvailable && asset.ticker && prices[asset.ticker]) {
+            const newPrice = prices[asset.ticker]
+            return {
+              ...asset,
+              price: newPrice,
+              currentValue: newPrice * asset.quantity,
+              lastSync: now.toISOString(),
+              lastUpdated: now.toISOString()
+            }
+          }
+          return asset
+        }))
+      }
+    } catch (error) {
+      console.error("Valore Sync Error:", error)
+    }
+  }, [assets])
+
+  // --- Snapshot e Sincronização Automática ---
   useEffect(() => {
     if (!isLoaded || totalNetWorth === 0) return
+
+    // Tentar atualizar cotações no load inicial
+    syncAssetsPrices()
 
     const today = new Date().toISOString().split("T")[0]
     const hasTodaySnapshot = patrimonialHistory.some((s: PatrimonialSnapshot) => s.date === today)
@@ -293,7 +341,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         savePatrimonialSnapshot()
       }
     }
-  }, [totalNetWorth, isLoaded])
+  }, [totalNetWorth, isLoaded, syncAssetsPrices, patrimonialHistory, savePatrimonialSnapshot])
 
   // --- Funções de Ativos ---
   const setAssets = useCallback((newAssets: Asset[]) => setAssetsState(newAssets), [])
@@ -681,6 +729,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isLoaded,
     exportData, importData, clearAllData, loadExampleData,
     togglePrivacy, isPrivate,
+    syncAssetsPrices,
   }), [
     assets, setAssets, addAsset, updateAsset, deleteAsset,
     categories, setCategories, addCategory, updateCategory, deleteCategory,
@@ -697,6 +746,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     monthlyScheduledIncome, monthlyScheduledExpenses, upcomingTransactions,
     isLoaded,
     exportData, importData, clearAllData, loadExampleData,
+    syncAssetsPrices,
   ])
 
 

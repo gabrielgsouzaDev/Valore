@@ -37,11 +37,14 @@ import {
     ListTodo,
     Receipt,
     Loader2,
+    Download,
+    Upload,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import type { ScheduledTransaction } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { OfxImporter } from "@/components/ofx-importer"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { formatCurrency, formatDate } from "@/lib/services"
 import NumberTicker from "@/components/ui/number-ticker"
@@ -87,6 +90,7 @@ export default function TransacoesPage() {
     const [filter, setFilter] = useState<"todos" | "pendente" | "pago">("todos")
     const [typeFilter, setTypeFilter] = useState<"todos" | "pagamento" | "ganho">("todos")
     const [showFilters, setShowFilters] = useState(false)
+    const [ofxOpen, setOfxOpen] = useState(false)
     const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("30d")
     const [histTypeFilter, setHistTypeFilter] = useState<"todos" | "pagamento" | "ganho">("todos")
     const [confirmOpen, setConfirmOpen] = useState(false)
@@ -380,94 +384,104 @@ export default function TransacoesPage() {
                         </div>
                     </div>
 
-
-                    <ResponsiveDialog
-                        open={dialogOpen}
-                        onOpenChange={handleOpenChange}
-                        trigger={
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20">
-                                <Plus className="h-4 w-4 mr-2" />
-                                Nova Transação
-                            </Button>
-                        }
-                        title={editingId ? "Editar Transação" : "Nova Transação"}
-                        footer={
-                            <div className="flex justify-end gap-2 w-full">
-                                <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">Cancelar</Button>
-                                <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingId ? "Salvar" : "Criar"}
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="border-border bg-card/50 text-foreground text-xs sm:text-sm font-semibold shadow-sm hover:bg-muted"
+                            onClick={() => setOfxOpen(true)}
+                        >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Importar
+                        </Button>
+                        <ResponsiveDialog
+                            open={dialogOpen}
+                            onOpenChange={handleOpenChange}
+                            trigger={
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20">
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Nova Transação
                                 </Button>
-                            </div>
-                        }
-                    >
+                            }
 
-                        <div className="space-y-1.5">
-                            <Label className="text-muted-foreground text-xs sm:text-sm">Nome</Label>
-                            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex: Salário, Aluguel..." className="bg-muted border-border text-foreground text-sm" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
+                            title={editingId ? "Editar Transação" : "Nova Transação"}
+                            footer={
+                                <div className="flex justify-end gap-2 w-full">
+                                    <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-border bg-transparent text-xs sm:text-sm flex-1 sm:flex-none">Cancelar</Button>
+                                    <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-none">
+                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {editingId ? "Salvar" : "Criar"}
+                                    </Button>
+                                </div>
+                            }
+                        >
+
                             <div className="space-y-1.5">
-                                <Label className="text-muted-foreground text-xs sm:text-sm">Tipo</Label>
-                                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "pagamento" | "ganho" })}>
-                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Nome</Label>
+                                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex: Salário, Aluguel..." className="bg-muted border-border text-foreground text-sm" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-muted-foreground text-xs sm:text-sm">Tipo</Label>
+                                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "pagamento" | "ganho" })}>
+                                        <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="bg-card border-border">
+                                            <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
+                                            <SelectItem value="pagamento"><span className="flex items-center gap-2 text-muted-foreground"><ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento</span></SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-muted-foreground text-xs sm:text-sm">Valor (R$)</Label>
+                                    <Input type="number" value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number.parseFloat(e.target.value) || 0 })} className="bg-muted border-border text-foreground text-sm" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-muted-foreground text-xs sm:text-sm">Vencimento</Label>
+                                    <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="bg-muted border-border text-foreground text-sm" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-muted-foreground text-xs sm:text-sm">Recorrência</Label>
+                                    <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as "unico" | "semanal" | "mensal" | "anual" })}>
+                                        <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="bg-card border-border">
+                                            <SelectItem value="unico">Único</SelectItem>
+                                            <SelectItem value="semanal">Semanal</SelectItem>
+                                            <SelectItem value="mensal">Mensal</SelectItem>
+                                            <SelectItem value="anual">Anual</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Banco / Conta</Label>
+                                <Select value={form.bankId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, bankId: v === "none" ? undefined : Number.parseInt(v) })}>
+                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione um banco" /></SelectTrigger>
                                     <SelectContent className="bg-card border-border">
-                                        <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
-                                        <SelectItem value="pagamento"><span className="flex items-center gap-2 text-muted-foreground"><ArrowDownCircle className="h-3.5 w-3.5" /> Pagamento</span></SelectItem>
+                                        <SelectItem value="none">Sem banco vinculado</SelectItem>
+                                        {banks.map((bank) => (<SelectItem key={bank.id} value={bank.id.toString()}><span className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{bank.name}</span></SelectItem>))}
                                     </SelectContent>
                                 </Select>
                             </div>
+                            {form.type === "pagamento" && (
+                                <div className="space-y-1.5">
+                                    <Label className="text-muted-foreground text-xs sm:text-sm">Categoria (opcional)</Label>
+                                    <Select value={form.categoryId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? undefined : Number.parseInt(v) })}>
+                                        <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger>
+                                        <SelectContent className="bg-card border-border">
+                                            <SelectItem value="none">Sem categoria</SelectItem>
+                                            <div className="px-2 py-1.5 mt-1 border-t border-border/50"><Button variant="ghost" className="w-full justify-start text-xs h-8 text-primary hover:bg-primary/10" onClick={(e) => { e.preventDefault(); setCatDialogOpen(true); }}><Plus className="mr-2 h-3.5 w-3.5" /> Nova Categoria Global</Button></div>
+                                            {categories.map((cat) => (<SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <div className="space-y-1.5">
-                                <Label className="text-muted-foreground text-xs sm:text-sm">Valor (R$)</Label>
-                                <Input type="number" value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number.parseFloat(e.target.value) || 0 })} className="bg-muted border-border text-foreground text-sm" />
+                                <Label className="text-muted-foreground text-xs sm:text-sm">Observações (opcional)</Label>
+                                <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anotações..." className="bg-muted border-border text-foreground text-sm" />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label className="text-muted-foreground text-xs sm:text-sm">Vencimento</Label>
-                                <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="bg-muted border-border text-foreground text-sm" />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-muted-foreground text-xs sm:text-sm">Recorrência</Label>
-                                <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as "unico" | "semanal" | "mensal" | "anual" })}>
-                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="bg-card border-border">
-                                        <SelectItem value="unico">Único</SelectItem>
-                                        <SelectItem value="semanal">Semanal</SelectItem>
-                                        <SelectItem value="mensal">Mensal</SelectItem>
-                                        <SelectItem value="anual">Anual</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-muted-foreground text-xs sm:text-sm">Banco / Conta</Label>
-                            <Select value={form.bankId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, bankId: v === "none" ? undefined : Number.parseInt(v) })}>
-                                <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione um banco" /></SelectTrigger>
-                                <SelectContent className="bg-card border-border">
-                                    <SelectItem value="none">Sem banco vinculado</SelectItem>
-                                    {banks.map((bank) => (<SelectItem key={bank.id} value={bank.id.toString()}><span className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{bank.name}</span></SelectItem>))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {form.type === "pagamento" && (
-                            <div className="space-y-1.5">
-                                <Label className="text-muted-foreground text-xs sm:text-sm">Categoria (opcional)</Label>
-                                <Select value={form.categoryId?.toString() || "none"} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? undefined : Number.parseInt(v) })}>
-                                    <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger>
-                                    <SelectContent className="bg-card border-border">
-                                        <SelectItem value="none">Sem categoria</SelectItem>
-                                        <div className="px-2 py-1.5 mt-1 border-t border-border/50"><Button variant="ghost" className="w-full justify-start text-xs h-8 text-primary hover:bg-primary/10" onClick={(e) => { e.preventDefault(); setCatDialogOpen(true); }}><Plus className="mr-2 h-3.5 w-3.5" /> Nova Categoria Global</Button></div>
-                                        {categories.map((cat) => (<SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                        <div className="space-y-1.5">
-                            <Label className="text-muted-foreground text-xs sm:text-sm">Observações (opcional)</Label>
-                            <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Anotações..." className="bg-muted border-border text-foreground text-sm" />
-                        </div>
-                    </ResponsiveDialog>
+                        </ResponsiveDialog>
+                    </div>
                 </div>
             </header>
             <DemoBanner />
@@ -809,6 +823,8 @@ export default function TransacoesPage() {
                     }
                 }}
             />
+            {/* OFX Importer */}
+            <OfxImporter open={ofxOpen} onOpenChange={setOfxOpen} />
         </>
     )
 }
