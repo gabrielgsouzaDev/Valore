@@ -18,6 +18,20 @@ export const BUSINESS_RULES = {
   DEFAULT_LOCALE: "pt-BR",
   EMERGENCY_FUND_RECOMMENDED_MONTHS: 6,
 
+  // Rebalance & Budgeting Thresholds
+  REBALANCE_TOLERANCE: 0.01,
+  BUDGET_WARNING_THRESHOLD: 0.8,
+  BUDGET_DANGER_THRESHOLD: 1.0,
+  BUDGET_TOLERANCE: 0.05,
+
+  // Allocation Ratios for UI Colors
+  ALLOCATION_RATIOS: {
+    MIN_BALANCED: 0.95,
+    MAX_BALANCED: 1.05,
+    MIN_ACCEPTABLE: 0.80,
+    MAX_ACCEPTABLE: 1.40,
+  },
+
   // Assets & Transactions
   DUPLICATE_TRANSACTION_WINDOW_MS: 1000 * 60 * 60 * 24, // 1 day for hash comparison
   MAX_TRANSACTIONS_PER_PAGE: 50,
