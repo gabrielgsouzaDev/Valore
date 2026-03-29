@@ -96,6 +96,7 @@ export const creditCardSchema = z.object({
     dueDay: z.number().min(1).max(31),
     color: z.string().default("slate"),
     bankId: z.number().optional(),
+    last4: z.string().optional(),
 })
 
 export const creditCardWithIdSchema = creditCardSchema.merge(idSchema)

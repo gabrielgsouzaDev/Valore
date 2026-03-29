@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
+import { INTERFACE_LABELS } from "@/lib/constants"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
@@ -87,14 +88,14 @@ export default function InvestimentosPage() {
                     </div>
                     <div className="flex gap-4 sm:gap-8 items-center">
                         <div className="text-left sm:text-right flex flex-col justify-center">
-                            <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">Capital Investido</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">{INTERFACE_LABELS.INVESTED_CAPITAL}</p>
                             <div className="text-lg sm:text-2xl font-bold tracking-tight text-foreground/70">
                                 <NumberTicker value={totalInvested} currency isPrivate={settings.isPrivate} />
                             </div>
                         </div>
                         <div className="text-left sm:text-right flex flex-col justify-center">
                             <div className="flex items-center gap-2 mb-0.5 justify-start sm:justify-end">
-                                <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">Patrimônio Atual</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">{INTERFACE_LABELS.CURRENT_EQUITY}</p>
                                 <Badge variant="outline" className={cn(
                                     "text-[10px] py-0 px-1.5 h-4 font-bold border-none",
                                     totalGain >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"

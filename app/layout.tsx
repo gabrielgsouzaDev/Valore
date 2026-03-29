@@ -67,6 +67,13 @@ export default function RootLayout({
                   });
                   if (theme.mode === 'dark') root.classList.add('dark');
                   else root.classList.remove('dark');
+                  
+                  // Atualizar theme-color do PWA
+                  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                  if (metaThemeColor) {
+                    const rgb = theme.colors.background.split(' ');
+                    metaThemeColor.setAttribute('content', 'rgb(' + rgb.join(',') + ')');
+                  }
                 } catch (e) {}
               })();
             `,

@@ -115,6 +115,7 @@ export type CreditCard = {
     dueDay: number
     color: string
     bankId?: number
+    last4?: string
 }
 
 export type CardExpense = {

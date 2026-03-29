@@ -13,6 +13,7 @@ import { useApp } from "@/contexts/app-context"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/hooks/use-toast"
 import type { CreditCard as CreditCardType, CardExpense } from "@/lib/types"
+import { CARD_COLOR_MAP } from "@/lib/constants"
 import {
   Plus,
   CreditCard,
@@ -33,12 +34,7 @@ import NumberTicker from "@/components/ui/number-ticker"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts"
 
 const mapTailwindColorToHex = (colorName: string) => {
-  const map: Record<string, string> = {
-    violet: "#8b5cf6", orange: "#f97316", emerald: "#10b981", blue: "#2563eb",
-    rose: "#f43f5e", cyan: "#06b6d4", amber: "#f59e0b", slate: "#64748b",
-    zinc: "#3f3f46", indigo: "#4f46e5"
-  }
-  return map[colorName] || "var(--primary)"
+  return CARD_COLOR_MAP[colorName as keyof typeof CARD_COLOR_MAP] || "var(--primary)"
 }
 
 const cardColors = [
@@ -377,7 +373,7 @@ export default function CartoesPage() {
                           {card.name}
                         </h4>
                         <div className="flex items-center gap-4">
-                          <p className="text-[10px] font-mono opacity-60 tracking-[0.2em]">•••• •••• •••• 4022</p>
+                          <p className="text-[10px] font-mono opacity-60 tracking-[0.2em]">•••• •••• •••• {card.last4 || "0000"}</p>
                           <ContactlessIcon />
                         </div>
                       </div>

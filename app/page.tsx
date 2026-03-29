@@ -8,6 +8,7 @@ import {
   ArrowUpRight, ArrowDownRight, ChevronRight, Zap, Eye, EyeOff, Activity
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { INTERFACE_LABELS } from "@/lib/constants"
 import NumberTicker from "@/components/ui/number-ticker"
 import { ResponsiveContainer, AreaChart, Area } from "recharts"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
@@ -127,7 +128,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
           <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border shadow-sm flex relative overflow-hidden group">
             <div className="flex-1 z-10 relative pointer-events-none">
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Patrimônio Total</p>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">{INTERFACE_LABELS.TOTAL_NET_WORTH}</p>
               <div className="text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
                 <NumberTicker value={totalNetWorth} currency isPrivate={isPrivate} />
               </div>
@@ -141,11 +142,11 @@ export default function DashboardPage() {
                 <AreaChart data={sparklineData}>
                   <defs>
                     <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <Area type="monotone" dataKey="value" stroke="var(--color-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorNetWorth)" isAnimationActive={true} />
+                  <Area type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorNetWorth)" isAnimationActive={true} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -201,9 +202,9 @@ export default function DashboardPage() {
 
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40">
                         <div>
-                          <p className="text-[9px] text-muted-foreground font-bold uppercase">Liquidez Imediata</p>
+                          <p className="text-[9px] text-muted-foreground font-bold uppercase">{INTERFACE_LABELS.IMMEDIATE_LIQUIDITY}</p>
                           <div className={cn("text-sm font-bold text-foreground")}>
-                            <NumberTicker value={totalNetWorth * 0.15} currency isPrivate={isPrivate} />
+                            <NumberTicker value={immediateLiquidity} currency isPrivate={isPrivate} />
                           </div>
                         </div>
                         <div>
@@ -263,7 +264,7 @@ export default function DashboardPage() {
                             <div className="h-6 w-16 opacity-50 block">
                               <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={economySparkline}>
-                                  <Area type="monotone" dataKey="value" stroke="var(--color-success)" strokeWidth={2} fillOpacity={0} isAnimationActive={true} />
+                                  <Area type="monotone" dataKey="value" stroke="var(--success)" strokeWidth={2} fillOpacity={0} isAnimationActive={true} />
                                 </AreaChart>
                               </ResponsiveContainer>
                             </div>

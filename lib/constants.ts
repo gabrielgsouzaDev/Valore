@@ -1,5 +1,18 @@
 import { ThemePreset, Settings, Asset, Category, Goal, ScheduledTransaction, CreditCard, CardExpense, Bank } from "./types"
 
+export const CARD_COLOR_MAP = {
+    violet: "#8b5cf6",
+    orange: "#f97316",
+    emerald: "#10b981",
+    blue: "#2563eb",
+    rose: "#f43f5e",
+    cyan: "#06b6d4",
+    amber: "#f59e0b",
+    slate: "#64748b",
+    zinc: "#3f3f46",
+    indigo: "#4f46e5"
+}
+
 export const themePresets: ThemePreset[] = [
     // ── TEMAS CLAROS (LIGHT) ──────────────────────────────────────────────
     {
@@ -776,8 +789,8 @@ export const exampleData = {
         { id: 3, name: "MacBook Pro", target: 12000, current: 12000, deadline: "2026-03-01", monthlyContribution: 0, priority: "baixa", category: "Tech", bankId: 1 }
     ] as Goal[],
     creditCards: [
-        { id: 1, name: "Nubank Ultravioleta", limit: 15000, closingDay: 25, dueDay: 2, color: "violet", bankId: 1 },
-        { id: 2, name: "Mercado Pago", limit: 5000, closingDay: 1, dueDay: 10, color: "green", bankId: 1 }
+        { id: 1, name: "Nubank Ultravioleta", limit: 15000, closingDay: 25, dueDay: 2, color: "violet", bankId: 1, last4: "4022" },
+        { id: 2, name: "Mercado Pago", limit: 5000, closingDay: 1, dueDay: 10, color: "green", bankId: 1, last4: "8890" }
     ] as CreditCard[],
     cardExpenses: [
         { id: 1, description: "MacBook Air M2", totalAmount: 8500, purchaseDate: "2026-03-04T12:00:00.000Z", installments: 10, cardId: 1 },
@@ -792,4 +805,15 @@ export const exampleData = {
         { id: 4, name: "Freelance design", amount: 1200, type: "ganho", status: "pago", recurrence: "unico", dueDate: "2026-03-08T12:00:00.000Z" },
         { id: 5, name: "Plano de saúde", amount: 320, type: "pagamento", status: "pendente", recurrence: "mensal", dueDate: "2026-03-20T12:00:00.000Z" }
     ] as ScheduledTransaction[]
+}
+
+export const INTERFACE_LABELS = {
+    TOTAL_NET_WORTH: "Patrimônio Total",
+    IMMEDIATE_LIQUIDITY: "Liquidez Imediata",
+    MONTHLY_INCOME: "Renda Mensal",
+    MONTHLY_EXPENSES: "Saídas do Mês",
+    INVESTED_CAPITAL: "Capital Investido",
+    CURRENT_EQUITY: "Patrimônio Atual",
+    YIELD_ON_COST: "Yield on Cost",
+    BEST_DAY_TO_BUY: "Melhor Dia",
 }
