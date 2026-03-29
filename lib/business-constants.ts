@@ -23,8 +23,17 @@ export const BUSINESS_RULES = {
   MAX_TRANSACTIONS_PER_PAGE: 50,
 
   // Security & Persistence
-  LOCALSTORAGE_VERSION: 1,
+  LOCALSTORAGE_VERSION: 2,
   AUTO_SAVE_INTERVAL_MS: 3000,
+} as const;
+
+export const FORMAT_CONFIG = {
+  DEFAULT_LOCALE: BUSINESS_RULES.DEFAULT_LOCALE,
+  DEFAULT_CURRENCY: BUSINESS_RULES.DEFAULT_CURRENCY,
+} as const;
+
+export const STORAGE_CONFIG = {
+  KEY: "valore_app_data_v2",
 } as const;
 
 export type BusinessRules = typeof BUSINESS_RULES;

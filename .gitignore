@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/ui-ux-pro-max-skill-main
 
 # next.js
 /.next/
