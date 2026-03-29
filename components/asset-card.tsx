@@ -24,6 +24,11 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
   const difference = currentPercentage - asset.targetPercentage
   const progressValue = (currentPercentage / asset.targetPercentage) * 100
 
+  const totalCost = asset.quantity * asset.averagePrice
+  const totalGain = asset.currentValue - totalCost
+  const rentabilidade = asset.averagePrice > 0 ? ((asset.price / asset.averagePrice) - 1) * 100 : 0
+  const yoc = (asset.annualDividend && asset.averagePrice > 0) ? (asset.annualDividend / asset.averagePrice) * 100 : 0
+
   // Alert logic for stale prices and Bitcoin
   const isBitcoin = asset.name === "Bitcoin"
   const showSellAlert = isBitcoin && currentPercentage > 25
@@ -111,20 +116,24 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row items-baseline justify-between gap-4">
+            <div className="flex-1">
               <div className={cn("text-3xl font-bold text-foreground")}>
                 <NumberTicker value={asset.currentValue} currency isPrivate={isPrivate} />
               </div>
-              <p className={cn("text-sm text-muted-foreground mt-1", isPrivate && "blur-sm select-none pointer-events-none opacity-60")}>
-                {asset.quantity} {asset.name === "Bitcoin" ? "BTC" : "cotas"} ×{" "}
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(asset.price)}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className={cn("text-xs text-muted-foreground", isPrivate && "blur-sm select-none")}>
+                  Investido: {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalCost)}
+                </p>
+                <Badge variant="outline" className={cn(
+                  "text-[10px] py-0 px-1.5 h-4 font-bold border-none",
+                  totalGain >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                )}>
+                  {totalGain >= 0 ? "+" : ""}{rentabilidade.toFixed(1)}%
+                </Badge>
+              </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <p className="text-2xl font-bold text-foreground">{currentPercentage.toFixed(1)}%</p>
               <p
                 className="text-sm font-medium"
@@ -137,6 +146,16 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
               </p>
             </div>
           </div>
+
+          {yoc > 0 && (
+            <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg border border-border/50">
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-warning" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Yield on Cost</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{yoc.toFixed(2)}%</span>
+            </div>
+          )}
 
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">

@@ -11,6 +11,7 @@ export interface ParsedTransaction {
     amount: number
     description: string
     type: "entrada" | "saída"
+    transactionHash?: string
 }
 
 export function parseStatement(fileContent: string, fileName: string): ParsedTransaction[] {
@@ -106,12 +107,16 @@ function parseCSV(csvString: string): ParsedTransaction[] {
             description = textCols[0].trim()
         }
 
+        const hashSource = `${dateObj.toISOString().split('T')[0]}_${amount}_${description.trim()}`
+        const transactionHash = hashSource.toLowerCase().replace(/\s+/g, '')
+
         transactions.push({
             id: Math.random().toString(36).substring(7),
             date: dateObj,
             amount: amount,
             description: description,
-            type: amount >= 0 ? "entrada" : "saída"
+            type: amount >= 0 ? "entrada" : "saída",
+            transactionHash
         })
     }
 
@@ -159,12 +164,16 @@ export function parseOFX(ofxString: string): ParsedTransaction[] {
         const fitidMatch = trnBlock.match(/<FITID>(.*?)(?:\r\n|\n|<)/)
         const id = fitidMatch ? fitidMatch[1].trim() : Math.random().toString(36).substring(7)
 
+        const hashSource = `${date.toISOString().split('T')[0]}_${amount}_${description.trim()}`
+        const transactionHash = hashSource.toLowerCase().replace(/\s+/g, '')
+
         transactions.push({
             id,
             date,
             amount,
             description,
-            type: amount >= 0 ? "entrada" : "saída"
+            type: amount >= 0 ? "entrada" : "saída",
+            transactionHash
         })
     }
 

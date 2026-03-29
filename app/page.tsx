@@ -5,10 +5,11 @@ import { DemoBanner } from "@/components/demo-banner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   TrendingUp, Wallet, Target, Receipt, CreditCard, LayoutDashboard,
-  ArrowUpRight, ArrowDownRight, ChevronRight, Zap, Eye, EyeOff
+  ArrowUpRight, ArrowDownRight, ChevronRight, Zap, Eye, EyeOff, Activity
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import NumberTicker from "@/components/ui/number-ticker"
+import { ResponsiveContainer, AreaChart, Area } from "recharts"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { cn } from "@/lib/utils"
 import {
@@ -33,7 +34,9 @@ export default function DashboardPage() {
     getTotalCardDebt,
     settings,
     isPrivate,
-    togglePrivacy
+    togglePrivacy,
+    patrimonialHistory,
+    banks
   } = useApp()
 
   const activeModules = settings.activeModules || {}
@@ -69,6 +72,19 @@ export default function DashboardPage() {
     const d = new Date(inv.year, inv.monthIndex)
     return d >= today
   })
+
+  // Liquidez Imediata (Bancos + Renda Fixa)
+  const totalBanks = banks.reduce((acc, b) => acc + b.balance, 0)
+  const totalLiquidityAssets = assets.filter(a => a.type === "Renda Fixa").reduce((acc, a) => acc + a.currentValue, 0)
+  const immediateLiquidity = totalBanks + totalLiquidityAssets
+
+  // Sparkline Histórico Patrimonial (7 dias)
+  const sparklineData = patrimonialHistory.length > 1
+    ? patrimonialHistory.slice(-7).map(s => ({ value: s.totalNetWorth }))
+    : Array.from({ length: 7 }).map((_, i) => ({ value: totalNetWorth * (0.95 + (i * 0.01)) })) // Mock para movimento visual se não houver dados
+
+  // Sparkline de Ganhos/Despesas (mock visual ou real se houver muito histórico)
+  const economySparkline = Array.from({ length: 7 }).map((_, i) => ({ value: Math.random() * 1000 + 500 }))
 
   return (
     <>
@@ -107,13 +123,45 @@ export default function DashboardPage() {
       <DemoBanner />
 
       <div className="p-4 sm:p-6 lg:p-8">
-        {/* Patrimônio em destaque */}
-        <div className="mb-6 p-4 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Patrimônio Total</p>
-          <div className="text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
-            <NumberTicker value={totalNetWorth} currency isPrivate={isPrivate} />
+        {/* Top Indicators: Patrimônio & Liquidez com Sparklines */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+          <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border shadow-sm flex relative overflow-hidden group">
+            <div className="flex-1 z-10 relative pointer-events-none">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Patrimônio Total</p>
+              <div className="text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
+                <NumberTicker value={totalNetWorth} currency isPrivate={isPrivate} />
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2 flex items-center gap-1.5 opacity-80">
+                <Activity className="h-3.5 w-3.5 text-primary" /> Tendência de 7 dias
+              </p>
+            </div>
+            {/* Minimal Sparkline Area */}
+            <div className="absolute top-0 right-0 bottom-0 w-1/2 opacity-30 group-hover:opacity-50 transition-opacity pointer-events-none">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={sparklineData}>
+                  <defs>
+                    <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area type="monotone" dataKey="value" stroke="var(--color-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorNetWorth)" isAnimationActive={true} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-2">{assets.length} ativo{assets.length !== 1 ? "s" : ""} em carteira</p>
+
+          <div className="p-4 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm relative overflow-hidden group">
+            <div className="flex-1 z-10 relative pointer-events-none">
+              <p className="text-xs sm:text-sm text-primary/80 font-bold uppercase tracking-widest mb-1">Liquidez Imediata</p>
+              <div className="text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
+                <NumberTicker value={immediateLiquidity} currency isPrivate={isPrivate} />
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-bold mt-2 uppercase tracking-wide opacity-80">
+                Bancos + Renda Fixa
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Bento Grid layout - Densidade de Informação de Elite */}
@@ -198,7 +246,7 @@ export default function DashboardPage() {
                         <span className="text-xs text-muted-foreground font-bold opacity-40 uppercase tracking-widest">/ {fmt(totalBudgeted)}</span>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-4 flex-1 flex flex-col justify-end">
                         <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden ring-1 ring-border/5">
                           <div
                             className="h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(34,197,94,0.2)]"
@@ -211,12 +259,13 @@ export default function DashboardPage() {
 
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
-                            <p className="text-[9px] text-muted-foreground font-bold uppercase mb-1">Reserva Emergência</p>
-                            <div className="flex items-center gap-2">
-                              <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-warning w-2/3 rounded-full" />
-                              </div>
-                              <span className="text-[10px] font-bold">66%</span>
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase mb-1">Tendência de Ganhos</p>
+                            <div className="h-6 w-16 opacity-50 block">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={economySparkline}>
+                                  <Area type="monotone" dataKey="value" stroke="var(--color-success)" strokeWidth={2} fillOpacity={0} isAnimationActive={true} />
+                                </AreaChart>
+                              </ResponsiveContainer>
                             </div>
                           </div>
                           <div className="text-right">

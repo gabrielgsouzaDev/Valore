@@ -34,6 +34,8 @@ export type Asset = {
     currentValue: number
     quantity: number
     price: number
+    averagePrice: number
+    annualDividend?: number
     bankId?: number
     ceilingPrice?: number
     priority?: number
@@ -102,6 +104,7 @@ export type ScheduledTransaction = {
     status: "pendente" | "pago" | "atrasado"
     notes?: string
     bankId?: number
+    transactionHash?: string
 }
 
 export type CreditCard = {
@@ -129,7 +132,7 @@ export type InvoiceProjection = {
     year: number
     monthIndex: number
     total: number
-    expenses: { description: string; amount: number; installment: string }[]
+    expenses: { description: string; amount: number; installment: string; cardId: number }[]
 }
 
 export type BankType = "conta_corrente" | "poupanca" | "carteira_digital" | "corretora" | "banco_digital" | "banco_tradicional" | "outro"

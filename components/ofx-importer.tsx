@@ -5,6 +5,7 @@ import { Upload, FileText, CheckCircle2, AlertCircle, X, Check } from "lucide-re
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useApp } from "@/contexts/app-context"
+import { useToast } from "@/hooks/use-toast"
 import { parseStatement, ParsedTransaction } from "@/lib/ofx-parser"
 
 interface OfxImporterProps {
@@ -14,18 +15,21 @@ interface OfxImporterProps {
 
 export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
     const { addTransaction, transactions } = useApp()
+    const { toast } = useToast()
     const [isDragging, setIsDragging] = useState(false)
     const [parsedData, setParsedData] = useState<ParsedTransaction[]>([])
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-    const [error, setError] = useState<string | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const processFile = async (file: File) => {
-        setError(null)
         const fileName = file.name.toLowerCase()
         if (!fileName.endsWith('.ofx') && !fileName.endsWith('.csv')) {
-            setError("Por favor, envie apenas arquivos no formato OFX ou CSV.")
+            toast({
+                variant: "destructive",
+                title: "Formato Inválido",
+                description: "Por favor, envie apenas arquivos no formato OFX ou CSV."
+            })
             return
         }
 
@@ -34,16 +38,19 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
             const data = parseStatement(text, fileName)
 
             if (data.length === 0) {
-                setError("Não foi possível encontrar transações válidas neste arquivo.")
+                toast({
+                    variant: "destructive",
+                    title: "Arquivo Vazio ou Inválido",
+                    description: "Não foi possível encontrar transações válidas neste arquivo."
+                })
                 return
             }
 
-            // Detect duplicates heuristically
+            // Detect duplicates heuristically via TransactionHash
+            const existingHashes = new Set(transactions.map(t => t.transactionHash).filter(Boolean))
+
             const newTransactions = data.map((t: ParsedTransaction) => {
-                const isDuplicate = transactions.some(existing =>
-                    existing.amount === t.amount &&
-                    existing.dueDate.split('T')[0] === t.date.toISOString().split('T')[0]
-                )
+                const isDuplicate = t.transactionHash ? existingHashes.has(t.transactionHash) : false
                 return { ...t, isDuplicate }
             })
 
@@ -56,9 +63,18 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
             })
             setSelectedIds(initialSelected)
 
+            toast({
+                title: "Arquivo processado",
+                description: `${newTransactions.length} transações encontradas.`
+            })
+
         } catch (err) {
             console.error(err)
-            setError("Falha ao ler o arquivo. Certifique-se de que é um extrato válido.")
+            toast({
+                variant: "destructive",
+                title: "Falha na Leitura",
+                description: "Certifique-se de que é um extrato válido de banco."
+            })
         }
     }
 
@@ -88,6 +104,8 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
                 status: "pago",
                 dueDate: t.date.toISOString(),
                 recurrence: "unico",
+                transactionHash: t.transactionHash,
+                notes: "[IMPORTADO]" // Badge indicator hook
             })
         })
 
@@ -97,7 +115,6 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
     const resetAndClose = () => {
         setParsedData([])
         setSelectedIds(new Set())
-        setError(null)
         onOpenChange(false)
     }
 
@@ -119,13 +136,6 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
                         Sincronize transações enviando o arquivo OFX ou CSV exportado pelo seu banco.
                     </DialogDescription>
                 </DialogHeader>
-
-                {error && (
-                    <div className="bg-danger/10 text-danger border border-danger/20 p-3 rounded-md flex items-center gap-2 text-sm mt-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <p>{error}</p>
-                    </div>
-                )}
 
                 {parsedData.length === 0 ? (
                     <div

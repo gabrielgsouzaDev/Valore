@@ -28,6 +28,8 @@ interface Asset {
   currentValue: number
   quantity: number
   price: number
+  averagePrice: number
+  annualDividend?: number
   bankId?: number
 }
 
@@ -64,6 +66,8 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
     targetPercentage: "",
     quantity: "",
     price: "",
+    averagePrice: "",
+    annualDividend: "",
     bankId: "",
   })
 
@@ -77,6 +81,8 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
         targetPercentage: asset.targetPercentage.toString(),
         quantity: asset.quantity.toString(),
         price: asset.price.toString(),
+        averagePrice: asset.averagePrice?.toString() || asset.price.toString(),
+        annualDividend: asset.annualDividend?.toString() || "",
         bankId: asset.bankId?.toString() || "",
       })
       setIsManualMode(true) // Editing implies seeing the form
@@ -89,6 +95,8 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
         targetPercentage: "",
         quantity: "",
         price: "",
+        averagePrice: "",
+        annualDividend: "",
         bankId: "",
       })
       setIsManualMode(false)
@@ -156,6 +164,8 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
       targetPercentage: Number.parseFloat(formData.targetPercentage) || 0,
       quantity: Number.parseFloat(formData.quantity) || 0,
       price: Number.parseFloat(formData.price) || 0,
+      averagePrice: Number.parseFloat(formData.averagePrice) || Number.parseFloat(formData.price) || 0,
+      annualDividend: formData.annualDividend ? Number.parseFloat(formData.annualDividend) : undefined,
       bankId: formData.bankId ? Number.parseInt(formData.bankId) : undefined,
     })
     onOpenChange(false)
@@ -307,7 +317,7 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="price" className="text-foreground font-medium">Preço (R$)</Label>
+                  <Label htmlFor="price" className="text-foreground font-medium">Preço Atual (R$)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -317,7 +327,39 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
                     placeholder="Ex: 140.50"
                     className="bg-muted border-border"
                     required
-                    readOnly={formData.syncAvailable} // Preço vem da API
+                    readOnly={formData.syncAvailable}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="averagePrice" className="text-foreground font-medium">Preço Médio (R$)</Label>
+                  <Input
+                    id="averagePrice"
+                    type="number"
+                    step="0.01"
+                    value={formData.averagePrice}
+                    onChange={(e) => setFormData({ ...formData, averagePrice: e.target.value })}
+                    placeholder="Quanto você pagou"
+                    className="bg-muted border-border"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="annualDividend" className="text-foreground font-medium flex items-center gap-1.5">
+                    Div. Anual/Cota (R$)
+                    <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Label>
+                  <Input
+                    id="annualDividend"
+                    type="number"
+                    step="0.01"
+                    value={formData.annualDividend}
+                    onChange={(e) => setFormData({ ...formData, annualDividend: e.target.value })}
+                    placeholder="Calcula o YOC"
+                    className="bg-muted border-border"
                   />
                 </div>
               </div>

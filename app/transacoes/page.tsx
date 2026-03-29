@@ -39,6 +39,7 @@ import {
     Loader2,
     Download,
     Upload,
+    X,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
@@ -99,6 +100,7 @@ export default function TransacoesPage() {
     const [catDialogOpen, setCatDialogOpen] = useState(false)
     const [newCatName, setNewCatName] = useState("")
     const [newCatColor, setNewCatColor] = useState("slate")
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const { toast } = useToast()
     const showActions = true
 
@@ -267,6 +269,25 @@ export default function TransacoesPage() {
         }
     }
 
+    const toggleSelection = (id: number) => {
+        const next = new Set(selectedIds)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        setSelectedIds(next)
+    }
+
+    const handleBatchPay = () => {
+        selectedIds.forEach(id => markAsPaid(id))
+        setSelectedIds(new Set())
+        toast({ title: "Transações marcadas como pagas" })
+    }
+
+    const handleBatchDelete = () => {
+        selectedIds.forEach(id => deleteTransaction(id))
+        setSelectedIds(new Set())
+        toast({ title: "Transações excluídas" })
+    }
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case "pago":
@@ -293,6 +314,7 @@ export default function TransacoesPage() {
         const bank = transaction.bankId ? getBankById(transaction.bankId) : null
         const categoryName = getCategoryName(transaction.categoryId)
         const isAtrasado = transaction.status === "atrasado"
+        const isImported = transaction.notes?.includes("[IMPORTADO]")
 
         return (
             <motion.div
@@ -301,13 +323,28 @@ export default function TransacoesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: (index || 0) * 0.05 }}
                 className={cn(
-                    "flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border transition-all gap-3",
+                    "flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl border transition-all gap-3 group relative cursor-pointer",
                     isAtrasado
                         ? "bg-danger/5 border-danger/20 animate-pulse-critical"
-                        : "bg-card border-border/50 hover:border-primary/30"
+                        : "bg-card border-border/50 hover:border-primary/30",
+                    selectedIds.has(transaction.id) && "ring-2 ring-primary bg-primary/5"
                 )}
+                onClick={() => toggleSelection(transaction.id)}
             >
                 <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-3">
+                        <button
+                            className={cn(
+                                "w-5 h-5 rounded flex items-center justify-center border shrink-0 transition-colors pointer-events-none",
+                                selectedIds.has(transaction.id)
+                                    ? 'bg-primary border-primary text-primary-foreground'
+                                    : 'border-muted-foreground/30 group-hover:border-primary/50'
+                            )}
+                        >
+                            {selectedIds.has(transaction.id) && <Check className="w-3 h-3" />}
+                        </button>
+                    </div>
+
                     <div className={cn("p-2 rounded-lg flex-shrink-0", transaction.type === "ganho" ? "bg-success/10" : "bg-danger/10")}>
                         {transaction.type === "ganho"
                             ? <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
@@ -333,6 +370,15 @@ export default function TransacoesPage() {
                             )}
                             {categoryName && (
                                 <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground font-medium">{categoryName}</span>
+                            )}
+                            {isImported ? (
+                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-primary/10 rounded text-primary flex items-center gap-1 font-semibold">
+                                    <Building2 className="h-2.5 w-2.5" /> Bancário
+                                </span>
+                            ) : (
+                                <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground flex items-center gap-1 font-semibold">
+                                    <Pencil className="h-2.5 w-2.5" /> Manual
+                                </span>
                             )}
                         </div>
                     </div>
@@ -361,7 +407,7 @@ export default function TransacoesPage() {
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-primary/20 hover:text-primary transition-all rounded-xl" onClick={() => handleEdit(transaction)}>
                                 <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-danger/20 hover:text-danger transition-all rounded-xl" onClick={() => { setTransactionToDelete(transaction.id); setConfirmOpen(true) }}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-danger/20 hover:text-danger transition-all rounded-xl" onClick={(e) => { e.stopPropagation(); setTransactionToDelete(transaction.id); setConfirmOpen(true) }}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
@@ -373,6 +419,30 @@ export default function TransacoesPage() {
 
     return (
         <>
+            {/* Floating Batch Actions Bar */}
+            <AnimatePresence>
+                {selectedIds.size > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0, x: "-50%" }}
+                        animate={{ y: 0, opacity: 1, x: "-50%" }}
+                        exit={{ y: 100, opacity: 0, x: "-50%" }}
+                        className="fixed bottom-6 left-1/2 bg-card border border-border/50 shadow-[0_20px_40px_rgba(0,0,0,0.2)] rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-4 z-50 backdrop-blur-xl w-[90%] sm:w-auto overflow-x-auto custom-scrollbar"
+                    >
+                        <span className="text-xs sm:text-sm font-bold whitespace-nowrap">{selectedIds.size} selecionada{selectedIds.size !== 1 && 's'}</span>
+                        <div className="w-px h-4 bg-border shrink-0"></div>
+                        <Button variant="ghost" size="sm" onClick={handleBatchPay} className="text-success hover:text-success hover:bg-success/10 text-xs sm:text-sm h-8 rounded-full px-2 sm:px-3">
+                            <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Pagar
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={handleBatchDelete} className="text-danger hover:text-danger hover:bg-danger/10 text-xs sm:text-sm h-8 rounded-full px-2 sm:px-3">
+                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Excluir
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedIds(new Set())} className="text-muted-foreground h-8 w-8 rounded-full ml-auto shrink-0">
+                            <X className="w-4 h-4" />
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Header */}
             <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30">
                 <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

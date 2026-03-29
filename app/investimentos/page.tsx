@@ -14,6 +14,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
 import Link from "next/link"
 import dynamic from "next/dynamic"
@@ -32,6 +34,9 @@ export default function InvestimentosPage() {
     const [assetToDelete, setAssetToDelete] = useState<number | null>(null)
 
     const totalCardDebt = getTotalCardDebt()
+    const totalInvested = assets.reduce((sum, asset) => sum + (asset.quantity * asset.averagePrice), 0)
+    const totalGain = totalNetWorth - totalInvested
+    const totalGainPercent = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0
 
     const handleAddAsset = (assetData: Omit<Asset, "id" | "currentValue">) => {
         addAsset(assetData)
@@ -80,10 +85,26 @@ export default function InvestimentosPage() {
                             <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Investimentos • Portfólio em tempo real</p>
                         </div>
                     </div>
-                    <div className="text-left sm:text-right flex flex-col justify-center">
-                        <p className="text-xs sm:text-sm text-muted-foreground font-medium">Patrimônio Total</p>
-                        <div className="text-xl sm:text-3xl font-bold tracking-tight text-primary">
-                            <NumberTicker value={totalNetWorth} currency isPrivate={settings.isPrivate} />
+                    <div className="flex gap-4 sm:gap-8 items-center">
+                        <div className="text-left sm:text-right flex flex-col justify-center">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">Capital Investido</p>
+                            <div className="text-lg sm:text-2xl font-bold tracking-tight text-foreground/70">
+                                <NumberTicker value={totalInvested} currency isPrivate={settings.isPrivate} />
+                            </div>
+                        </div>
+                        <div className="text-left sm:text-right flex flex-col justify-center">
+                            <div className="flex items-center gap-2 mb-0.5 justify-start sm:justify-end">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider">Patrimônio Atual</p>
+                                <Badge variant="outline" className={cn(
+                                    "text-[10px] py-0 px-1.5 h-4 font-bold border-none",
+                                    totalGain >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                                )}>
+                                    {totalGain >= 0 ? "+" : ""}{totalGainPercent.toFixed(1)}%
+                                </Badge>
+                            </div>
+                            <div className="text-xl sm:text-3xl font-bold tracking-tight text-primary">
+                                <NumberTicker value={totalNetWorth} currency isPrivate={settings.isPrivate} />
+                            </div>
                         </div>
                     </div>
                 </div>

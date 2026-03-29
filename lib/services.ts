@@ -22,7 +22,7 @@ export function calculateInvoices(
         const monthName = format(projectionDate, "MMMM", { locale: ptBR })
         const year = projectionDate.getFullYear()
 
-        const monthlyExpenses: { description: string; amount: number; installment: string }[] = []
+        const monthlyExpenses: { description: string; amount: number; installment: string; cardId: number }[] = []
         let monthlyTotal = 0
 
         expenses.forEach((expense) => {
@@ -55,6 +55,7 @@ export function calculateInvoices(
                     description: expense.description,
                     amount: installmentAmount,
                     installment: `${actualInstallmentIndex + 1}/${expense.installments}`,
+                    cardId: expense.cardId,
                 })
             }
         })

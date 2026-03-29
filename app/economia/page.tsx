@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
 import { getEconomyBarColor, formatCurrency } from "@/lib/services"
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet } from "lucide-react"
+import Link from "next/link"
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Wallet, TrendingUp } from "lucide-react"
 import { CategoryDialog } from "@/components/category-dialog"
 import { SubcategoryDialog } from "@/components/subcategory-dialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -347,6 +348,30 @@ export default function EconomiaPage() {
                   </p>
                 </div>
               </Card>
+
+              {/* Regra de Sobra (Leftover Rule) */}
+              {remaining > 0 && (
+                <Card className="bg-success/5 border-success/20 p-4 sm:p-6 shadow-sm overflow-hidden relative group">
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-success/10 rounded-full blur-2xl group-hover:bg-success/20 transition-all pointer-events-none" />
+                  <h3 className="text-xs sm:text-sm font-bold text-success uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" /> Regra de Sobra
+                  </h3>
+                  <p className="text-sm text-foreground/80 mb-4 font-medium leading-snug tracking-tight">Você economizou este mês! Que tal investir a diferença para acelerar sua liberdade financeira?</p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-[10px] text-success/80 font-bold uppercase mb-1">Aporte Sugerido</p>
+                      <div className="text-xl sm:text-2xl font-black text-success tracking-tighter">
+                        <NumberTicker value={remaining} currency isPrivate={settings.isPrivate} />
+                      </div>
+                    </div>
+                    <Link href={`/investimentos?aporte=${remaining}`}>
+                      <Button size="sm" className="bg-success hover:bg-success/90 text-white font-bold shadow-md shadow-success/20 rounded-xl">
+                        Investir
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              )}
 
               {/* Fixed Expenses */}
               <Card className="bg-card border-border p-4 sm:p-6">

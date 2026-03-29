@@ -11,7 +11,7 @@ import type { Asset } from "@/lib/types"
 
 interface UpdateTableProps {
   assets: Asset[]
-  onUpdate: (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number) => void
+  onUpdate: (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number, averagePrice?: number, annualDividend?: number) => void
 }
 
 export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
@@ -20,20 +20,26 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
   const [tempPrice, setTempPrice] = useState("")
   const [tempCeiling, setTempCeiling] = useState("")
   const [tempPriority, setTempPriority] = useState("")
+  const [tempAverage, setTempAverage] = useState("")
+  const [tempDividend, setTempDividend] = useState("")
 
   const handleUpdate = (id: number) => {
     const quantity = Number.parseFloat(tempQuantity)
     const price = Number.parseFloat(tempPrice)
     const ceiling = tempCeiling === "" ? undefined : Number.parseFloat(tempCeiling)
     const priority = tempPriority === "" ? undefined : Number.parseInt(tempPriority)
+    const average = tempAverage === "" ? undefined : Number.parseFloat(tempAverage)
+    const dividend = tempDividend === "" ? undefined : Number.parseFloat(tempDividend)
 
     if (!isNaN(quantity) && !isNaN(price)) {
-      onUpdate(id, quantity, price, ceiling, priority)
+      onUpdate(id, quantity, price, ceiling, priority, average, dividend)
       setEditingAsset(null)
       setTempQuantity("")
       setTempPrice("")
       setTempCeiling("")
       setTempPriority("")
+      setTempAverage("")
+      setTempDividend("")
     }
   }
 
@@ -43,6 +49,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
     setTempPrice(asset.price.toString())
     setTempCeiling(asset.ceilingPrice?.toString() || "")
     setTempPriority(asset.priority?.toString() || "")
+    setTempAverage(asset.averagePrice?.toString() || "")
+    setTempDividend(asset.annualDividend?.toString() || "")
   }
 
   const fmt = (n: number) =>
@@ -52,14 +60,12 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
     <Card className="bg-card border-border p-4 sm:p-6 transition-theme">
       <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Atualização Rápida</h3>
 
-      {/* Mobile: cards empilhados | Desktop: grid 4 colunas */}
       <div className="space-y-3">
         {assets.map((asset) => (
           <div
             key={asset.id}
             className="p-4 bg-muted/20 border border-border rounded-xl transition-theme"
           >
-            {/* Header do card: nome + botão atualizar */}
             <div className="flex items-center justify-between mb-3">
               <span className="font-semibold text-foreground text-sm sm:text-base">{asset.name}</span>
               {editingAsset !== asset.id && (
@@ -67,7 +73,6 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   onClick={() => startEditing(asset)}
                   size="icon"
                   variant="ghost"
-                  aria-label={`Atualizar ${asset.name}`}
                   className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
                 >
                   <RefreshCcw className="h-4 w-4" />
@@ -76,7 +81,6 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
             </div>
 
             {editingAsset === asset.id ? (
-              /* ── MODO EDIÇÃO ── */
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -104,6 +108,34 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Preço Médio
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempAverage}
+                      onChange={(e) => setTempAverage(e.target.value)}
+                      placeholder="R$"
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                      Dividendos
+                    </label>
+                    <Input
+                      type="number"
+                      value={tempDividend}
+                      onChange={(e) => setTempDividend(e.target.value)}
+                      placeholder="R$"
+                      className="bg-muted/30 border-border text-foreground text-sm h-11"
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
@@ -130,10 +162,10 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     />
                   </div>
                 </div>
+
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleUpdate(asset.id)}
-                    aria-label={`Salvar alterações em ${asset.name}`}
                     className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium min-h-[44px]"
                   >
                     <Check className="h-4 w-4 mr-1" />
@@ -142,7 +174,6 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   <Button
                     onClick={() => setEditingAsset(null)}
                     variant="outline"
-                    aria-label="Cancelar edição"
                     className="border-border text-foreground hover:bg-muted min-h-[44px] px-4"
                   >
                     <X className="h-4 w-4" />
@@ -150,24 +181,32 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                 </div>
               </div>
             ) : (
-              /* ── MODO VISUALIZAÇÃO: inline no mobile, row no desktop ── */
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Patrimônio</div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Patrimônio</div>
                   <div className="text-sm font-semibold text-foreground">
                     {asset.quantity}x {fmt(asset.price)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Teto</div>
-                  <div className="text-sm text-foreground">
-                    {asset.ceilingPrice ? fmt(asset.ceilingPrice) : <span className="text-muted-foreground">∞</span>}
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Rentabilidade</div>
+                  <div className={cn(
+                    "text-sm font-bold",
+                    asset.price >= asset.averagePrice ? "text-success" : "text-danger"
+                  )}>
+                    {asset.averagePrice > 0 ? (((asset.price / asset.averagePrice) - 1) * 100).toFixed(1) : 0}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold">Prioridade</div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">YOC</div>
+                  <div className="text-sm text-foreground font-semibold">
+                    {asset.annualDividend && asset.averagePrice > 0 ? ((asset.annualDividend / asset.averagePrice) * 100).toFixed(2) : "0.00"}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Teto</div>
                   <div className="text-sm text-foreground">
-                    {asset.priority ?? <span className="text-muted-foreground">—</span>}
+                    {asset.ceilingPrice ? fmt(asset.ceilingPrice) : <span className="text-muted-foreground">∞</span>}
                   </div>
                 </div>
               </div>

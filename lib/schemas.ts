@@ -19,6 +19,8 @@ export const assetSchema = z.object({
     targetPercentage: z.preprocess((val) => parseCurrency(val as string), z.number().min(0).max(100)),
     quantity: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
     price: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
+    averagePrice: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)),
+    annualDividend: z.preprocess((val) => parseCurrency(val as string), z.number().min(0)).optional(),
     bankId: z.number().optional(),
     currentValue: z.number(),
     ceilingPrice: z.number().optional(),

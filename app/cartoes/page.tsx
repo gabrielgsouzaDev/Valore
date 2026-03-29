@@ -30,6 +30,16 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts"
+
+const mapTailwindColorToHex = (colorName: string) => {
+  const map: Record<string, string> = {
+    violet: "#8b5cf6", orange: "#f97316", emerald: "#10b981", blue: "#2563eb",
+    rose: "#f43f5e", cyan: "#06b6d4", amber: "#f59e0b", slate: "#64748b",
+    zinc: "#3f3f46", indigo: "#4f46e5"
+  }
+  return map[colorName] || "var(--primary)"
+}
 
 const cardColors = [
   { value: "violet", label: "Roxo", class: "from-violet-600 to-violet-800" },
@@ -203,10 +213,21 @@ export default function CartoesPage() {
   const getBestDayToBuy = (card: CreditCardType) => {
     const today = new Date().getDate()
     if (today >= card.closingDay) {
-      return `Compre apos dia ${card.closingDay} para a fatura do proximo mes`
+      return `Fatura atual fechada`
     }
-    return `Compre antes do dia ${card.closingDay} para entrar na fatura atual`
+    return `Fatura fecha dia ${card.closingDay}`
   }
+
+  const chartData = invoices.map(inv => {
+    const dataRow: any = { name: `${inv.month} ${inv.year.toString().slice(2)}`, total: inv.total }
+    creditCards.forEach(card => {
+      const cardTotal = inv.expenses.filter(e => e.cardId === card.id).reduce((sum, e) => sum + e.amount, 0)
+      if (cardTotal > 0) {
+        dataRow[card.name] = cardTotal
+      }
+    })
+    return dataRow
+  })
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
@@ -384,9 +405,12 @@ export default function CartoesPage() {
                         </div>
                       </div>
 
-                      <div className="mt-3 sm:mt-4 p-1.5 sm:p-2 bg-black/20 rounded-lg flex items-start gap-1.5 sm:gap-2">
-                        <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 shrink-0" />
-                        <p className="text-[10px] sm:text-xs opacity-90">{getBestDayToBuy(card)}</p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <div className="px-2 py-1 bg-yellow-400 text-yellow-950 font-bold text-[10px] rounded flex items-center gap-1 shadow-sm">
+                          <Sparkles className="h-3 w-3" />
+                          Melhor Dia: {card.closingDay}
+                        </div>
+                        <p className="text-[10px] opacity-80 flex-1 truncate">{getBestDayToBuy(card)}</p>
                       </div>
                     </div>
                   </div>
@@ -607,62 +631,54 @@ export default function CartoesPage() {
             </div>
           </div>
 
-          {/* Invoices Projection */}
+          {/* Invoices Projection Diagram */}
           <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-base sm:text-xl font-semibold text-foreground">Projeção de Faturas</h3>
+            <h3 className="text-base sm:text-xl font-semibold text-foreground">Projeção de Faturas (12 meses)</h3>
 
-            <div className="space-y-2 sm:space-y-3">
-              {invoices.map((invoice, index) => (
-                <Card
-                  key={index}
-                  className="bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => setExpandedInvoice(expandedInvoice === index ? null : index)}
-                >
-                  <div className="p-3 sm:p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-foreground text-sm">
-                          {invoice.month} {invoice.year}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Fatura</p>
-                      </div>
-                      <p className={cn("text-base sm:text-lg font-bold text-primary", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                        {formatCurrency(invoice.total)}
-                      </p>
-                      {invoice.expenses.length > 0 &&
-                        (expandedInvoice === index ? (
-                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        ))}
-                    </div>
-
-                    {expandedInvoice === index && invoice.expenses.length > 0 && (
-                      <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 space-y-1.5 sm:space-y-2">
-                        {invoice.expenses.map((exp, i) => (
-                          <div key={i} className="text-xs sm:text-sm">
-                            <div className="flex justify-between gap-2">
-                              <span className="text-muted-foreground truncate flex-1 mr-2">{exp.description}</span>
-                              <span className={cn("text-foreground font-medium flex-shrink-0", settings.isPrivate && "blur-sm select-none pointer-events-none opacity-40")}>
-                                {formatCurrency(exp.amount)}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground/70">{exp.installment}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-
-              {invoices.length === 0 && (
-                <Card className="bg-card/50 border-border border-dashed p-6 sm:p-8 flex flex-col items-center justify-center">
+            <Card className="bg-card border-border p-4 sm:p-6 w-full h-[350px] shadow-sm">
+              {invoices.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                    <XAxis
+                      dataKey="name"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: 'var(--muted-foreground)' }}
+                      dy={10}
+                    />
+                    <YAxis
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `R$ ${value}`}
+                      tick={{ fill: 'var(--muted-foreground)' }}
+                    />
+                    <RechartsTooltip
+                      cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
+                      contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', backgroundColor: 'var(--card)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                    {creditCards.map(card => (
+                      <Bar
+                        key={card.id}
+                        dataKey={card.name}
+                        stackId="a"
+                        fill={mapTailwindColorToHex(card.color)}
+                        radius={[2, 2, 2, 2]}
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full flex flex-col items-center justify-center">
                   <Calendar className="h-10 w-10 text-muted-foreground/50 mb-3" />
                   <p className="text-xs sm:text-sm text-muted-foreground text-center">Nenhuma fatura projetada</p>
-                </Card>
+                </div>
               )}
-            </div>
+            </Card>
           </div>
         </div>
       </div>
