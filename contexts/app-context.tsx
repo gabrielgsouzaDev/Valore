@@ -211,15 +211,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (validation.success) {
           const data = validation.data
-          setAssetsState(data.assets)
+
+          // --- State Healing / Sanitation ---
+          const sanitizedAssets = (data.assets || []).map((asset: Asset) => ({
+            ...asset,
+            quantity: Number(asset.quantity) || 0,
+            averagePrice: Number(asset.averagePrice) || 0,
+            price: Number(asset.price) || 0,
+            currentValue: (Number(asset.quantity) || 0) * (Number(asset.price) || 0),
+            targetPercentage: Number(asset.targetPercentage) || 0,
+          }))
+
+          setAssetsState(sanitizedAssets)
           setCategoriesState(data.categories)
           setGoalsState(data.goals)
           setSettingsState(data.settings as Settings)
           setTransactionsState(data.transactions)
           setCreditCardsState(data.creditCards)
           setCardExpensesState(data.cardExpenses as CardExpense[])
-          setBanksState(data.banks)
-          setPatrimonialHistory(data.patrimonialHistory)
+          setBanksState(data.banks || [])
+          setPatrimonialHistory(data.patrimonialHistory || [])
 
           // Aplica tema após carregar configurações
           setTimeout(() => {

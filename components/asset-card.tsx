@@ -1,11 +1,12 @@
 "use client"
 
-import { memo } from "react"
+import { memo, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, AlertTriangle, Pencil, Trash2 } from "lucide-react"
-
+import { Input } from "@/components/ui/input"
+import { TrendingUp, AlertTriangle, Pencil, Trash2, Check, X, RefreshCcw } from "lucide-react"
+import { useApp } from "@/contexts/app-context"
 import { getAssetBarColor } from "@/lib/services"
 import { cn } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
@@ -20,6 +21,13 @@ interface AssetCardProps {
 }
 
 export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit, onDelete, isPrivate = false }: AssetCardProps) {
+  const { updateAsset } = useApp()
+  const [isQuickEditing, setIsQuickEditing] = useState(false)
+  const [quickForm, setQuickForm] = useState({
+    price: asset.price.toString(),
+    quantity: asset.quantity.toString()
+  })
+
   const currentPercentage = (asset.currentValue / totalNetWorth) * 100
   const difference = currentPercentage - asset.targetPercentage
   const progressValue = (currentPercentage / asset.targetPercentage) * 100
@@ -28,6 +36,14 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
   const totalGain = asset.currentValue - totalCost
   const rentabilidade = asset.averagePrice > 0 ? ((asset.price / asset.averagePrice) - 1) * 100 : 0
   const yoc = (asset.annualDividend && asset.averagePrice > 0) ? (asset.annualDividend / asset.averagePrice) * 100 : 0
+
+  const handleQuickSave = () => {
+    updateAsset(asset.id, {
+      price: Number(quickForm.price) || 0,
+      quantity: Number(quickForm.quantity) || 0
+    })
+    setIsQuickEditing(false)
+  }
 
   // Alert logic for stale prices and Bitcoin
   const isBitcoin = asset.name === "Bitcoin"
@@ -46,12 +62,6 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
     return "border-border"
   }
 
-  const getAlertColor = () => {
-    if (showSellAlert) return "var(--danger)"
-    if (showBuyAlert) return "var(--success)"
-    return "var(--primary)"
-  }
-
   return (
     <Card className={`bg-card ${getBorderColor()} border-2 p-6 relative overflow-hidden transition-theme`}>
       {/* Background glow effect */}
@@ -68,7 +78,19 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
           </div>
           <div className="flex flex-col gap-2 items-end">
             <div className="flex gap-2">
-              {onEdit && (
+              <Button
+                onClick={() => setIsQuickEditing(!isQuickEditing)}
+                variant="ghost"
+                size="icon"
+                aria-label="Atualização rápida"
+                className={cn(
+                  "h-8 w-8 transition-colors duration-150 rounded-md",
+                  isQuickEditing ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <RefreshCcw className={cn("h-4 w-4", isQuickEditing && "animate-spin")} style={{ animationIterationCount: 1, animationDuration: '0.5s' }} />
+              </Button>
+              {onEdit && !isQuickEditing && (
                 <Button
                   onClick={onEdit}
                   variant="ghost"
@@ -79,7 +101,7 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
                   <Pencil className="h-4 w-4" />
                 </Button>
               )}
-              {onDelete && (
+              {onDelete && !isQuickEditing && (
                 <Button
                   onClick={onDelete}
                   variant="ghost"
@@ -117,21 +139,56 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
 
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-baseline justify-between gap-4">
-            <div className="flex-1">
-              <div className={cn("text-3xl font-bold text-foreground")}>
-                <NumberTicker value={asset.currentValue} currency isPrivate={isPrivate} />
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <p className={cn("text-xs text-muted-foreground", isPrivate && "blur-sm select-none")}>
-                  Investido: {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalCost)}
-                </p>
-                <Badge variant="outline" className={cn(
-                  "text-[10px] py-0 px-1.5 h-4 font-bold border-none",
-                  totalGain >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                )}>
-                  {totalGain >= 0 ? "+" : ""}{rentabilidade.toFixed(1)}%
-                </Badge>
-              </div>
+            <div className="flex-1 w-full">
+              {isQuickEditing ? (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Preço Atual</label>
+                      <Input
+                        type="number"
+                        value={quickForm.price}
+                        onChange={(e) => setQuickForm({ ...quickForm, price: e.target.value })}
+                        className="h-8 text-xs bg-muted/50"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Qtd. Total</label>
+                      <Input
+                        type="number"
+                        value={quickForm.quantity}
+                        onChange={(e) => setQuickForm({ ...quickForm, quantity: e.target.value })}
+                        className="h-8 text-xs bg-muted/50"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleQuickSave} size="sm" className="h-8 flex-1 bg-primary text-primary-foreground">
+                      <Check className="h-3 w-3 mr-1" /> Salvar
+                    </Button>
+                    <Button onClick={() => setIsQuickEditing(false)} size="sm" variant="outline" className="h-8 px-2">
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={cn("text-3xl font-bold text-foreground")}>
+                    <NumberTicker value={asset.currentValue} currency isPrivate={isPrivate} />
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className={cn("text-xs text-muted-foreground", isPrivate && "blur-sm select-none")}>
+                      Investido: {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalCost)}
+                    </p>
+                    <Badge variant="outline" className={cn(
+                      "text-[10px] py-0 px-1.5 h-4 font-bold border-none",
+                      totalGain >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                    )}>
+                      {totalGain >= 0 ? "+" : ""}{rentabilidade.toFixed(1)}%
+                    </Badge>
+                  </div>
+                </>
+              )}
             </div>
             <div className="text-right shrink-0">
               <p className="text-2xl font-bold text-foreground">{currentPercentage.toFixed(1)}%</p>

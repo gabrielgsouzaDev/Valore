@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings, ArrowUpRight, CreditCard, TrendingUp, Plus } from "lucide-react"
@@ -26,9 +27,13 @@ import type { Asset } from "@/lib/types"
 const PortfolioChart = dynamic(() => import("@/components/portfolio-chart").then(mod => mod.PortfolioChart), { ssr: false })
 const HistoryChart = dynamic(() => import("@/components/history-chart").then(mod => mod.HistoryChart), { ssr: false })
 
-export default function InvestimentosPage() {
+function InvestimentosContent() {
     const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
     const { toast } = useToast()
+    const searchParams = useSearchParams()
+    const aporteParam = searchParams.get("aporte")
+    const initialAporte = aporteParam ? Number.parseFloat(aporteParam) : undefined
+
     const [dialogOpen, setDialogOpen] = useState(false)
     const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
     const [confirmOpen, setConfirmOpen] = useState(false)
@@ -156,7 +161,7 @@ export default function InvestimentosPage() {
                                 <PortfolioChart assets={assets} totalNetWorth={totalNetWorth} />
                             </ErrorBoundary>
                             <ErrorBoundary moduleName="Calculadora de Aportes">
-                                <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} />
+                                <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} initialAmount={initialAporte} />
                             </ErrorBoundary>
                         </div>
                     </div>
@@ -184,5 +189,13 @@ export default function InvestimentosPage() {
                 }}
             />
         </>
+    )
+}
+
+export default function InvestimentosPage() {
+    return (
+        <Suspense fallback={<div className="p-8">Carregando investimentos...</div>}>
+            <InvestimentosContent />
+        </Suspense>
     )
 }

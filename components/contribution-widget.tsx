@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,12 +14,22 @@ import type { Asset } from "@/lib/types"
 interface ContributionWidgetProps {
   assets: Asset[]
   totalNetWorth: number
+  initialAmount?: number
 }
 
-export function ContributionWidget({ assets, totalNetWorth }: ContributionWidgetProps) {
+export function ContributionWidget({ assets, totalNetWorth, initialAmount }: ContributionWidgetProps) {
   const { settings } = useApp()
-  const [contribution, setContribution] = useState("")
+  const [contribution, setContribution] = useState(initialAmount?.toString() || "")
   const [recommendations, setRecommendations] = useState<{ name: string; amount: number }[]>([])
+
+  useEffect(() => {
+    if (initialAmount && initialAmount > 0) {
+      setContribution(initialAmount.toString())
+      const strategy = settings.investmentStrategy || "rebalance"
+      const recs = calculateInvestmentDistribution(initialAmount, assets, totalNetWorth, strategy)
+      setRecommendations(recs)
+    }
+  }, [initialAmount, assets, totalNetWorth, settings.investmentStrategy])
 
   const calculateDistribution = () => {
     const amount = Number.parseFloat(contribution)

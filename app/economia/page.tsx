@@ -350,7 +350,7 @@ export default function EconomiaPage() {
               </Card>
 
               {/* Regra de Sobra (Leftover Rule) */}
-              {remaining > 0 && (
+              {remaining > 0 && settings.activeModules?.investimentos !== false && (
                 <Card className="bg-success/5 border-success/20 p-4 sm:p-6 shadow-sm overflow-hidden relative group">
                   <div className="absolute -right-4 -top-4 w-24 h-24 bg-success/10 rounded-full blur-2xl group-hover:bg-success/20 transition-all pointer-events-none" />
                   <h3 className="text-xs sm:text-sm font-bold text-success uppercase tracking-widest mb-2 flex items-center gap-2">
