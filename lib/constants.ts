@@ -742,15 +742,11 @@ export const defaultSettings: Settings = {
     },
 }
 
-export const STORAGE_KEY = "valore-app-data-v1"
+import { STORAGE_CONFIG } from "./business-constants"
 
-export const defaultAssets: Asset[] = []
-export const defaultCategories: Category[] = []
-export const defaultGoals: Goal[] = []
-export const defaultTransactions: ScheduledTransaction[] = []
-export const defaultCreditCards: CreditCard[] = []
-export const defaultCardExpenses: CardExpense[] = []
-export const defaultBanks: Bank[] = []
+export const STORAGE_KEY = STORAGE_CONFIG.KEY
+
+// Constantes default removidas - não são mais utilizadas (substituídas por exampleData)
 
 export const exampleData = {
     settings: { ...defaultSettings, nome: "" },

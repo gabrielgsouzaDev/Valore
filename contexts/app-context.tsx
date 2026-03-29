@@ -6,10 +6,9 @@ import {
   CreditCard, CardExpense, InvoiceProjection, Bank, ThemePreset, Subcategory, PatrimonialSnapshot
 } from "@/lib/types"
 import {
-  themePresets, defaultSettings, defaultAssets, defaultCategories,
-  defaultGoals, defaultTransactions, defaultCreditCards, defaultCardExpenses,
-  defaultBanks, STORAGE_KEY, exampleData
+  themePresets, defaultSettings, STORAGE_KEY, exampleData
 } from "@/lib/constants"
+import { BUSINESS_RULES, STORAGE_CONFIG } from "@/lib/business-constants"
 import {
   calculateInvoices as calculateInvoicesUtil,
   generateId,
@@ -163,14 +162,14 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 export function AppProvider({ children }: { children: ReactNode }) {
   // --- Estado ---
   const [isLoaded, setIsLoaded] = useState(false)
-  const [assets, setAssetsState] = useState<Asset[]>(defaultAssets)
-  const [categories, setCategoriesState] = useState<Category[]>(defaultCategories)
-  const [goals, setGoalsState] = useState<Goal[]>(defaultGoals)
+  const [assets, setAssetsState] = useState<Asset[]>([])
+  const [categories, setCategoriesState] = useState<Category[]>([])
+  const [goals, setGoalsState] = useState<Goal[]>([])
   const [settings, setSettingsState] = useState<Settings>(defaultSettings)
-  const [transactions, setTransactionsState] = useState<ScheduledTransaction[]>(defaultTransactions)
-  const [creditCards, setCreditCardsState] = useState<CreditCard[]>(defaultCreditCards)
-  const [cardExpenses, setCardExpensesState] = useState<CardExpense[]>(defaultCardExpenses)
-  const [banks, setBanksState] = useState<Bank[]>(defaultBanks)
+  const [transactions, setTransactionsState] = useState<ScheduledTransaction[]>([])
+  const [creditCards, setCreditCardsState] = useState<CreditCard[]>([])
+  const [cardExpenses, setCardExpensesState] = useState<CardExpense[]>([])
+  const [banks, setBanksState] = useState<Bank[]>([])
   const [patrimonialHistory, setPatrimonialHistory] = useState<PatrimonialSnapshot[]>([])
 
   // --- Temas ---
@@ -278,7 +277,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.warn("Storage cheio ou indisponível:", error)
       }
-    }, 500) // 500ms debounce
+    }, BUSINESS_RULES.SAVE_DEBOUNCE_MS) // Debounce configurável
 
     return () => clearTimeout(saveTimeout)
   }, [assets, categories, goals, settings, transactions, creditCards, cardExpenses, banks, patrimonialHistory, isLoaded])
@@ -659,7 +658,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const safeSettings = { ...settings, isDemoMode: false }
     const dataToExport = {
       _app: "valore",
-      _version: 2,
+      _version: STORAGE_CONFIG.SCHEMA_VERSION,
       _exportedAt: new Date().toISOString(),
       assets, categories, goals, settings: safeSettings, transactions,
       creditCards, cardExpenses, banks, patrimonialHistory,

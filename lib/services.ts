@@ -1,6 +1,7 @@
 import { InvoiceProjection, CardExpense, CreditCard, Asset, InvestmentStrategy, ScheduledTransaction, Category, Goal, Bank } from "./types"
 import { addMonths, format, startOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { BUSINESS_RULES, FORMAT_CONFIG } from "./business-constants"
 
 /**
  * Calcula a projeção de faturas de cartão de crédito.
@@ -17,7 +18,7 @@ export function calculateInvoices(
     const projections: InvoiceProjection[] = []
     const today = new Date()
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < BUSINESS_RULES.INVOICE_PROJECTION_MONTHS; i++) {
         const projectionDate = addMonths(startOfMonth(today), i)
         const monthName = format(projectionDate, "MMMM", { locale: ptBR })
         const year = projectionDate.getFullYear()
@@ -76,9 +77,9 @@ export function calculateInvoices(
  * Formata um valor numérico para moeda brasileira (BRL).
  */
 export function formatCurrency(value: number): string {
-    return new Intl.NumberFormat("pt-BR", {
+    return new Intl.NumberFormat(FORMAT_CONFIG.DEFAULT_LOCALE, {
         style: "currency",
-        currency: "BRL",
+        currency: FORMAT_CONFIG.DEFAULT_CURRENCY,
     }).format(value)
 }
 
@@ -241,17 +242,16 @@ export function calculateInvestmentDistribution(
         }
     }
 
-    return recs.filter((r) => r.amount > 0.01)
+    return recs.filter((r) => r.amount > BUSINESS_RULES.REBALANCE_TOLERANCE)
 }
 
 /**
  * Retorna a cor da barra de progresso para Economia (Categoria).
  */
 export function getEconomyBarColor(spent: number, budget: number): string {
-    const TOLERANCE = 0.01
-    const percent = budget > 0 ? (spent / budget) * 100 : 0
-    if (percent < 75) return "var(--success)"
-    if (percent < 100 - TOLERANCE) return "var(--warning)"
+    const percent = budget > 0 ? (spent / budget) : 0
+    if (percent < BUSINESS_RULES.BUDGET_WARNING_THRESHOLD) return "var(--success)"
+    if (percent < BUSINESS_RULES.BUDGET_DANGER_THRESHOLD - BUSINESS_RULES.BUDGET_TOLERANCE) return "var(--warning)"
     return "var(--danger)"
 }
 
@@ -259,12 +259,11 @@ export function getEconomyBarColor(spent: number, budget: number): string {
  * Retorna a cor da barra de progresso para Objetivos (Metas).
  */
 export function getGoalBarColor(current: number, target: number, monthlyContribution: number, monthlyNeeded: number): string {
-    const TOLERANCE = 0.01
     if (current >= target) return "var(--success)"
     // Se o aporte estiver abaixo de 95% do necessário -> VERMELHO
-    if (monthlyContribution < (monthlyNeeded * 0.95) - TOLERANCE) return "var(--danger)"
+    if (monthlyContribution < (monthlyNeeded * BUSINESS_RULES.ALLOCATION_RATIOS.MIN_BALANCED) - BUSINESS_RULES.BUDGET_TOLERANCE) return "var(--danger)"
     // Se o aporte estiver entre 95% e 105% do necessário -> AMARELO
-    if (monthlyContribution < (monthlyNeeded * 1.05) - TOLERANCE) return "var(--warning)"
+    if (monthlyContribution < (monthlyNeeded * BUSINESS_RULES.ALLOCATION_RATIOS.MAX_BALANCED) - BUSINESS_RULES.BUDGET_TOLERANCE) return "var(--warning)"
     // Se for maior que 105% -> TEMA (PRIMARY)
     return "var(--primary)"
 }
@@ -276,11 +275,11 @@ export function getAssetBarColor(currentValue: number, targetValue: number): str
     if (targetValue === 0) return "var(--primary)"
     const ratio = currentValue / targetValue
     // 95% a 105% -> VERDE (Rebalanceado)
-    if (ratio >= 0.95 && ratio <= 1.05) return "var(--success)"
+    if (ratio >= BUSINESS_RULES.ALLOCATION_RATIOS.MIN_BALANCED && ratio <= BUSINESS_RULES.ALLOCATION_RATIOS.MAX_BALANCED) return "var(--success)"
     // 80% a 95% -> AZUL (Abaixo mas aceitável)
-    if (ratio >= 0.8 && ratio < 0.95) return "var(--primary)"
+    if (ratio >= BUSINESS_RULES.ALLOCATION_RATIOS.MIN_ACCEPTABLE && ratio < BUSINESS_RULES.ALLOCATION_RATIOS.MIN_BALANCED) return "var(--primary)"
     // 105% a 140% -> AMARELO (Acima da meta / Bitcoin story)
-    if (ratio > 1.05 && ratio <= 1.40) return "var(--warning)"
+    if (ratio > BUSINESS_RULES.ALLOCATION_RATIOS.MAX_BALANCED && ratio <= BUSINESS_RULES.ALLOCATION_RATIOS.MAX_ACCEPTABLE) return "var(--warning)"
     // Fora disso -> VERMELHO
     return "var(--danger)"
 }
