@@ -24,12 +24,12 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
   const [tempDividend, setTempDividend] = useState("")
 
   const handleUpdate = (id: number) => {
-    const quantity = Number.parseFloat(tempQuantity)
-    const price = Number.parseFloat(tempPrice)
-    const ceiling = tempCeiling === "" ? undefined : Number.parseFloat(tempCeiling)
-    const priority = tempPriority === "" ? undefined : Number.parseInt(tempPriority)
-    const average = tempAverage === "" ? undefined : Number.parseFloat(tempAverage)
-    const dividend = tempDividend === "" ? undefined : Number.parseFloat(tempDividend)
+    const quantity = Number(tempQuantity) || 0
+    const price = Number(tempPrice) || 0
+    const ceiling = tempCeiling === "" ? undefined : Number(tempCeiling)
+    const priority = tempPriority === "" ? undefined : Number(tempPriority)
+    const average = tempAverage === "" ? undefined : Number(tempAverage)
+    const dividend = tempDividend === "" ? undefined : Number(tempDividend)
 
     if (!isNaN(quantity) && !isNaN(price)) {
       onUpdate(id, quantity, price, ceiling, priority, average, dividend)

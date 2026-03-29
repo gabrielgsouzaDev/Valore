@@ -161,12 +161,12 @@ export function AssetDialog({ open, onOpenChange, asset, onSave }: AssetDialogPr
       ticker: formData.ticker || undefined,
       syncAvailable: formData.syncAvailable,
       type: formData.type,
-      targetPercentage: Number.parseFloat(formData.targetPercentage) || 0,
-      quantity: Number.parseFloat(formData.quantity) || 0,
-      price: Number.parseFloat(formData.price) || 0,
-      averagePrice: Number.parseFloat(formData.averagePrice) || Number.parseFloat(formData.price) || 0,
-      annualDividend: formData.annualDividend ? Number.parseFloat(formData.annualDividend) : undefined,
-      bankId: formData.bankId ? Number.parseInt(formData.bankId) : undefined,
+      targetPercentage: Number(formData.targetPercentage) || 0,
+      quantity: Number(formData.quantity) || 0,
+      price: Number(formData.price) || 0,
+      averagePrice: Number(formData.averagePrice) || Number(formData.price) || 0,
+      annualDividend: formData.annualDividend ? Number(formData.annualDividend) : undefined,
+      bankId: formData.bankId ? Number(formData.bankId) : undefined,
     })
     onOpenChange(false)
   }

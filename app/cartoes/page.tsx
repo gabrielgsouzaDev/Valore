@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts"
 
 const mapTailwindColorToHex = (colorName: string) => {
   return CARD_COLOR_MAP[colorName as keyof typeof CARD_COLOR_MAP] || "var(--primary)"
@@ -634,8 +634,14 @@ export default function CartoesPage() {
             <Card className="bg-card border-border p-4 sm:p-6 w-full h-[350px] shadow-sm">
               {invoices.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--theme-primary)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--theme-primary)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
                     <XAxis
                       dataKey="name"
                       fontSize={10}
@@ -652,21 +658,44 @@ export default function CartoesPage() {
                       tick={{ fill: 'var(--muted-foreground)' }}
                     />
                     <RechartsTooltip
-                      cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
-                      contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', backgroundColor: 'var(--card)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                      contentStyle={{
+                        borderRadius: '12px',
+                        border: '1px solid var(--border)',
+                        backgroundColor: 'var(--card)',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                      }}
+                      itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                       formatter={(value: number) => formatCurrency(value)}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+
+                    {/* Área de Dívida Total (Background) */}
+                    <Area
+                      type="monotone"
+                      dataKey="total"
+                      stroke="var(--theme-primary)"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#colorTotal)"
+                      name="Total Projetado"
+                    />
+
+                    {/* Breakdown por Cartão (Pontos/Linhas sutis se quiser, ou apenas no Tooltip) */}
                     {creditCards.map(card => (
-                      <Bar
+                      <Area
                         key={card.id}
+                        type="monotone"
                         dataKey={card.name}
-                        stackId="a"
+                        stackId="cards"
+                        stroke={mapTailwindColorToHex(card.color)}
                         fill={mapTailwindColorToHex(card.color)}
-                        radius={[2, 2, 2, 2]}
+                        fillOpacity={0.2}
+                        strokeWidth={1}
+                        strokeDasharray="5 5"
+                        name={card.name}
                       />
                     ))}
-                  </BarChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full w-full flex flex-col items-center justify-center">

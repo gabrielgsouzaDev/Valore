@@ -82,7 +82,12 @@ export default function DashboardPage() {
   // Sparkline Histórico Patrimonial (7 dias)
   const sparklineData = patrimonialHistory.length > 1
     ? patrimonialHistory.slice(-7).map(s => ({ value: s.totalNetWorth }))
-    : Array.from({ length: 7 }).map((_, i) => ({ value: totalNetWorth * (0.95 + (i * 0.01)) })) // Mock para movimento visual se não houver dados
+    : Array.from({ length: 7 }).map((_, i) => ({ value: totalNetWorth }))
+
+  // Cálculo de mudança percentual (comparando com último registro se houver)
+  const patrimonialChange = patrimonialHistory.length > 1
+    ? ((totalNetWorth - patrimonialHistory[patrimonialHistory.length - 2].totalNetWorth) / (patrimonialHistory[patrimonialHistory.length - 2].totalNetWorth || 1)) * 100
+    : 0
 
   // Sparkline de Ganhos/Despesas (mock visual ou real se houver muito histórico)
   const economySparkline = Array.from({ length: 7 }).map((_, i) => ({ value: Math.random() * 1000 + 500 }))
@@ -183,9 +188,12 @@ export default function DashboardPage() {
                           </div>
                           <CardTitle className="text-sm sm:text-base font-black text-foreground tracking-tighter italic uppercase">Patrimônio</CardTitle>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold">
-                          <ArrowUpRight className="h-3 w-3" />
-                          +2.4%
+                        <div className={cn(
+                          "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold",
+                          patrimonialChange >= 0 ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                        )}>
+                          {patrimonialChange >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                          {patrimonialChange >= 0 ? "+" : ""}{patrimonialChange.toFixed(1)}%
                         </div>
                       </div>
                     </CardHeader>

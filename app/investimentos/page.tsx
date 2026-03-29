@@ -35,7 +35,7 @@ export default function InvestimentosPage() {
     const [assetToDelete, setAssetToDelete] = useState<number | null>(null)
 
     const totalCardDebt = getTotalCardDebt()
-    const totalInvested = assets.reduce((sum, asset) => sum + (asset.quantity * asset.averagePrice), 0)
+    const totalInvested = assets.reduce((sum, asset) => sum + ((asset.quantity || 0) * (asset.averagePrice || 0)), 0)
     const totalGain = totalNetWorth - totalInvested
     const totalGainPercent = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0
 

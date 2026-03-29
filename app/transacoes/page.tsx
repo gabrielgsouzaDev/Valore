@@ -189,7 +189,7 @@ export default function TransacoesPage() {
         return Infinity
     }
 
-    const historyBaseTransactions = processedTransactions.filter(t => t.status === "pago" || t.status === "atrasado")
+    const historyBaseTransactions = processedTransactions.filter(t => t.status === "pago")
 
     const historyTransactions = historyBaseTransactions
         .filter((t) => {
