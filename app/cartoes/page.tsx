@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react"
 import { DemoBanner } from "@/components/demo-banner"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { CreditCard as CardIcon } from "lucide-react"
+import { CreditCard as CardIcon, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -102,7 +103,7 @@ export default function CartoesPage() {
                 const expenseDate = new Date(e.purchaseDate)
                 const startMonth = expenseDate.getMonth()
                 const startYear = expenseDate.getFullYear()
-                
+
                 const monthsDiff = (year - startYear) * 12 + (month - startMonth)
                 if (monthsDiff >= 0 && monthsDiff < e.installments) {
                     return sum + (e.totalAmount / e.installments)

@@ -21,6 +21,7 @@ interface DangerZoneProps {
     onImportData: (e: React.ChangeEvent<HTMLInputElement>) => void
     onResetOnboarding: () => void
     onClearAllData: () => void
+    onLoadDemoData?: () => void
     saveStatus: string | null
 }
 
@@ -29,6 +30,7 @@ export function DangerZone({
     onImportData,
     onResetOnboarding,
     onClearAllData,
+    onLoadDemoData,
     saveStatus
 }: DangerZoneProps) {
     return (
@@ -93,17 +95,26 @@ export function DangerZone({
                 </CardHeader>
                 <CardContent className="space-y-3 p-4 sm:p-6 pt-0 sm:pt-0">
                     <div className="flex flex-col gap-2">
+                        {onLoadDemoData && (
+                            <Button
+                                variant="outline"
+                                onClick={onLoadDemoData}
+                                className="justify-start border-primary/20 bg-primary/5 hover:bg-primary hover:text-primary-foreground text-xs h-10 px-4 transition-all"
+                            >
+                                <Sparkles className="h-3.5 w-3.5 mr-2" /> Carregar Dados de Demonstração
+                            </Button>
+                        )}
                         <Button
                             variant="outline"
                             onClick={onResetOnboarding}
-                            className="justify-start border-border hover:bg-muted text-xs h-10 px-4"
+                            className="justify-start border-border hover:bg-muted hover:text-foreground text-xs h-10 px-4 transition-all"
                         >
                             <RefreshCcw className="h-3.5 w-3.5 mr-2" /> Reiniciar Tour de Boas-vindas
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={onClearAllData}
-                            className="justify-start bg-danger/10 hover:bg-danger text-danger hover:text-white border border-danger/20 text-xs h-10 px-4"
+                            className="justify-start bg-danger/10 hover:bg-danger text-danger hover:text-white border border-danger/20 text-xs h-10 px-4 transition-all"
                         >
                             <Trash2 className="h-3.5 w-3.5 mr-2" /> Apagar Todos os Dados
                         </Button>

@@ -51,8 +51,8 @@ function InvestimentosContent() {
         toast({ title: "Ativo atualizado" })
     }
 
-    const handleUpdateAsset = (id: number, data: Partial<Asset>) => {
-        updateAsset(id, data)
+    const handleUpdateAssetFromTable = (id: number, quantity: number, price: number, ceilingPrice?: number, priority?: number, averagePrice?: number, annualDividend?: number) => {
+        updateAsset(id, { quantity, price, ceilingPrice, priority, averagePrice, annualDividend })
         toast({ title: "Ativo atualizado" })
     }
 
@@ -153,7 +153,7 @@ function InvestimentosContent() {
                         )}
 
                         <ErrorBoundary moduleName="Tabela de Ativos">
-                            <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
+                            <UpdateTable assets={assets} onUpdate={handleUpdateAssetFromTable} />
                         </ErrorBoundary>
 
                         <ErrorBoundary moduleName="Relatório de IR">
@@ -196,26 +196,40 @@ function InvestimentosContent() {
                                                         acc[a.type] = true
                                                         return acc
                                                     }, {} as Record<string, boolean>)).map((_, index) => (
-                                                        <Cell key={`cell-${index}`} fill={`rgba(var(--theme-primary), ${1 - (index * 0.15)})`} />
+                                                        <Cell
+                                                            key={`cell-${index}`}
+                                                            fill={`rgba(var(--theme-primary), ${1 - (index * 0.15)})`}
+                                                            stroke="var(--card)"
+                                                            strokeWidth={2}
+                                                        />
                                                     ))
-                                                : <Cell fill="var(--muted)" />}
+                                                    : <Cell fill="var(--muted)" />}
                                             </Pie>
                                             <Tooltip
-                                                contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", borderRadius: "8px" }}
-                                                itemStyle={{ color: "var(--foreground)", fontSize: "12px", fontWeight: "bold" }}
+                                                contentStyle={{
+                                                    backgroundColor: "var(--card)",
+                                                    borderColor: "var(--border)",
+                                                    borderRadius: "12px",
+                                                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                                    borderWidth: "1px"
+                                                }}
+                                                itemStyle={{ color: "var(--foreground)", fontSize: "12px", fontWeight: "800" }}
                                                 formatter={(value: number) => settings.isPrivate ? "***" : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)}
                                             />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 justify-center">
                                     {Object.entries(assets.reduce((acc, a) => {
                                         acc[a.type] = (acc[a.type] || 0) + a.currentValue
                                         return acc
                                     }, {} as Record<string, number>)).map(([type, value], i) => (
-                                        <div key={type} className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: `rgba(var(--theme-primary), ${1 - (i * 0.15)})` }} />
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase truncate">{type}</span>
+                                        <div key={type} className="flex items-center gap-2 bg-muted/30 px-2 py-1 rounded-md border border-border/50">
+                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: `rgba(var(--theme-primary), ${1 - (i * 0.15)})` }} />
+                                            <span className="text-[9px] font-black text-foreground uppercase tracking-tighter">{type}</span>
+                                            <span className="text-[9px] font-bold text-muted-foreground">
+                                                {totalNetWorth > 0 ? ((value / totalNetWorth) * 100).toFixed(0) : 0}%
+                                            </span>
                                         </div>
                                     ))}
                                 </div>

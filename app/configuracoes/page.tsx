@@ -8,10 +8,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Settings, Download } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { appStorageSchema } from "@/lib/schemas"
-import { migrateBackup } from "@/lib/services"
+import { migrateBackup, formatCurrency } from "@/lib/services"
 import type { Bank, BankType, InvestmentStrategy } from "@/lib/types"
 import { usePWA } from "@/hooks/use-pwa"
-import { Card, CardContent, Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 // Local Atomic Components
 import { ProfileSection } from "./components/ProfileSection"
@@ -74,6 +75,7 @@ export default function ConfiguracoesPage() {
     deleteBank,
     setTheme,
     clearAllData,
+    loadExampleData,
     totalNetWorth,
     currentTheme,
     banks
@@ -194,9 +196,6 @@ export default function ConfiguracoesPage() {
     e.target.value = ""
   }
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
-
   return (
     <>
       <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
@@ -266,6 +265,12 @@ export default function ConfiguracoesPage() {
             <DangerZone
               onExportData={exportData}
               onImportData={handleImportarDados}
+              onLoadDemoData={() => setConfirmState({
+                isOpen: true,
+                title: "Carregar Demo",
+                description: "Isso substituirá seus dados atuais por dados de exemplo. Continuar?",
+                action: () => { loadExampleData(); toast({ title: "Dados de demo carregados" }) }
+              })}
               onResetOnboarding={() => setConfirmState({
                 isOpen: true,
                 title: "Reiniciar tour",

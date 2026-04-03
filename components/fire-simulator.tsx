@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TrendingUp, Flame, Calendar, DollarSign } from "lucide-react"
 import { formatCurrency } from "@/lib/services"
+import { cn } from "@/lib/utils"
 
 interface FireSimulatorProps {
     currentEquity: number
@@ -16,8 +17,10 @@ export function FireSimulator({ currentEquity, monthlyContribution }: FireSimula
     const [monthlyExpense, setMonthlyExpense] = useState(5000)
     const [annualReturn, setAnnualReturn] = useState(8)
     const [inflation, setInflation] = useState(4)
+    const [manualRealReturn, setManualRealReturn] = useState<number | null>(null)
 
-    const realReturn = (1 + annualReturn / 100) / (1 + inflation / 100) - 1
+    const calculatedRealReturn = (1 + annualReturn / 100) / (1 + inflation / 100) - 1
+    const realReturn = manualRealReturn !== null ? manualRealReturn / 100 : calculatedRealReturn
     const monthlyRealReturn = Math.pow(1 + realReturn, 1 / 12) - 1
 
     // Regra dos 4% (ou 25x o gasto anual)
@@ -69,9 +72,10 @@ export function FireSimulator({ currentEquity, monthlyContribution }: FireSimula
                             <TrendingUp className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                             <Input
                                 type="number"
-                                value={annualReturn - inflation}
-                                readOnly
-                                className="pl-8 h-9 text-sm bg-muted/30"
+                                step="0.1"
+                                value={manualRealReturn !== null ? manualRealReturn : (annualReturn - inflation)}
+                                onChange={(e) => setManualRealReturn(Number(e.target.value))}
+                                className={cn("pl-8 h-9 text-sm", manualRealReturn !== null ? "bg-primary/5 border-primary/20" : "")}
                             />
                         </div>
                     </div>

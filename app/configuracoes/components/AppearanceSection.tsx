@@ -39,24 +39,35 @@ export function AppearanceSection({
                                 key={theme.id}
                                 onClick={() => setTheme(theme.id)}
                                 className={cn(
-                                    "relative flex flex-col items-start p-3 rounded-xl border-2 transition-all group overflow-hidden",
+                                    "relative flex flex-col items-start p-3 rounded-xl border-2 transition-all group overflow-hidden h-24",
                                     currentTheme.id === theme.id
                                         ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
-                                        : "border-border bg-muted/30 hover:border-primary/30"
+                                        : "border-border bg-card hover:border-primary/40 hover:bg-muted/50"
                                 )}
                             >
-                                <div className="flex items-center justify-between w-full mb-2">
-                                    <div className="flex gap-1">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.primary})` }} />
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.accent})` }} />
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.background})` }} />
+                                <div className="flex items-center justify-between w-full mb-auto">
+                                    <div className="flex -space-x-1.5 shrink-0">
+                                        <div className="w-4 h-4 rounded-full border-2 border-card shadow-sm" style={{ backgroundColor: `rgb(${theme.colors.primary})` }} title="Primary" />
+                                        <div className="w-4 h-4 rounded-full border-2 border-card shadow-sm" style={{ backgroundColor: `rgb(${theme.colors.accent})` }} title="Accent" />
+                                        <div className="w-4 h-4 rounded-full border-2 border-card shadow-sm" style={{ backgroundColor: `rgb(${theme.colors.background})` }} title="Background" />
                                     </div>
-                                    {currentTheme.id === theme.id && <Check className="h-3 w-3 text-primary" />}
+                                    {currentTheme.id === theme.id && (
+                                        <div className="bg-primary text-primary-foreground rounded-full p-0.5 animate-in zoom-in-50 duration-300">
+                                            <Check className="h-2.5 w-2.5" />
+                                        </div>
+                                    )}
                                 </div>
-                                <span className="text-xs font-bold text-foreground">{theme.name}</span>
-                                <span className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-70 group-hover:opacity-100 transition-opacity">
-                                    {theme.id}
-                                </span>
+                                <div className="mt-2 text-left">
+                                    <p className="text-xs font-bold text-foreground leading-none">{theme.name}</p>
+                                    <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-70 group-hover:opacity-100 transition-opacity">
+                                        {theme.id}
+                                    </p>
+                                </div>
+                                {theme.mode === "dark" && (
+                                    <div className="absolute top-0 right-0 w-8 h-8 bg-black/10 rounded-bl-full flex items-center justify-end pr-1 pt-1 pointer-events-none">
+                                        <div className="w-1 h-1 bg-white/20 rounded-full" />
+                                    </div>
+                                )}
                             </button>
                         ))}
                     </div>

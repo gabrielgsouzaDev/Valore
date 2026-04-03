@@ -11,8 +11,9 @@ import { GoalDialog } from "@/components/goal-dialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
-import { getGoalBarColor } from "@/lib/services"
+import { getGoalBarColor, formatCurrency } from "@/lib/services"
 import type { Goal } from "@/lib/types"
+import Link from "next/link"
 
 export default function ObjetivosPage() {
   const { goals, addGoal, updateGoal, deleteGoal, addContributionToGoal, availableForInvestment } = useApp()
@@ -126,13 +127,13 @@ export default function ObjetivosPage() {
               {filteredGoals.length === 0 ? (
                 <EmptyState
                   icon={Target}
-                  title="Nenhum objetivo definido"
-                  description="Transforme seus sonhos em metas concretas. Defina prazos e aportes para sua reserva de emergência, viagens ou aposentadoria."
+                  title="Nenhum objetivo encontrado"
+                  description="Ajuste os filtros ou crie um novo objetivo para começar."
                   actionLabel="Criar Meu Primeiro Objetivo"
                   onAction={() => setGoalDialogOpen(true)}
                 />
               ) : (
-                goals.map((goal) => {
+                filteredGoals.map((goal) => {
                   const percentage = (goal.current / goal.target) * 100
                   const monthsRemaining = calculateMonthsRemaining(goal.deadline)
                   const monthlyNeeded =
@@ -318,6 +319,11 @@ export default function ObjetivosPage() {
                       {formatCurrency(Math.max(0, availableForInvestment))}
                     </div>
                   </div>
+                  <Link href={`/investimentos?aporte=${availableForInvestment}`}>
+                    <Button size="sm" className="bg-success hover:bg-success/90 text-white font-bold shadow-md shadow-success/20 rounded-xl px-4">
+                      Investir
+                    </Button>
+                  </Link>
                 </div>
               </Card>
 
