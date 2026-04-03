@@ -112,7 +112,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                      Preço Médio
+                      Custo Médio
                     </label>
                     <Input
                       type="number"
@@ -124,7 +124,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   </div>
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                      Dividendos
+                      Proventos (Anual)
                     </label>
                     <Input
                       type="number"
@@ -198,7 +198,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">YOC</div>
+                  <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Yield (YOC)</div>
                   <div className="text-sm text-foreground font-semibold">
                     {asset.annualDividend && asset.averagePrice > 0 ? ((asset.annualDividend / asset.averagePrice) * 100).toFixed(2) : "0.00"}%
                   </div>

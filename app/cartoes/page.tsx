@@ -16,6 +16,8 @@ import { CreditCardStack } from "./components/CreditCardStack"
 import { ExpenseTable } from "./components/ExpenseTable"
 import { InvoiceProjection } from "./components/InvoiceProjection"
 import { CardDialogs } from "./components/CardDialogs"
+import { Input } from "@/components/ui/input"
+import { Search, ArrowUpDown } from "lucide-react"
 
 const emptyCardForm = {
     name: "",
@@ -47,6 +49,8 @@ export default function CartoesPage() {
     } = useApp()
 
     const [activeCardId, setActiveCardId] = useState<number | null>(null)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
     const [cardDialogOpen, setCardDialogOpen] = useState(false)
     const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
     const [editingCardId, setEditingCardId] = useState<number | null>(null)
@@ -63,11 +67,21 @@ export default function CartoesPage() {
         [creditCards, activeCardId]
     )
 
-    const activeExpenses = useMemo(() =>
-        cardExpenses.filter(e => e.cardId === (activeCard?.id || 0))
-            .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()),
-        [cardExpenses, activeCard]
-    )
+    const activeExpenses = useMemo(() => {
+        let filtered = cardExpenses;
+        if (activeCardId !== null && activeCardId !== 0) {
+            filtered = filtered.filter(e => e.cardId === activeCardId);
+        }
+
+        if (searchTerm) {
+            filtered = filtered.filter(e => e.description.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+
+        return filtered.sort((a, b) => {
+            if (sortOrder === "desc") return b.totalAmount - a.totalAmount;
+            return a.totalAmount - b.totalAmount;
+        });
+    }, [cardExpenses, activeCardId, searchTerm, sortOrder])
 
     const getCardAvailableLimit = (card: CreditCard) => {
         const used = cardExpenses
@@ -169,7 +183,6 @@ export default function CartoesPage() {
                         <CardIcon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                         <div>
                             <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight italic uppercase">Cartões</h2>
-                            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80 italic lowercase tracking-wider">Gestão de Crédito • Faturas</p>
                         </div>
                     </div>
                 </div>
@@ -179,8 +192,16 @@ export default function CartoesPage() {
 
             <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
                 <section>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 border-b border-border/40 pb-2">
                         <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Meus Cartões</h3>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setEditingCardId(null); setCardForm(emptyCardForm); setCardDialogOpen(true); }}
+                            className="text-primary hover:text-primary hover:bg-primary/10 font-bold uppercase tracking-tighter text-[10px]"
+                        >
+                            <Plus className="w-3 h-3 mr-1" /> Adicionar Cartão
+                        </Button>
                     </div>
                     <CreditCardStack
                         creditCards={creditCards}
@@ -205,21 +226,37 @@ export default function CartoesPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     <div className="xl:col-span-2 space-y-6">
                         <section>
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">
-                                    Histórico de Gastos {activeCard && `• ${activeCard.name}`}
+                                    Histórico de Gastos
                                 </h3>
-                                {activeCard && (
-                                    <div className="flex items-center gap-2">
-                                        <select 
-                                            value={activeCard.id} 
-                                            onChange={(e) => setActiveCardId(parseInt(e.target.value))}
-                                            className="bg-transparent text-xs font-bold text-primary border-none focus:ring-0 cursor-pointer"
-                                        >
-                                            {creditCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                        </select>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Buscar despesa..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-8 h-8 text-xs w-[180px] bg-card"
+                                        />
                                     </div>
-                                )}
+                                    <select
+                                        value={activeCardId || 0}
+                                        onChange={(e) => setActiveCardId(parseInt(e.target.value))}
+                                        className="bg-card text-xs font-bold text-primary border border-border rounded-md px-2 h-8 cursor-pointer focus:ring-1 focus:ring-primary outline-none"
+                                    >
+                                        <option value={0}>Todos os Cartões</option>
+                                        {creditCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                                        className="h-8 text-[10px] font-bold uppercase tracking-tighter"
+                                    >
+                                        <ArrowUpDown className="w-3 h-3 mr-1" /> Valor
+                                    </Button>
+                                </div>
                             </div>
                             <ExpenseTable
                                 expenses={activeExpenses}
@@ -230,7 +267,7 @@ export default function CartoesPage() {
                         </section>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="xl:col-span-3">
                         <InvoiceProjection
                             data={projectionData}
                             formatCurrency={formatCurrency}

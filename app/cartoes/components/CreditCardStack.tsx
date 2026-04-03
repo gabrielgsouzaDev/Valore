@@ -111,14 +111,28 @@ export function CreditCardStack({
                             </div>
 
                             {/* Actions Overlay */}
-                            <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent flex gap-2 justify-center backdrop-blur-[2px]">
-                                <Button size="sm" onClick={() => onAddExpense(card.id)} className="bg-white text-black hover:bg-white/90 text-[10px] font-bold h-8 rounded-full shadow-lg">
+                            <div className="absolute inset-x-0 bottom-0 p-4 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent flex gap-2 justify-center backdrop-blur-[2px] z-20">
+                                <Button
+                                    size="sm"
+                                    onClick={(e) => { e.stopPropagation(); onAddExpense(card.id); }}
+                                    className="bg-white text-black hover:bg-white/90 text-[10px] font-bold h-8 rounded-full shadow-lg"
+                                >
                                     <Plus className="w-3 h-3 mr-1" /> Despesa
                                 </Button>
-                                <Button size="sm" variant="ghost" onClick={() => onEditCard(card)} className="text-white hover:bg-white/20 text-[10px] font-bold h-8 rounded-full border border-white/20">
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => { e.stopPropagation(); onEditCard(card); }}
+                                    className="text-white hover:bg-white/20 text-[10px] font-bold h-8 rounded-full border border-white/20"
+                                >
                                     <Pencil className="w-3 h-3 mr-1" /> Editar
                                 </Button>
-                                <Button size="sm" variant="ghost" onClick={() => onDeleteCard(card.id)} className="text-white hover:bg-white/20 text-[10px] font-bold h-8 rounded-full border border-white/20">
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => { e.stopPropagation(); onDeleteCard(card.id); }}
+                                    className="text-white hover:bg-white/20 text-[10px] font-bold h-8 rounded-full border border-white/20"
+                                >
                                     <Trash2 className="w-3 h-3 mr-1" /> Excluir
                                 </Button>
                             </div>

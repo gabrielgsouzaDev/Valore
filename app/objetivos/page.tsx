@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/empty-state"
 import { DemoBanner } from "@/components/demo-banner"
-import { Plus, Target, TrendingUp, Calendar, DollarSign, Pencil, Trash2, PlusCircle } from "lucide-react"
+import { Plus, Target, TrendingUp, Calendar, DollarSign, Pencil, Trash2, PlusCircle, Filter } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { GoalDialog } from "@/components/goal-dialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useApp } from "@/contexts/app-context"
@@ -22,6 +23,12 @@ export default function ObjetivosPage() {
   const [contributionAmount, setContributionAmount] = useState<{ [key: number]: string }>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [goalToDelete, setGoalToDelete] = useState<number | null>(null)
+  const [priorityFilter, setPriorityFilter] = useState<string>("todos")
+
+  const filteredGoals = useMemo(() => {
+    if (priorityFilter === "todos") return goals
+    return goals.filter(g => g.priority === priorityFilter)
+  }, [goals, priorityFilter])
 
   const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0)
   const totalCurrent = goals.reduce((sum, goal) => sum + goal.current, 0)
@@ -62,9 +69,6 @@ export default function ObjetivosPage() {
             <Target className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
             <div className="flex flex-col justify-center">
               <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Objetivos</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                Projetos de vida • Metas financeiras
-              </p>
             </div>
           </div>
           <div className="text-left sm:text-right flex flex-col justify-center">
@@ -89,23 +93,37 @@ export default function ObjetivosPage() {
             {/* Add Goal Button */}
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-base sm:text-lg font-semibold text-foreground">Meus Objetivos</h3>
-              <Button
-                onClick={() => {
-                  setEditingGoal(null)
-                  setGoalDialogOpen(true)
-                }}
-                size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
-              >
-                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Novo Objetivo</span>
-                <span className="sm:hidden">Novo</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-[140px] h-9 bg-card border-border text-xs sm:text-sm">
+                    <Filter className="w-3 h-3 mr-2" />
+                    <SelectValue placeholder="Prioridade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="todos">Todas Prioridades</SelectItem>
+                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="média">Média</SelectItem>
+                    <SelectItem value="baixa">Baixa</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() => {
+                    setEditingGoal(null)
+                    setGoalDialogOpen(true)
+                  }}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
+                >
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Novo Objetivo</span>
+                  <span className="sm:hidden">Novo</span>
+                </Button>
+              </div>
             </div>
 
             {/* Goals List */}
             <div className="space-y-3 sm:space-y-4">
-              {goals.length === 0 ? (
+              {filteredGoals.length === 0 ? (
                 <EmptyState
                   icon={Target}
                   title="Nenhum objetivo definido"
@@ -287,14 +305,20 @@ export default function ObjetivosPage() {
           {/* Summary Sidebar */}
           <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-6">
-              <Card className="bg-card border-border p-4 sm:p-6">
-                <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-4">
-                  Disponível p/ Investir
+              <Card className="bg-success/5 border-success/20 p-4 sm:p-6 shadow-sm overflow-hidden relative group">
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-success/10 rounded-full blur-2xl group-hover:bg-success/20 transition-all pointer-events-none" />
+                <h3 className="text-xs sm:text-sm font-bold text-success uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" /> Disponível p/ Investir
                 </h3>
-                <p className="text-xl sm:text-3xl font-bold text-accent mb-1 sm:mb-2">
-                  {formatCurrency(Math.max(0, availableForInvestment))}
-                </p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Restante da categoria Investimentos</p>
+                <p className="text-sm text-foreground/80 mb-4 font-medium leading-snug tracking-tight">Que tal aportar este valor hoje para acelerar seus objetivos?</p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[10px] text-success/80 font-bold uppercase mb-1">Saldo em Investimentos</p>
+                    <div className="text-xl sm:text-2xl font-black text-success tracking-tighter">
+                      {formatCurrency(Math.max(0, availableForInvestment))}
+                    </div>
+                  </div>
+                </div>
               </Card>
 
               {/* Overview Card */}
@@ -346,7 +370,7 @@ export default function ObjetivosPage() {
               {/* Priority Distribution */}
               <Card className="bg-card border-border p-4 sm:p-6">
                 <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-3 sm:mb-4">
-                  Por Prioridade
+                  Prioridades
                 </h3>
                 <div className="space-y-2 sm:space-y-3">
                   <div className="flex items-center justify-between">

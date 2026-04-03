@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import {
   TrendingUp, Wallet, Target, Settings, LayoutDashboard,
-  CreditCard, Receipt, MoreHorizontal, X,
+  CreditCard, Receipt, MoreHorizontal, X, EyeOff, Eye,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useApp } from "@/contexts/app-context"
@@ -25,7 +25,7 @@ const BOTTOM_NAV_FIXED_KEYS = ["dashboard", "investimentos", "economia", "cartoe
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { settings, goals } = useApp()
+  const { settings, togglePrivacy, isPrivate } = useApp()
   const activeModules = settings.activeModules || {}
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -86,7 +86,20 @@ export function Sidebar() {
         </nav>
 
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-2">
+          <button
+            onClick={togglePrivacy}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium min-h-[44px] w-full",
+              isPrivate
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {isPrivate ? <EyeOff className="h-5 w-5 flex-shrink-0" /> : <Eye className="h-5 w-5 flex-shrink-0" />}
+            <span>{isPrivate ? "Privado" : "Público"}</span>
+          </button>
+
           <Link
             href="/configuracoes"
             className={cn(
@@ -190,6 +203,24 @@ export function Sidebar() {
             </div>
 
             <div className="px-4 pb-8 space-y-1">
+              <button
+                onClick={() => {
+                  togglePrivacy()
+                  setDrawerOpen(false)
+                }}
+                className={cn(
+                  "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all w-full",
+                  isPrivate
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <div className={cn("p-2 rounded-xl", isPrivate ? "bg-primary/15" : "bg-muted")}>
+                  {isPrivate ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </div>
+                <span className="font-semibold text-sm">{isPrivate ? "Modo Privado" : "Modo Público"}</span>
+              </button>
+
               {drawerModules.map((item) => {
                 const Icon = item.icon
                 const active = isActive(item.href)

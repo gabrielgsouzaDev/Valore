@@ -22,6 +22,10 @@ import {
 import { appStorageSchema } from "@/lib/schemas"
 import "jspdf-autotable"
 
+// Hooks de Ações (Modularização)
+import { useAssetActions, useCategoryActions } from "./hooks/use-actions"
+import { useGoalActions, useTransactionActions, useCardActions, useBankActions } from "./hooks/use-actions-extended"
+
 /**
  * Aplica o tema visual ao documento via variáveis CSS.
  * Esta função acessa a API do browser (document) por necessidade técnica.
@@ -38,8 +42,10 @@ export function applyThemeVariables(theme: ThemePreset) {
   // Alterna o modo claro/escuro
   if (theme.mode === "light") {
     root.classList.remove("dark")
+    root.style.setProperty("--calendar-invert", "0")
   } else {
     root.classList.add("dark")
+    root.style.setProperty("--calendar-invert", "1")
   }
 
   // Atualiza a meta tag theme-color
@@ -172,6 +178,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [banks, setBanksState] = useState<Bank[]>([])
   const [patrimonialHistory, setPatrimonialHistory] = useState<PatrimonialSnapshot[]>([])
 
+  // --- Actions Hooks ---
+  const { addAsset, updateAsset, deleteAsset } = useAssetActions(assets, setAssetsState)
+  const {
+    addCategory, updateCategory, deleteCategory,
+    addSubcategory, updateSubcategory, deleteSubcategory, toggleCategory
+  } = useCategoryActions(categories, setCategoriesState, setTransactionsState)
+  const { addGoal, updateGoal, deleteGoal, addContributionToGoal } = useGoalActions(goals, setGoalsState)
+  const { addTransaction, updateTransaction, deleteTransaction, markAsPaid } = useTransactionActions(transactions, setTransactionsState, setCategoriesState)
+  const { addCreditCard, updateCreditCard, deleteCreditCard, addCardExpense, updateCardExpense, deleteCardExpense } = useCardActions(creditCards, setCreditCardsState, cardExpenses, setCardExpensesState)
+  const { addBank, updateBank, deleteBank } = useBankActions(banks, setBanksState, setAssetsState, setGoalsState, setTransactionsState, setCreditCardsState)
+
   // --- Temas ---
   const initialTheme = themePresets.find((t: ThemePreset) => t.id === "paper") || themePresets[0]
   const currentTheme = themePresets.find((t: ThemePreset) => t.id === settings.themeId) || initialTheme
@@ -237,7 +254,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             applyThemeVariables(theme)
           }, 0)
         } else {
-          // Se falhar a validação (ex: schema antigo), tenta carregar o que for possível ou resetar
+          // Tenta migrar dados de versões anteriores ou chaves diferentes
+          const legacyData = window.localStorage.getItem("valore-app-data-v1") || window.localStorage.getItem("valore_app_data")
+          if (legacyData) {
+             try {
+                const parsedLegacy = JSON.parse(legacyData)
+                if (parsedLegacy.settings) {
+                   setSettingsState(prev => ({...prev, ...parsedLegacy.settings}))
+                }
+             } catch(e) {}
+          }
           console.warn("Falha na validação do localStorage, carregando exemplos.")
           loadExampleData()
         }
@@ -271,8 +297,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify(validation.data))
         } else {
           console.error("⛔ Falha Crítica: Tentativa de salvar dados inválidos bloqueada pelo Zod.", validation.error)
-          // Em um app real, poderíamos despachar um evento pra UI mostrar um Toast aqui
-          // "Erro ao salvar dados. Por favor, recarregue a página."
         }
       } catch (error) {
         console.warn("Storage cheio ou indisponível:", error)
@@ -353,235 +377,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [totalNetWorth, isLoaded, syncAssetsPrices, patrimonialHistory, savePatrimonialSnapshot])
 
-  // --- Funções de Ativos ---
+  // --- Funções Auxiliares ---
   const setAssets = useCallback((newAssets: Asset[]) => setAssetsState(newAssets), [])
-
-  const addAsset = useCallback((assetData: Omit<Asset, "id" | "currentValue">) => {
-    const newAsset: Asset = {
-      ...assetData,
-      id: generateId(assets),
-      currentValue: assetData.quantity * assetData.price,
-      lastUpdated: new Date().toISOString(),
-    }
-    setAssetsState((prev: Asset[]) => [...prev, newAsset])
-  }, [assets])
-
-  const updateAsset = useCallback((id: number, data: Partial<Asset>) => {
-    setAssetsState((prev: Asset[]) =>
-      prev.map((asset: Asset) => {
-        if (asset.id === id) {
-          const updated = { ...asset, ...data }
-          if (data.quantity !== undefined || data.price !== undefined) {
-            updated.currentValue = (data.quantity ?? asset.quantity) * (data.price ?? asset.price)
-            updated.lastUpdated = new Date().toISOString()
-          }
-          return updated
-        }
-        return asset
-      }),
-    )
-  }, [])
-
-  const deleteAsset = useCallback((id: number) => {
-    setAssetsState((prev: Asset[]) => prev.filter((asset: Asset) => asset.id !== id))
-  }, [])
-
-  // --- Funções de Orçamento ---
   const setCategories = useCallback((newCategories: Category[]) => setCategoriesState(newCategories), [])
-
-  const addCategory = useCallback((categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
-    const newCategory: Category = {
-      ...categoryData,
-      id: generateId(categories),
-      spent: 0,
-      subcategories: [],
-      expanded: false,
-    }
-    setCategoriesState((prev: Category[]) => [...prev, newCategory])
-  }, [categories])
-
-  const updateCategory = useCallback((id: number, data: Partial<Category>) => {
-    setCategoriesState((prev: Category[]) => prev.map((cat: Category) => (cat.id === id ? { ...cat, ...data } : cat)))
-  }, [])
-
-  const deleteCategory = useCallback((id: number) => {
-    setCategoriesState((prev: Category[]) => prev.filter((cat: Category) => cat.id !== id))
-    // Desvincular transações órfãs (Evita falha de integridade referencial)
-    setTransactionsState((prev: ScheduledTransaction[]) =>
-      prev.map((t: ScheduledTransaction) => t.categoryId === id ? { ...t, categoryId: undefined } : t)
-    )
-  }, [])
-
-  const addSubcategory = useCallback((categoryId: number, subcategoryData: Omit<Subcategory, "id">) => {
-    setCategoriesState((prev: Category[]) =>
-      prev.map((cat: Category) => {
-        if (cat.id === categoryId) {
-          const newSub: Subcategory = {
-            ...subcategoryData,
-            id: generateId(cat.subcategories || []),
-          }
-          return {
-            ...cat,
-            subcategories: [...(cat.subcategories || []), newSub],
-            spent: cat.spent + subcategoryData.spent,
-          }
-        }
-        return cat
-      }),
-    )
-  }, [])
-
-  const updateSubcategory = useCallback((categoryId: number, subcategoryId: number, data: Partial<Subcategory>) => {
-    setCategoriesState((prev: Category[]) =>
-      prev.map((cat: Category) => {
-        if (cat.id === categoryId) {
-          const oldSub = cat.subcategories?.find((s: Subcategory) => s.id === subcategoryId)
-          const oldSpent = oldSub?.spent || 0
-          const newSpent = data.spent ?? oldSpent
-          return {
-            ...cat,
-            subcategories: cat.subcategories?.map((sub: Subcategory) => (sub.id === subcategoryId ? { ...sub, ...data } : sub)),
-            spent: cat.spent - oldSpent + newSpent,
-          }
-        }
-        return cat
-      }),
-    )
-  }, [])
-
-  const deleteSubcategory = useCallback((categoryId: number, subcategoryId: number) => {
-    setCategoriesState((prev: Category[]) =>
-      prev.map((cat: Category) => {
-        if (cat.id === categoryId) {
-          const deletedSpent = cat.subcategories?.find((s: Subcategory) => s.id === subcategoryId)?.spent || 0
-          return {
-            ...cat,
-            subcategories: cat.subcategories?.filter((sub: Subcategory) => sub.id !== subcategoryId),
-            spent: cat.spent - deletedSpent,
-          }
-        }
-        return cat
-      }),
-    )
-  }, [])
-
-  const toggleCategory = useCallback((id: number) => {
-    setCategoriesState((prev: Category[]) => prev.map((cat: Category) => (cat.id === id ? { ...cat, expanded: !cat.expanded } : cat)))
-  }, [])
-
-  // --- Funções de Metas ---
   const setGoals = useCallback((newGoals: Goal[]) => setGoalsState(newGoals), [])
-
-  const addGoal = useCallback((goalData: Omit<Goal, "id">) => {
-    const newGoal: Goal = {
-      ...goalData,
-      id: generateId(goals),
-    }
-    setGoalsState((prev: Goal[]) => [...prev, newGoal])
-  }, [goals])
-
-  const updateGoal = useCallback((id: number, data: Partial<Goal>) => {
-    setGoalsState((prev: Goal[]) => prev.map((goal: Goal) => (goal.id === id ? { ...goal, ...data } : goal)))
-  }, [])
-
-  const deleteGoal = useCallback((id: number) => {
-    setGoalsState((prev: Goal[]) => prev.filter((goal: Goal) => goal.id !== id))
-  }, [])
-
-  const addContributionToGoal = useCallback((goalId: number, amount: number) => {
-    setGoalsState((prev: Goal[]) =>
-      prev.map((goal: Goal) => (goal.id === goalId ? { ...goal, current: goal.current + amount } : goal)),
-    )
-
-  }, [])
-
-  // --- Funções de Transações ---
   const setTransactions = useCallback((newTransactions: ScheduledTransaction[]) => setTransactionsState(newTransactions), [])
-
-  const addTransaction = useCallback((transactionData: Omit<ScheduledTransaction, "id">) => {
-    const newTransaction: ScheduledTransaction = {
-      ...transactionData,
-      id: generateId(transactions),
-    }
-    setTransactionsState((prev: ScheduledTransaction[]) => [...prev, newTransaction])
-  }, [transactions])
-
-  const updateTransaction = useCallback((id: number, data: Partial<ScheduledTransaction>) => {
-    setTransactionsState((prev: ScheduledTransaction[]) => prev.map((t: ScheduledTransaction) => (t.id === id ? { ...t, ...data } : t)))
-  }, [])
-
-  const deleteTransaction = useCallback((id: number) => {
-    setTransactionsState((prev: ScheduledTransaction[]) => prev.filter((t: ScheduledTransaction) => t.id !== id))
-  }, [])
-
-  const markAsPaid = useCallback((id: number) => {
-    setTransactionsState((prev: ScheduledTransaction[]) => {
-      const transaction = prev.find((t: ScheduledTransaction) => t.id === id)
-      if (!transaction) return prev
-
-      const updated = prev.map((t: ScheduledTransaction) => (t.id === id ? { ...t, status: "pago" as const } : t))
-
-      if (transaction.type === "pagamento" && transaction.categoryId) {
-        setCategoriesState((catPrev: Category[]) =>
-          catPrev.map((cat: Category) =>
-            cat.id === transaction.categoryId ? { ...cat, spent: cat.spent + transaction.amount } : cat,
-          ),
-        )
-      }
-
-      if (transaction.recurrence !== "unico") {
-        const nextDate = calculateNextDate(transaction.dueDate, transaction.recurrence)
-        const newTransaction: ScheduledTransaction = {
-          ...transaction,
-          id: generateId(prev),
-          dueDate: nextDate,
-          status: "pendente" as const,
-        }
-        return [...updated, newTransaction]
-      }
-      return updated
-    })
-  }, [calculateNextDate, generateId, setCategoriesState])
-
-  // --- Funções de Cartão ---
   const setCreditCards = useCallback((cards: CreditCard[]) => setCreditCardsState(cards), [])
-
-  const addCreditCard = useCallback((cardData: Omit<CreditCard, "id">) => {
-    const newCard: CreditCard = {
-      ...cardData,
-      id: generateId(creditCards),
-    }
-    setCreditCardsState((prev: CreditCard[]) => [...prev, newCard])
-  }, [creditCards])
-
-  const updateCreditCard = useCallback((id: number, data: Partial<CreditCard>) => {
-    setCreditCardsState((prev: CreditCard[]) => prev.map((card: CreditCard) => (card.id === id ? { ...card, ...data } : card)))
-  }, [])
-
-  const deleteCreditCard = useCallback((id: number) => {
-    setCreditCardsState((prev: CreditCard[]) => prev.filter((card: CreditCard) => card.id !== id))
-    // Remove despesas vinculadas (Cascade Delete)
-    setCardExpensesState((prev: CardExpense[]) => prev.filter((expense: CardExpense) => expense.cardId !== id))
-  }, [])
-
   const setCardExpenses = useCallback((expenses: CardExpense[]) => setCardExpensesState(expenses), [])
-
-  const addCardExpense = useCallback((expenseData: Omit<CardExpense, "id">) => {
-    const newExpense: CardExpense = {
-      ...expenseData,
-      id: generateId(cardExpenses),
-      paidInstallments: 0,
-    }
-    setCardExpensesState((prev: CardExpense[]) => [...prev, newExpense])
-  }, [cardExpenses])
-
-  const updateCardExpense = useCallback((id: number, data: Partial<CardExpense>) => {
-    setCardExpensesState((prev: CardExpense[]) => prev.map((expense: CardExpense) => (expense.id === id ? { ...expense, ...data } : expense)))
-  }, [])
-
-  const deleteCardExpense = useCallback((id: number) => {
-    setCardExpensesState((prev: CardExpense[]) => prev.filter((expense: CardExpense) => expense.id !== id))
-  }, [])
+  const setBanks = useCallback((newBanks: Bank[]) => setBanksState(newBanks), [])
 
   const calculateInvoices = useCallback((cardId?: number) => calculateInvoicesUtil(cardExpenses, creditCards, cardId), [cardExpenses, creditCards])
 
@@ -601,37 +404,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return card.limit - nextInvoice
   }, [creditCards, calculateInvoices])
 
-  // --- Funções de Bancos ---
-  const setBanks = useCallback((newBanks: Bank[]) => setBanksState(newBanks), [])
-
-  const addBank = useCallback((bankData: Omit<Bank, "id">) => {
-    const newBank: Bank = {
-      ...bankData,
-      id: generateId(banks),
-    }
-    if (bankData.isMain) {
-      setBanksState((prev: Bank[]) => prev.map((b: Bank) => ({ ...b, isMain: false })))
-    }
-    setBanksState((prev: Bank[]) => [...prev, newBank])
-  }, [banks])
-
-  const updateBank = useCallback((id: number, data: Partial<Bank>) => {
-    if (data.isMain) {
-      setBanksState((prev: Bank[]) => prev.map((b: Bank) => ({ ...b, isMain: b.id === id })))
-    }
-    setBanksState((prev: Bank[]) => prev.map((bank: Bank) => (bank.id === id ? { ...bank, ...data } : bank)))
-  }, [])
-
-  const deleteBank = useCallback((id: number) => {
-    setAssetsState((prev: Asset[]) => prev.map((a: Asset) => (a.bankId === id ? { ...a, bankId: undefined } : a)))
-    setGoalsState((prev: Goal[]) => prev.map((g: Goal) => (g.bankId === id ? { ...g, bankId: undefined } : g)))
-    setTransactionsState((prev: ScheduledTransaction[]) => prev.map((t: ScheduledTransaction) => (t.bankId === id ? { ...t, bankId: undefined } : t)))
-    setCreditCardsState((prev: CreditCard[]) => prev.map((c: CreditCard) => (c.bankId === id ? { ...c, bankId: undefined } : c)))
-    setBanksState((prev: Bank[]) => prev.filter((bank: Bank) => bank.id !== id))
-  }, [])
-
   const getBankById = useCallback((id: number) => banks.find((b: Bank) => b.id === id), [banks])
-
   const getTotalBankBalance = useCallback(() => banks.reduce((sum: number, bank: Bank) => sum + bank.balance, 0), [banks])
 
   const getLinkedItems = useCallback((bankId: number) => ({
@@ -710,8 +483,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGoalsState([])
       setSettingsState({
         ...defaultSettings,
-        nome: settings.nome, // Previne que o nome seja limpo
-        onboardingCompleted: settings.onboardingCompleted // Previne volta ao onboarding
+        nome: settings.nome,
+        onboardingCompleted: settings.onboardingCompleted
       })
       setTransactionsState([])
       setCreditCardsState([])
@@ -741,14 +514,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     togglePrivacy, isPrivate,
     syncAssetsPrices,
   }), [
-    assets, setAssets, addAsset, updateAsset, deleteAsset,
-    categories, setCategories, addCategory, updateCategory, deleteCategory,
+    assets, addAsset, updateAsset, deleteAsset,
+    categories, addCategory, updateCategory, deleteCategory,
     addSubcategory, updateSubcategory, deleteSubcategory, toggleCategory,
-    goals, setGoals, addGoal, updateGoal, deleteGoal, addContributionToGoal,
-    transactions, setTransactions, addTransaction, updateTransaction, deleteTransaction, markAsPaid,
-    creditCards, setCreditCards, addCreditCard, updateCreditCard, deleteCreditCard,
-    cardExpenses, setCardExpenses, addCardExpense, updateCardExpense, deleteCardExpense,
-    banks, setBanks, addBank, updateBank, deleteBank, getBankById, getTotalBankBalance, getLinkedItems,
+    goals, addGoal, updateGoal, deleteGoal, addContributionToGoal,
+    transactions, addTransaction, updateTransaction, deleteTransaction, markAsPaid,
+    creditCards, addCreditCard, updateCreditCard, deleteCreditCard,
+    cardExpenses, addCardExpense, updateCardExpense, deleteCardExpense,
+    banks, addBank, updateBank, deleteBank, getBankById, getTotalBankBalance, getLinkedItems,
     patrimonialHistory, savePatrimonialSnapshot,
     calculateInvoices, getTotalCardDebt, getCardAvailableLimit,
     settings, updateSettings, currentTheme, setTheme,
@@ -757,6 +530,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isLoaded,
     exportData, importData, clearAllData, loadExampleData,
     syncAssetsPrices,
+    togglePrivacy, isPrivate
   ])
 
 

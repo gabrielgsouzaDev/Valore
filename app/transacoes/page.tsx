@@ -9,6 +9,7 @@ import {
     Plus,
     Receipt,
     Upload,
+    Download,
     X,
     Check,
     Trash2,
@@ -210,6 +211,33 @@ export default function TransacoesPage() {
         toast({ title: "Transações excluídas" })
     }
 
+    const handleExportCSV = () => {
+        const data = activeTab === "agendadas" ? agendadasTransactions : historyTransactions
+        if (data.length === 0) return
+
+        const headers = ["Nome", "Valor", "Tipo", "Data", "Recorrência", "Status", "Categoria", "Banco"]
+        const rows = data.map(t => [
+            t.name,
+            t.amount.toString(),
+            t.type,
+            t.dueDate,
+            t.recurrence,
+            t.status,
+            getCategoryNameSafe(t.categoryId) || "",
+            getBankByIdSafe(t.bankId || 0)?.name || ""
+        ])
+
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n")
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.setAttribute("href", url)
+        link.setAttribute("download", `valore-transacoes-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     const getBankByIdSafe = (id: number) => banks.find(b => b.id === id)
     const getCategoryNameSafe = (id?: number) => categories.find(c => c.id === id)?.name || null
 
@@ -245,11 +273,13 @@ export default function TransacoesPage() {
                         <Receipt className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                         <div>
                             <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Transações</h2>
-                            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Fluxo de caixa • Planejamento</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="border-border bg-card/50 text-foreground hover:bg-muted" onClick={handleExportCSV} title="Exportar CSV">
+                            <Download className="h-4 w-4" />
+                        </Button>
                         <Button variant="outline" className="border-border bg-card/50 text-foreground text-xs sm:text-sm font-semibold hover:bg-muted" onClick={() => setOfxOpen(true)}>
                             <Upload className="h-4 w-4 mr-2" /> Importar
                         </Button>

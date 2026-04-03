@@ -1,8 +1,8 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { TrendingUp } from "lucide-react"
-import { AreaChart, Area, Tooltip, ResponsiveContainer } from "recharts"
+import { TrendingUp, BarChart3 } from "lucide-react"
+import { ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 import { formatCurrency } from "@/lib/services"
 
 interface ProjectionChartProps {
@@ -26,26 +26,39 @@ export function ProjectionChart({ data }: ProjectionChartProps) {
                         *Considerando apenas transações pendentes e agendadas.
                     </p>
                 </div>
-                <div className="h-[120px] w-full mt-4">
+                <div className="h-[250px] w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data}>
+                        <ComposedChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--theme-primary)" stopOpacity={0.3} />
                                     <stop offset="95%" stopColor="var(--theme-primary)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                            <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                                minTickGap={20}
+                            />
+                            <YAxis
+                                hide
+                                domain={['auto', 'auto']}
+                            />
                             <Tooltip
+                                cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                                 content={(props) => {
                                     const { active, payload } = props
                                     if (active && payload && payload.length) {
                                         const val = (payload[0].value ?? 0) as number
                                         const label = (payload[0].payload as { name: string }).name
                                         return (
-                                            <div className="bg-card border border-border p-2 rounded-lg shadow-xl text-[10px] font-bold">
-                                                <p className="text-muted-foreground">{label}</p>
+                                            <div className="bg-card border border-border p-3 rounded-xl shadow-2xl text-xs font-bold ring-4 ring-black/5">
+                                                <p className="text-muted-foreground mb-1">{label}</p>
                                                 <p className={val >= 0 ? "text-success" : "text-danger"}>
-                                                    {formatCurrency(val)}
+                                                    Saldo: {formatCurrency(val)}
                                                 </p>
                                             </div>
                                         )
@@ -53,6 +66,7 @@ export function ProjectionChart({ data }: ProjectionChartProps) {
                                     return null
                                 }}
                             />
+                            <ReferenceLine y={0} stroke="var(--muted-foreground)" strokeDasharray="3 3" opacity={0.5} />
                             <Area
                                 type="monotone"
                                 dataKey="saldo"
@@ -60,8 +74,9 @@ export function ProjectionChart({ data }: ProjectionChartProps) {
                                 strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorSaldo)"
+                                animationDuration={1000}
                             />
-                        </AreaChart>
+                        </ComposedChart>
                     </ResponsiveContainer>
                 </div>
             </CardContent>

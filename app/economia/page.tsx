@@ -100,9 +100,6 @@ export default function EconomiaPage() {
             <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
             <div className="flex flex-col justify-center">
               <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Economia</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                Orçamento • Alocação de capital
-              </p>
             </div>
           </div>
           <div className="text-left sm:text-right flex flex-col justify-center">
@@ -281,7 +278,7 @@ export default function EconomiaPage() {
                               }}
                               variant="ghost"
                               size="sm"
-                              className="text-accent hover:text-accent/80 text-xs h-7"
+                              className="text-accent hover:text-accent-foreground hover:bg-accent text-xs h-7"
                             >
                               <Plus className="h-3 w-3 mr-1" />
                               Subcategoria
