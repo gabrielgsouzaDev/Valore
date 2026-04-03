@@ -68,9 +68,9 @@ export function CreditCardStack({
                 const limitUsage = ((card.limit - available) / card.limit) * 100
 
                 return (
-                    <Card key={card.id} className="relative group overflow-hidden border-0 bg-transparent shadow-none">
+                    <div key={card.id} className="relative group aspect-[1.586/1]">
                         <div className={cn(
-                            "w-full aspect-[1.586/1] rounded-[24px] p-6 text-white relative flex flex-col justify-between shadow-2xl transition-all duration-500 overflow-hidden bg-gradient-to-br",
+                            "w-full h-full rounded-[24px] p-6 text-white relative flex flex-col justify-between shadow-2xl transition-all duration-500 overflow-hidden bg-gradient-to-br",
                             getColorClass(card.color)
                         )}>
                             {/* Texture overlay */}
@@ -137,7 +137,7 @@ export function CreditCardStack({
                                 </Button>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 )
             })}
 

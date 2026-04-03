@@ -87,7 +87,6 @@ export default function ConfiguracoesPage() {
     capitalInvestido: settings.capitalInvestido.toString(),
     metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
     investmentStrategy: settings.investmentStrategy || "rebalance",
-    userFocus: settings.userFocus || "both",
     activeModules: settings.activeModules || {
       investimentos: true,
       economia: true,
@@ -144,11 +143,7 @@ export default function ConfiguracoesPage() {
     toast({ title: "Modulos atualizados" })
   }
 
-  const handleFocusChange = (focus: string) => {
-    handleUpdateLocalSetting("userFocus", focus)
-    updateSettings({ userFocus: focus as any })
-    toast({ title: "Foco atualizado" })
-  }
+
 
   const handleImportarDados = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -182,7 +177,6 @@ export default function ConfiguracoesPage() {
               capitalInvestido: validData.settings.capitalInvestido.toString(),
               metaReservaEmergencia: validData.settings.metaReservaEmergencia.toString(),
               investmentStrategy: validData.settings.investmentStrategy,
-              userFocus: validData.settings.userFocus || "both",
               activeModules: validData.settings.activeModules || localSettings.activeModules
             })
             toast({ title: "Backup importado!" })
@@ -204,9 +198,6 @@ export default function ConfiguracoesPage() {
             <Settings className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
             <div className="flex flex-col justify-center">
               <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Configurações</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">
-                Sistema • Preferências e Personalização
-              </p>
             </div>
           </div>
         </div>
@@ -253,8 +244,6 @@ export default function ConfiguracoesPage() {
             <AppearanceSection
               currentTheme={currentTheme}
               setTheme={setTheme}
-              userFocus={localSettings.userFocus}
-              onFocusChange={handleFocusChange}
             />
 
             <ModuleToggles

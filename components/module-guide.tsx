@@ -98,7 +98,6 @@ export function ModuleGuide() {
     const { settings, updateSettings } = useApp()
     const [currentStep, setCurrentStep] = useState(0)
     const [isVisible, setIsVisible] = useState(false)
-    const [hasBeenShown, setHasBeenShown] = useState<Record<string, boolean>>({})
 
     const content = GUIDE_CONTENT[pathname] || null
 
@@ -112,11 +111,12 @@ export function ModuleGuide() {
     // 2. Tivermos conteúdo para a rota atual
     // 3. Ainda não tivermos mostrado nesta sessão (para não ser irritante)
     useEffect(() => {
-        if (settings.showGuide && content && !hasBeenShown[pathname]) {
+        const shownGuides = settings.shownGuides || []
+        if (settings.showGuide && content && !shownGuides.includes(pathname)) {
             setIsVisible(true)
             setCurrentStep(0)
         }
-    }, [pathname, settings.showGuide, content, hasBeenShown])
+    }, [pathname, settings.showGuide, content, settings.shownGuides])
 
     const handleNext = () => {
         if (!content) return
@@ -135,7 +135,10 @@ export function ModuleGuide() {
 
     const handleClose = () => {
         setIsVisible(false)
-        setHasBeenShown(prev => ({ ...prev, [pathname]: true }))
+        if (!settings.shownGuides?.includes(pathname)) {
+            const currentShown = settings.shownGuides || []
+            updateSettings({ shownGuides: [...currentShown, pathname] })
+        }
     }
 
     const handleDismissForever = () => {

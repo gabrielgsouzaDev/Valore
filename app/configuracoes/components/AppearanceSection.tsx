@@ -11,15 +11,11 @@ import type { ThemePreset } from "@/lib/types"
 interface AppearanceSectionProps {
     currentTheme: ThemePreset
     setTheme: (theme: string) => void
-    userFocus: string
-    onFocusChange: (focus: string) => void
 }
 
 export function AppearanceSection({
     currentTheme,
-    setTheme,
-    userFocus,
-    onFocusChange
+    setTheme
 }: AppearanceSectionProps) {
     return (
         <Card className="bg-card border-border">
@@ -70,48 +66,6 @@ export function AppearanceSection({
                                 )}
                             </button>
                         ))}
-                    </div>
-                </div>
-
-                <div className="space-y-3 pt-4 border-t border-border/50">
-                    <Label className="text-foreground/80 text-xs sm:text-sm">Foco da Interface</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <Button
-                            variant={userFocus === "finance" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => onFocusChange("finance")}
-                            className="justify-start text-xs h-auto py-2.5 px-3"
-                        >
-                            <Zap className="h-3.5 w-3.5 mr-2 opacity-70" />
-                            <div className="text-left">
-                                <p className="font-bold">Finanças</p>
-                                <p className="text-[9px] opacity-70">Prioriza fluxo de caixa</p>
-                            </div>
-                        </Button>
-                        <Button
-                            variant={userFocus === "investing" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => onFocusChange("investing")}
-                            className="justify-start text-xs h-auto py-2.5 px-3"
-                        >
-                            <TrendingUp className="h-3.5 w-3.5 mr-2 opacity-70" />
-                            <div className="text-left">
-                                <p className="font-bold">Investimentos</p>
-                                <p className="text-[9px] opacity-70">Foco em patrimônio</p>
-                            </div>
-                        </Button>
-                        <Button
-                            variant={userFocus === "both" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => onFocusChange("both")}
-                            className="justify-start text-xs h-auto py-2.5 px-3"
-                        >
-                            <Sparkles className="h-3.5 w-3.5 mr-2 opacity-70" />
-                            <div className="text-left">
-                                <p className="font-bold">Híbrido</p>
-                                <p className="text-[9px] opacity-70">Equilíbrio total</p>
-                            </div>
-                        </Button>
                     </div>
                 </div>
             </CardContent>

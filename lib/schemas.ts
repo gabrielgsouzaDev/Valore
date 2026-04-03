@@ -139,8 +139,8 @@ export const settingsSchema = z.object({
     onboardingCompleted: z.boolean().default(false),
     activeModules: z.record(z.boolean()).optional(),
     isDemoMode: z.boolean().optional(),
-    userFocus: z.enum(["invest", "save", "both"]).optional(),
     showGuide: z.boolean().optional(),
+    shownGuides: z.array(z.string()).default([]),
     activeGuideStep: z.number().nullable().optional(),
     isPrivate: z.boolean().optional(),
 })

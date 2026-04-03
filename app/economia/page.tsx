@@ -142,7 +142,7 @@ export default function EconomiaPage() {
                 </Button>
               </div>
 
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-4">
                 {categories.length === 0 ? (
                   <EmptyState
                     icon={Wallet}
@@ -152,142 +152,115 @@ export default function EconomiaPage() {
                     onAction={openAddCategoryDialog}
                   />
                 ) : (
-                  categories.map((category) => (
-                    <Card key={category.id} className="bg-card border-border overflow-hidden">
-                      <div className="p-3 sm:p-5">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                            <button
-                              onClick={() => toggleCategory(category.id)}
-                              className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                            >
-                              {category.expanded ? (
-                                <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                              )}
-                            </button>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
-                                {category.name}
-                              </h4>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
-                                {category.percentage}% do orçamento
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 sm:gap-4">
-                            <div className="text-right hidden sm:block">
-                              <p className={cn("font-semibold text-foreground text-sm sm:text-base", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                                {formatCurrency(category.spent)}
-                              </p>
-                              <p className={cn("text-xs sm:text-sm text-muted-foreground", settings.isPrivate && "blur-sm select-none pointer-events-none opacity-60")}>
-                                de {formatCurrency(category.budgeted)}
-                              </p>
-                            </div>
-                            <div className="flex gap-0.5 sm:gap-1">
-                              <Button
-                                onClick={() => openEditCategoryDialog(category)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
+                  <Card className="bg-card border-border overflow-hidden divide-y divide-border/50">
+                    {categories.map((category) => (
+                      <div key={category.id} className="transition-all hover:bg-muted/5">
+                        <div className="p-4 sm:p-5 group">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <button
+                                onClick={() => toggleCategory(category.id)}
+                                className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
                               >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteCategory(category.id)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className={cn("sm:hidden mb-2 text-right", settings.isPrivate && "blur-md select-none pointer-events-none opacity-40")}>
-                          <p className="font-semibold text-foreground text-sm">
-                            {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
-                          </p>
-                        </div>
-
-                        <div className="w-full bg-muted rounded-full h-1.5 sm:h-2 mt-2 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
-                              backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
-                            }}
-                          />
-                        </div>
-
-                        {/* Subcategories */}
-                        {category.expanded && (
-                          <div className="mt-3 sm:mt-4 pl-4 sm:pl-8 space-y-2 sm:space-y-3 border-l-2 border-border">
-                            {category.subcategories?.map((sub) => (
-                              <div key={sub.id} className="space-y-1.5 sm:space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <p className="text-xs sm:text-sm text-foreground/80 truncate">{sub.name}</p>
-                                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                    <span
-                                      className={cn(
-                                        "text-[10px] sm:text-xs font-medium",
-                                        sub.spent > sub.budgeted ? "text-danger" : "text-success",
-                                        settings.isPrivate && "blur-sm select-none pointer-events-none opacity-40"
-                                      )}
-                                    >
-                                      {formatCurrency(sub.spent)}
-                                    </span>
-                                    <Button
-                                      onClick={() => {
-                                        setEditingSubcategory({ categoryId: category.id, subcategory: sub })
-                                        setSubcategoryDialogOpen(true)
-                                      }}
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 rounded-md"
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      onClick={() => handleDeleteSubcategory(category.id, sub.id)}
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-danger transition-colors duration-150 rounded-md"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
+                                {category.expanded ? (
+                                  <ChevronDown className="h-5 w-5" />
+                                ) : (
+                                  <ChevronRight className="h-5 w-5" />
+                                )}
+                              </button>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-black text-foreground text-sm sm:text-base uppercase tracking-tighter italic">
+                                    {category.name}
+                                  </h4>
+                                  <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/50">
+                                    {category.percentage}%
+                                  </span>
                                 </div>
-                                <div className="w-full bg-muted rounded-full h-1 mt-1 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full transition-all duration-500"
-                                    style={{
-                                      width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
-                                      backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
-                                    }}
-                                  />
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="flex-1 max-w-[120px] bg-muted/50 rounded-full h-1 overflow-hidden">
+                                    <div
+                                      className="h-full transition-all duration-500"
+                                      style={{
+                                        width: `${Math.min((category.spent / (category.budgeted || 1)) * 100, 100)}%`,
+                                        backgroundColor: getEconomyBarColor(category.spent, category.budgeted)
+                                      }}
+                                    />
+                                  </div>
+                                  <span className={cn("text-[10px] font-bold", (category.spent / (category.budgeted || 1)) > 1 ? "text-danger" : "text-muted-foreground")}>
+                                    {((category.spent / (category.budgeted || 1)) * 100).toFixed(0)}%
+                                  </span>
                                 </div>
                               </div>
-                            ))}
-                            <Button
-                              onClick={() => {
-                                setEditingSubcategory({ categoryId: category.id, subcategory: null })
-                                setSubcategoryDialogOpen(true)
-                              }}
-                              variant="ghost"
-                              size="sm"
-                              className="text-accent hover:text-accent-foreground hover:bg-accent text-xs h-7"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              Subcategoria
-                            </Button>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                              <div className="text-right hidden sm:block">
+                                <p className={cn("font-black text-foreground text-sm sm:text-base tracking-tighter", settings.isPrivate && "blur-md select-none")}>
+                                  {formatCurrency(category.spent)}
+                                </p>
+                                <p className={cn("text-[10px] font-bold text-muted-foreground uppercase tracking-widest", settings.isPrivate && "blur-sm opacity-50")}>
+                                  de {formatCurrency(category.budgeted)}
+                                </p>
+                              </div>
+                              <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button onClick={() => openEditCategoryDialog(category)} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary"><Pencil className="h-4 w-4" /></Button>
+                                <Button onClick={() => handleDeleteCategory(category.id)} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-danger"><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </div>
                           </div>
-                        )}
+
+                          {/* Subcategories (Hierarchical Clean List) */}
+                          {category.expanded && (
+                            <div className="mt-4 ml-6 space-y-3 border-l-2 border-primary/10 pl-5 py-2 bg-primary/5 rounded-r-xl transition-all animate-in slide-in-from-top-2 duration-300">
+                              {category.subcategories?.map((sub) => (
+                                <div key={sub.id} className="relative group/sub">
+                                  <div className="flex items-center justify-between gap-4 py-1">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-sm font-bold text-foreground/70 tracking-tight">{sub.name}</p>
+                                        <span className={cn("text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-tighter", sub.spent > sub.budgeted ? "bg-danger/10 text-danger" : "bg-success/10 text-success")}>
+                                          {((sub.spent / (sub.budgeted || 1)) * 100).toFixed(0)}%
+                                        </span>
+                                      </div>
+                                      <div className="w-full max-w-[150px] bg-muted/40 rounded-full h-1 mt-1.5 overflow-hidden">
+                                        <div
+                                          className="h-full transition-all duration-700 ease-out"
+                                          style={{
+                                            width: `${Math.min((sub.spent / (sub.budgeted || 1)) * 100, 100)}%`,
+                                            backgroundColor: getEconomyBarColor(sub.spent, sub.budgeted)
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <p className={cn("text-xs font-black tracking-tighter text-foreground/90 flex-shrink-0", settings.isPrivate && "blur-sm opacity-40")}>
+                                        {formatCurrency(sub.spent)}
+                                      </p>
+                                      <div className="flex opacity-0 group-hover/sub:opacity-100 transition-opacity">
+                                        <Button onClick={() => { setEditingSubcategory({ categoryId: category.id, subcategory: sub }); setSubcategoryDialogOpen(true) }} variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary"><Pencil className="h-3.5 w-3.5" /></Button>
+                                        <Button onClick={() => handleDeleteSubcategory(category.id, sub.id)} variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-danger"><Trash2 className="h-3.5 w-3.5" /></Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              <div className="pt-2">
+                                <Button
+                                  onClick={() => { setEditingSubcategory({ categoryId: category.id, subcategory: null }); setSubcategoryDialogOpen(true) }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 h-7 px-2 rounded-lg"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" /> Adicionar Item
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </Card>
-                  ))
+                    ))}
+                  </Card>
                 )}
               </div>
             </div>

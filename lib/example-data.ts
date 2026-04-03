@@ -10,7 +10,7 @@ export const defaultSettings: Settings = {
     investmentStrategy: "waterfall",
     activeGuideStep: null,
     showGuide: false,
-    userFocus: "both",
+    shownGuides: [],
     activeModules: {
         investimentos: true,
         economia: true,

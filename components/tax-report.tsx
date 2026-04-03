@@ -15,15 +15,34 @@ export function TaxReport({ assets }: TaxReportProps) {
     const currentYear = new Date().getFullYear()
 
     return (
-        <Card className="bg-card border-border shadow-sm overflow-hidden">
+        <Card id="tax-report-print" className="bg-card border-border shadow-sm overflow-hidden">
+            <style jsx global>{`
+                @media print {
+                    body {
+                        visibility: hidden;
+                        background: white !important;
+                    }
+                    #tax-report-print, #tax-report-print * {
+                        visibility: visible;
+                    }
+                    #tax-report-print {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        border: none !important;
+                        box-shadow: none !important;
+                    }
+                }
+            `}</style>
             <CardHeader className="bg-muted/30 border-b border-border p-4 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <CardTitle className="flex items-center gap-2 text-foreground text-lg font-black uppercase tracking-tight italic">
                             <FileText className="h-5 w-5 text-primary" />
-                            Relatório de IR ({currentYear - 1})
+                            Relatório de Bens e Direitos
                         </CardTitle>
-                        <CardDescription>Dados para Declaração de Bens e Direitos</CardDescription>
+                        <CardDescription>Dados para Declaração de Imposto de Renda</CardDescription>
                     </div>
                     <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase" onClick={() => window.print()}>
                         <Download className="h-3 w-3 mr-1" /> PDF

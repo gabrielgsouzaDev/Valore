@@ -99,25 +99,33 @@ export default function CartoesPage() {
             const month = date.getMonth()
             const year = date.getFullYear()
 
-            const total = cardExpenses.reduce((sum, e) => {
+            const cardBreakdown: Record<string, number> = {}
+            let total = 0
+
+            cardExpenses.forEach(e => {
                 const expenseDate = new Date(e.purchaseDate)
                 const startMonth = expenseDate.getMonth()
                 const startYear = expenseDate.getFullYear()
 
                 const monthsDiff = (year - startYear) * 12 + (month - startMonth)
                 if (monthsDiff >= 0 && monthsDiff < e.installments) {
-                    return sum + (e.totalAmount / e.installments)
+                    const installmentValue = e.totalAmount / e.installments
+                    total += installmentValue
+
+                    const card = creditCards.find(c => c.id === e.cardId)
+                    const cardName = card?.name || "Desconhecido"
+                    cardBreakdown[cardName] = (cardBreakdown[cardName] || 0) + installmentValue
                 }
-                return sum
-            }, 0)
+            })
 
             return {
                 name: `${monthsNames[month]}`,
-                total: total
+                total: total,
+                breakdown: cardBreakdown
             }
         })
         return data
-    }, [cardExpenses])
+    }, [cardExpenses, creditCards])
 
     // ── HANDLERS ──────────────────────────────────────────────────
     const handleCardSubmit = async () => {

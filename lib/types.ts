@@ -88,8 +88,8 @@ export type Settings = {
     activeModules?: Record<string, boolean>
     isPrivate?: boolean
     isDemoMode?: boolean
-    userFocus?: "invest" | "save" | "both"
     showGuide?: boolean
+    shownGuides?: string[]
     activeGuideStep?: number | null
 }
 

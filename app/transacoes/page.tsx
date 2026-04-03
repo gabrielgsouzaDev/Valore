@@ -200,7 +200,12 @@ export default function TransacoesPage() {
     }
 
     const handleBatchPay = () => {
-        selectedIds.forEach(id => markAsPaid(id))
+        selectedIds.forEach(id => {
+            const t = transactions.find(tx => tx.id === id)
+            if (t?.status === "pendente" || t?.status === "atrasado") {
+                markAsPaid(id)
+            }
+        })
         setSelectedIds(new Set())
         toast({ title: "Transações marcadas como pagas" })
     }
@@ -254,9 +259,14 @@ export default function TransacoesPage() {
                     >
                         <span className="text-sm font-bold whitespace-nowrap">{selectedIds.size} selecionada{selectedIds.size !== 1 && 's'}</span>
                         <div className="w-px h-4 bg-border shrink-0"></div>
-                        <Button variant="ghost" size="sm" onClick={handleBatchPay} className="text-success hover:text-success hover:bg-success/10 text-xs sm:text-sm h-8 rounded-full">
-                            <Check className="w-4 h-4 mr-1 sm:mr-2" /> Pagar
-                        </Button>
+                        {Array.from(selectedIds).some(id => {
+                            const t = transactions.find(tx => tx.id === id);
+                            return t?.status === "pendente" || t?.status === "atrasado";
+                        }) && (
+                                <Button variant="ghost" size="sm" onClick={handleBatchPay} className="text-success hover:text-success hover:bg-success/10 text-xs sm:text-sm h-8 rounded-full">
+                                    <Check className="w-4 h-4 mr-1 sm:mr-2" /> Pagar
+                                </Button>
+                            )}
                         <Button variant="ghost" size="sm" onClick={handleBatchDelete} className="text-danger hover:text-danger hover:bg-danger/10 text-xs sm:text-sm h-8 rounded-full">
                             <Trash2 className="w-4 h-4 mr-1 sm:mr-2" /> Excluir
                         </Button>

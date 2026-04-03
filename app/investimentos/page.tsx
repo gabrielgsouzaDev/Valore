@@ -16,6 +16,14 @@ import { FireSimulator } from "@/components/fire-simulator"
 import { TaxReport } from "@/components/tax-report"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import { INTERFACE_LABELS } from "@/lib/constants"
@@ -26,7 +34,7 @@ import Link from "next/link"
 import type { Asset } from "@/lib/types"
 
 function InvestimentosContent() {
-    const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt } = useApp()
+    const { assets, addAsset, updateAsset, deleteAsset, totalNetWorth, settings, getTotalCardDebt, totalBudgeted } = useApp()
     const { toast } = useToast()
     const searchParams = useSearchParams()
     const aporteParam = searchParams.get("aporte")
@@ -155,10 +163,6 @@ function InvestimentosContent() {
                         <ErrorBoundary moduleName="Tabela de Ativos">
                             <UpdateTable assets={assets} onUpdate={handleUpdateAssetFromTable} />
                         </ErrorBoundary>
-
-                        <ErrorBoundary moduleName="Relatório de IR">
-                            <TaxReport assets={assets} />
-                        </ErrorBoundary>
                     </div>
 
                     <div className="space-y-6 sm:space-y-8 min-w-0">
@@ -168,7 +172,13 @@ function InvestimentosContent() {
                             </ErrorBoundary>
 
                             <ErrorBoundary moduleName="Simulador FIRE">
-                                <FireSimulator currentEquity={totalNetWorth} monthlyContribution={assets.reduce((acc, a) => acc + (a.annualDividend || 0) / 12, 0)} />
+                                <FireSimulator
+                                    currentEquity={totalNetWorth}
+                                    monthlyContribution={
+                                        (assets.reduce((acc, a) => acc + (a.annualDividend || 0), 0) / 12) +
+                                        Math.max(0, settings.rendaMensal - (totalBudgeted || 0))
+                                    }
+                                />
                             </ErrorBoundary>
 
                             <Card className="bg-card border-border p-6 shadow-sm overflow-hidden relative">
@@ -198,7 +208,8 @@ function InvestimentosContent() {
                                                     }, {} as Record<string, boolean>)).map((_, index) => (
                                                         <Cell
                                                             key={`cell-${index}`}
-                                                            fill={`rgba(var(--theme-primary), ${1 - (index * 0.15)})`}
+                                                            fill="var(--primary)"
+                                                            fillOpacity={(100 - (index * 15)) / 100}
                                                             stroke="var(--card)"
                                                             strokeWidth={2}
                                                         />
@@ -225,13 +236,33 @@ function InvestimentosContent() {
                                         return acc
                                     }, {} as Record<string, number>)).map(([type, value], i) => (
                                         <div key={type} className="flex items-center gap-2 bg-muted/30 px-2 py-1 rounded-md border border-border/50">
-                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: `rgba(var(--theme-primary), ${1 - (i * 0.15)})` }} />
+                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "var(--primary)", opacity: (100 - (i * 15)) / 100 }} />
                                             <span className="text-[9px] font-black text-foreground uppercase tracking-tighter">{type}</span>
                                             <span className="text-[9px] font-bold text-muted-foreground">
                                                 {totalNetWorth > 0 ? ((value / totalNetWorth) * 100).toFixed(0) : 0}%
                                             </span>
                                         </div>
                                     ))}
+                                </div>
+
+                                {/* IR Report Trigger */}
+                                <div className="mt-8 flex justify-center">
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+                                                <Settings className="h-3 w-3 mr-2" /> Relatório de Bens e Direitos
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border p-0 sm:p-0">
+                                            <DialogHeader className="p-6 pb-2">
+                                                <DialogTitle className="text-lg font-black uppercase italic tracking-tighter">Declaração de Bens</DialogTitle>
+                                                <DialogDescription>Consolidado de ativos para fins de Imposto de Renda</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="p-6 pt-0">
+                                                <TaxReport assets={assets} />
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
                             </Card>
                         </div>
