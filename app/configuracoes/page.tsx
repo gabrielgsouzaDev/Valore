@@ -227,16 +227,18 @@ export default function ConfiguracoesPage() {
               saveStatus={saveStatus}
             />
 
-            <PortfolioSection
-              totalNetWorth={totalNetWorth}
-              metaReservaEmergencia={localSettings.metaReservaEmergencia}
-              investmentStrategy={localSettings.investmentStrategy}
-              onChange={handleUpdateLocalSetting}
-              onSave={handleSalvarPortfolio}
-              isSubmitting={isSubmitting}
-              saveStatus={saveStatus}
-              formatCurrency={formatCurrency}
-            />
+            {localSettings.activeModules.investimentos && (
+              <PortfolioSection
+                totalNetWorth={totalNetWorth}
+                metaReservaEmergencia={localSettings.metaReservaEmergencia}
+                investmentStrategy={localSettings.investmentStrategy}
+                onChange={handleUpdateLocalSetting}
+                onSave={handleSalvarPortfolio}
+                isSubmitting={isSubmitting}
+                saveStatus={saveStatus}
+                formatCurrency={formatCurrency}
+              />
+            )}
 
             <BankManagement
               banks={banks}

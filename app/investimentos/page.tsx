@@ -9,8 +9,11 @@ import { AssetCard } from "@/components/asset-card"
 import { ContributionWidget } from "@/components/contribution-widget"
 import { UpdateTable } from "@/components/update-table"
 import { EmptyState } from "@/components/empty-state"
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts"
 import { DemoBanner } from "@/components/demo-banner"
 import { AssetDialog } from "@/components/asset-dialog"
+import { FireSimulator } from "@/components/fire-simulator"
+import { TaxReport } from "@/components/tax-report"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { useApp } from "@/contexts/app-context"
@@ -63,7 +66,7 @@ function InvestimentosContent() {
         setConfirmOpen(true)
     }
 
-    const totalInvested = assets.reduce((acc, a) => acc + (a.quantity * a.averagePrice), 0)
+    const totalInvested = assets.reduce((acc, a) => acc + (Number(a.quantity || 0) * Number(a.averagePrice || 0)), 0)
     const totalGain = totalNetWorth - totalInvested
     const profitability = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0
 
@@ -75,15 +78,9 @@ function InvestimentosContent() {
                         <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                         <div>
                             <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Investimentos</h2>
-                            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Gestão de ativos • Rebalanceamento</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Link href="/configuracoes">
-                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted hover:text-foreground">
-                                <Settings className="h-5 w-5" />
-                            </Button>
-                        </Link>
                         <Button
                             onClick={() => { setEditingAsset(null); setDialogOpen(true); }}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-md shadow-primary/20"
@@ -158,6 +155,10 @@ function InvestimentosContent() {
                         <ErrorBoundary moduleName="Tabela de Ativos">
                             <UpdateTable assets={assets} onUpdate={handleUpdateAsset} />
                         </ErrorBoundary>
+
+                        <ErrorBoundary moduleName="Relatório de IR">
+                            <TaxReport assets={assets} />
+                        </ErrorBoundary>
                     </div>
 
                     <div className="space-y-6 sm:space-y-8 min-w-0">
@@ -166,13 +167,57 @@ function InvestimentosContent() {
                                 <ContributionWidget assets={assets} totalNetWorth={totalNetWorth} initialAmount={initialAporte} />
                             </ErrorBoundary>
 
-                            <Card className="bg-card border-border p-6 border-dashed opacity-60">
-                                <div className="flex flex-col items-center justify-center py-10 text-center">
-                                    <div className="p-3 bg-muted rounded-full mb-4">
-                                        <TrendingUp className="h-6 w-6 text-muted-foreground" />
-                                    </div>
-                                    <h4 className="text-sm font-bold text-foreground mb-1 uppercase tracking-tighter italic">Gráficos em Manutenção</h4>
-                                    <p className="text-xs text-muted-foreground">Estamos refinando a visualização de histórico e alocação para maior precisão.</p>
+                            <ErrorBoundary moduleName="Simulador FIRE">
+                                <FireSimulator currentEquity={totalNetWorth} monthlyContribution={assets.reduce((acc, a) => acc + (a.annualDividend || 0) / 12, 0)} />
+                            </ErrorBoundary>
+
+                            <Card className="bg-card border-border p-6 shadow-sm overflow-hidden relative">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4">Distribuição</h3>
+                                <div className="h-[240px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={assets.length > 0 ?
+                                                    Object.entries(assets.reduce((acc, a) => {
+                                                        acc[a.type] = (acc[a.type] || 0) + a.currentValue
+                                                        return acc
+                                                    }, {} as Record<string, number>)).map(([name, value]) => ({ name, value }))
+                                                    : [{ name: "Nenhum", value: 1 }]
+                                                }
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {assets.length > 0 ?
+                                                    Object.keys(assets.reduce((acc, a) => {
+                                                        acc[a.type] = true
+                                                        return acc
+                                                    }, {} as Record<string, boolean>)).map((_, index) => (
+                                                        <Cell key={`cell-${index}`} fill={`rgba(var(--theme-primary), ${1 - (index * 0.15)})`} />
+                                                    ))
+                                                : <Cell fill="var(--muted)" />}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", borderRadius: "8px" }}
+                                                itemStyle={{ color: "var(--foreground)", fontSize: "12px", fontWeight: "bold" }}
+                                                formatter={(value: number) => settings.isPrivate ? "***" : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                    {Object.entries(assets.reduce((acc, a) => {
+                                        acc[a.type] = (acc[a.type] || 0) + a.currentValue
+                                        return acc
+                                    }, {} as Record<string, number>)).map(([type, value], i) => (
+                                        <div key={type} className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: `rgba(var(--theme-primary), ${1 - (i * 0.15)})` }} />
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase truncate">{type}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </Card>
                         </div>

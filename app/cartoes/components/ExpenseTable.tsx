@@ -35,6 +35,7 @@ export function ExpenseTable({
                     <thead>
                         <tr className="text-left">
                             <th className="px-4 py-2 text-[10px] uppercase font-black tracking-widest text-muted-foreground">Descrição</th>
+                            <th className="px-4 py-2 text-[10px] uppercase font-black tracking-widest text-muted-foreground hidden sm:table-cell">Parcelas</th>
                             <th className="px-4 py-2 text-[10px] uppercase font-black tracking-widest text-muted-foreground">Data</th>
                             <th className="px-4 py-2 text-[10px] uppercase font-black tracking-widest text-muted-foreground text-right">Valor</th>
                             <th className="px-4 py-2 w-10"></th>
@@ -47,12 +48,15 @@ export function ExpenseTable({
                                     <td className="px-4 py-3 bg-card border-y border-l border-border rounded-l-xl first:rounded-tl-xl first:rounded-bl-xl group-hover:border-primary/30 transition-colors">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-bold text-foreground">{expense.description}</span>
-                                            {expense.installments > 1 && (
-                                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full w-fit mt-1 font-bold">
-                                                    Parcelado {expense.installments}x
-                                                </span>
-                                            )}
                                         </div>
+                                    </td>
+                                    <td className="px-4 py-3 bg-card border-y border-border group-hover:border-primary/30 transition-colors hidden sm:table-cell">
+                                        <span className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                                            expense.installments > 1 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                                        )}>
+                                            {expense.installments}x
+                                        </span>
                                     </td>
                                     <td className="px-4 py-3 bg-card border-y border-border group-hover:border-primary/30 transition-colors text-xs font-semibold text-muted-foreground">
                                         {new Date(expense.purchaseDate).toLocaleDateString("pt-BR")}

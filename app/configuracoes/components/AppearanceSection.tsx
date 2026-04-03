@@ -9,7 +9,7 @@ import { themePresets } from "@/lib/constants"
 import type { ThemePreset } from "@/lib/types"
 
 interface AppearanceSectionProps {
-    currentTheme: string
+    currentTheme: ThemePreset
     setTheme: (theme: string) => void
     userFocus: string
     onFocusChange: (focus: string) => void
@@ -40,19 +40,20 @@ export function AppearanceSection({
                                 onClick={() => setTheme(theme.id)}
                                 className={cn(
                                     "relative flex flex-col items-start p-3 rounded-xl border-2 transition-all group overflow-hidden",
-                                    currentTheme === theme.title
+                                    currentTheme.id === theme.id
                                         ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
                                         : "border-border bg-muted/30 hover:border-primary/30"
                                 )}
                             >
                                 <div className="flex items-center justify-between w-full mb-2">
                                     <div className="flex gap-1">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.primary }} />
-                                        <div className="w-3 h-3 rounded-full opacity-50" style={{ backgroundColor: theme.background }} />
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.primary})` }} />
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.accent})` }} />
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: `rgb(${theme.colors.background})` }} />
                                     </div>
-                                    {currentTheme === theme.title && <Check className="h-3 w-3 text-primary" />}
+                                    {currentTheme.id === theme.id && <Check className="h-3 w-3 text-primary" />}
                                 </div>
-                                <span className="text-xs font-bold text-foreground">{theme.title}</span>
+                                <span className="text-xs font-bold text-foreground">{theme.name}</span>
                                 <span className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-70 group-hover:opacity-100 transition-opacity">
                                     {theme.id}
                                 </span>

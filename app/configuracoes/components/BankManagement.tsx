@@ -55,6 +55,7 @@ export function BankManagement({
         type: "banco_digital" as BankType,
         color: "violet",
         balance: 0,
+        currency: "BRL",
         isMain: false,
         notes: "",
     })
@@ -66,19 +67,21 @@ export function BankManagement({
             type: "banco_digital",
             color: "violet",
             balance: 0,
+            currency: "BRL",
             isMain: false,
             notes: "",
         })
         setDialogOpen(true)
     }
 
-    const openEditBank = (bank: Bank) => {
+    const openEditBank = (bank: any) => {
         setEditingBank(bank)
         setBankForm({
             name: bank.name,
             type: bank.type,
             color: bank.color,
             balance: bank.balance,
+            currency: bank.currency || "BRL",
             isMain: bank.isMain,
             notes: bank.notes || "",
         })
@@ -173,20 +176,33 @@ export function BankManagement({
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label className="text-foreground/80">Tipo de Conta</Label>
-                                    <Select value={bankForm.type} onValueChange={(v: BankType) => setBankForm({ ...bankForm, type: v })}>
+                                    <Label className="text-foreground/80">Moeda</Label>
+                                    <Select value={bankForm.currency} onValueChange={(v) => setBankForm({ ...bankForm, currency: v })}>
                                         <SelectTrigger className="bg-muted border-border text-foreground">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent className="bg-card border-border">
-                                            {bankTypes.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                                            <SelectItem value="BRL">BRL (R$)</SelectItem>
+                                            <SelectItem value="USD">USD ($)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-foreground/80">Saldo Atual (R$)</Label>
+                                    <Label className="text-foreground/80">Saldo Atual</Label>
                                     <Input type="number" value={bankForm.balance} onChange={(e) => setBankForm({ ...bankForm, balance: parseFloat(e.target.value) || 0 })} className="bg-muted border-border text-foreground" />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-foreground/80">Tipo de Conta</Label>
+                                <Select value={bankForm.type} onValueChange={(v: BankType) => setBankForm({ ...bankForm, type: v })}>
+                                    <SelectTrigger className="bg-muted border-border text-foreground">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-card border-border">
+                                        {bankTypes.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-foreground/80">Cor de Identificação</Label>

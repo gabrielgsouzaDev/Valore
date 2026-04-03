@@ -100,30 +100,7 @@ export default function DashboardPage() {
           <LayoutDashboard className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <div>
             <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Dashboard</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium opacity-80">Visão consolidada do seu patrimônio</p>
           </div>
-          <button
-            onClick={togglePrivacy}
-            className={cn(
-              "ml-auto p-2.5 rounded-2xl transition-all duration-500 flex items-center gap-2 group",
-              isPrivate
-                ? "bg-primary/10 text-primary shadow-inner ring-1 ring-primary/20"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted"
-            )}
-            aria-label={isPrivate ? "Mostrar valores" : "Ocultar valores"}
-          >
-            {isPrivate ? (
-              <>
-                <EyeOff className="h-5 w-5 animate-pulse" />
-                <span className="text-xs font-bold hidden sm:inline">Privado</span>
-              </>
-            ) : (
-              <>
-                <Eye className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-bold hidden sm:inline">Público</span>
-              </>
-            )}
-          </button>
         </div>
       </header>
       <DemoBanner />

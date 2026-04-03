@@ -32,30 +32,32 @@ export function ProfileSection({
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">Informações pessoais básicas</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="nome" className="text-foreground/80 text-xs sm:text-sm">
-                        Nome
-                    </Label>
-                    <Input
-                        id="nome"
-                        value={nome}
-                        onChange={(e) => onChange("nome", e.target.value)}
-                        className="bg-muted border-border text-foreground text-sm"
-                    />
-                </div>
+            <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="nome" className="text-foreground/80 text-xs sm:text-sm">
+                            Nome
+                        </Label>
+                        <Input
+                            id="nome"
+                            value={nome}
+                            onChange={(e) => onChange("nome", e.target.value)}
+                            className="bg-muted border-border text-foreground text-sm"
+                        />
+                    </div>
 
-                <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="renda" className="text-foreground/80 text-xs sm:text-sm">
-                        Renda Mensal (R$)
-                    </Label>
-                    <Input
-                        id="renda"
-                        type="number"
-                        value={rendaMensal}
-                        onChange={(e) => onChange("rendaMensal", e.target.value)}
-                        className="bg-muted border-border text-foreground text-sm"
-                    />
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="renda" className="text-foreground/80 text-xs sm:text-sm">
+                            Renda Mensal (R$)
+                        </Label>
+                        <Input
+                            id="renda"
+                            type="number"
+                            value={rendaMensal}
+                            onChange={(e) => onChange("rendaMensal", e.target.value)}
+                            className="bg-muted border-border text-foreground text-sm"
+                        />
+                    </div>
                 </div>
 
                 <Button

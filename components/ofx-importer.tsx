@@ -97,6 +97,22 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
         const toImport = parsedData.filter(t => selectedIds.has(t.id))
 
         toImport.forEach(t => {
+            // Simple Auto-categorization logic
+            let categoryId: number | undefined = undefined;
+            const desc = t.description.toLowerCase();
+
+            if (desc.includes("mercado") || desc.includes("supermercado") || desc.includes("hortifruit")) {
+                categoryId = 2; // Alimentação (based on example data)
+            } else if (desc.includes("uber") || desc.includes("99app") || desc.includes("posto")) {
+                categoryId = 3; // Transporte
+            } else if (desc.includes("ifood") || desc.includes("restaurante")) {
+                categoryId = 2; // Alimentação
+            } else if (desc.includes("aluguel") || desc.includes("condominio") || desc.includes("enel")) {
+                categoryId = 1; // Moradia
+            } else if (desc.includes("netflix") || desc.includes("spotify") || desc.includes("ingresso")) {
+                categoryId = 4; // Lazer
+            }
+
             addTransaction({
                 name: t.description,
                 amount: Math.abs(t.amount),
@@ -105,6 +121,7 @@ export function OfxImporter({ open, onOpenChange }: OfxImporterProps) {
                 dueDate: t.date.toISOString(),
                 recurrence: "unico",
                 transactionHash: t.transactionHash,
+                categoryId,
                 notes: "[IMPORTADO]" // Badge indicator hook
             })
         })

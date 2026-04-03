@@ -134,7 +134,7 @@ function TransactionRow({
                 </div>
 
                 <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                    {transaction.status !== "pago" && (
+                    {(transaction.status === "pendente" || transaction.status === "atrasado") && (
                         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-success/20 hover:text-success transition-all rounded-xl" onClick={() => onMarkAsPaid(transaction.id)}>
                             <Check className="h-4 w-4" />
                         </Button>
