@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { RefreshCcw, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-
+import { useUpdateTable } from "@/hooks/use-update-table"
 import type { Asset } from "@/lib/types"
 
 interface UpdateTableProps {
@@ -15,43 +14,14 @@ interface UpdateTableProps {
 }
 
 export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
-  const [editingAsset, setEditingAsset] = useState<number | null>(null)
-  const [tempQuantity, setTempQuantity] = useState("")
-  const [tempPrice, setTempPrice] = useState("")
-  const [tempCeiling, setTempCeiling] = useState("")
-  const [tempPriority, setTempPriority] = useState("")
-  const [tempAverage, setTempAverage] = useState("")
-  const [tempDividend, setTempDividend] = useState("")
-
-  const handleUpdate = (id: number) => {
-    const quantity = Number(tempQuantity) || 0
-    const price = Number(tempPrice) || 0
-    const ceiling = tempCeiling === "" ? undefined : Number(tempCeiling)
-    const priority = tempPriority === "" ? undefined : Number(tempPriority)
-    const average = tempAverage === "" ? undefined : Number(tempAverage)
-    const dividend = tempDividend === "" ? undefined : Number(tempDividend)
-
-    if (!isNaN(quantity) && !isNaN(price)) {
-      onUpdate(id, quantity, price, ceiling, priority, average, dividend)
-      setEditingAsset(null)
-      setTempQuantity("")
-      setTempPrice("")
-      setTempCeiling("")
-      setTempPriority("")
-      setTempAverage("")
-      setTempDividend("")
-    }
-  }
-
-  const startEditing = (asset: Asset) => {
-    setEditingAsset(asset.id)
-    setTempQuantity(asset.quantity.toString())
-    setTempPrice(asset.price.toString())
-    setTempCeiling(asset.ceilingPrice?.toString() || "")
-    setTempPriority(asset.priority?.toString() || "")
-    setTempAverage(asset.averagePrice?.toString() || "")
-    setTempDividend(asset.annualDividend?.toString() || "")
-  }
+  const {
+    editingAsset,
+    tempValues,
+    startEditing,
+    handleUpdate,
+    cancelEditing,
+    updateValue
+  } = useUpdateTable(onUpdate)
 
   const fmt = (n: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n)
@@ -89,8 +59,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempQuantity}
-                      onChange={(e) => setTempQuantity(e.target.value)}
+                      value={tempValues.quantity}
+                      onChange={(e) => updateValue("quantity", e.target.value)}
                       placeholder="Qtd"
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -101,8 +71,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempPrice}
-                      onChange={(e) => setTempPrice(e.target.value)}
+                      value={tempValues.price}
+                      onChange={(e) => updateValue("price", e.target.value)}
                       placeholder="R$"
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -116,8 +86,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempAverage}
-                      onChange={(e) => setTempAverage(e.target.value)}
+                      value={tempValues.average}
+                      onChange={(e) => updateValue("average", e.target.value)}
                       placeholder="R$"
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -128,8 +98,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempDividend}
-                      onChange={(e) => setTempDividend(e.target.value)}
+                      value={tempValues.dividend}
+                      onChange={(e) => updateValue("dividend", e.target.value)}
                       placeholder="R$"
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -143,8 +113,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempCeiling}
-                      onChange={(e) => setTempCeiling(e.target.value)}
+                      value={tempValues.ceiling}
+                      onChange={(e) => updateValue("ceiling", e.target.value)}
                       placeholder="Opcional"
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -155,8 +125,8 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     </label>
                     <Input
                       type="number"
-                      value={tempPriority}
-                      onChange={(e) => setTempPriority(e.target.value)}
+                      value={tempValues.priority}
+                      onChange={(e) => updateValue("priority", e.target.value)}
                       placeholder="1, 2, 3..."
                       className="bg-muted/30 border-border text-foreground text-sm h-11"
                     />
@@ -172,7 +142,7 @@ export function UpdateTable({ assets, onUpdate }: UpdateTableProps) {
                     Salvar
                   </Button>
                   <Button
-                    onClick={() => setEditingAsset(null)}
+                    onClick={cancelEditing}
                     variant="outline"
                     className="border-border text-foreground hover:bg-muted min-h-[44px] px-4"
                   >

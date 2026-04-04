@@ -257,12 +257,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           // Tenta migrar dados de versões anteriores ou chaves diferentes
           const legacyData = window.localStorage.getItem("valore-app-data-v1") || window.localStorage.getItem("valore_app_data")
           if (legacyData) {
-             try {
-                const parsedLegacy = JSON.parse(legacyData)
-                if (parsedLegacy.settings) {
-                   setSettingsState(prev => ({...prev, ...parsedLegacy.settings}))
-                }
-             } catch(e) {}
+            try {
+              const parsedLegacy = JSON.parse(legacyData)
+              if (parsedLegacy.settings) {
+                setSettingsState(prev => ({ ...prev, ...parsedLegacy.settings }))
+              }
+            } catch (e) { }
           }
           console.warn("Falha na validação do localStorage, carregando exemplos.")
           loadExampleData()
@@ -431,7 +431,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const safeSettings = { ...settings, isDemoMode: false }
     const dataToExport = {
       _app: "valore",
-      _version: STORAGE_CONFIG.SCHEMA_VERSION,
+      _version: STORAGE_CONFIG.VERSION,
       _exportedAt: new Date().toISOString(),
       assets, categories, goals, settings: safeSettings, transactions,
       creditCards, cardExpenses, banks, patrimonialHistory,

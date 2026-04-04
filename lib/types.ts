@@ -145,6 +145,7 @@ export type Bank = {
     color: string
     balance: number
     isMain: boolean
+    currency?: string
     notes?: string
     icon?: string
 }

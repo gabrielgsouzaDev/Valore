@@ -9,17 +9,30 @@ type Tab = "agendadas" | "historico"
 type PeriodFilter = "7d" | "30d" | "3m" | "todos"
 
 interface TransactionFiltersProps {
+    /** Aba ativa atualmente (agendadas ou histórico). */
     activeTab: Tab
+    /** Filtro de status para a aba agendadas. */
     filter: "todos" | "pendente" | "pago"
+    /** Callback para atualizar o filtro de status. */
     setFilter: (val: "todos" | "pendente" | "pago") => void
+    /** Filtro de tipo (entrada/saída). */
     typeFilter: "todos" | "pagamento" | "ganho"
+    /** Callback para atualizar o filtro de tipo. */
     setTypeFilter: (val: "todos" | "pagamento" | "ganho") => void
+    /** Filtro de período para a aba histórico. */
     periodFilter: PeriodFilter
+    /** Callback para atualizar o filtro de período. */
     setPeriodFilter: (val: PeriodFilter) => void
+    /** Indica se os filtros mobile estão visíveis. */
     showFilters: boolean
+    /** Callback para alternar a visibilidade dos filtros mobile. */
     setShowFilters: (val: boolean) => void
 }
 
+/**
+ * Componente de filtros para a listagem de transações.
+ * Adapta as opções disponíveis com base na aba ativa.
+ */
 export function TransactionFilters({
     activeTab,
     filter,
@@ -38,7 +51,7 @@ export function TransactionFilters({
                     <Filter className="h-3.5 w-3.5 mr-1" /> Filtros
                 </Button>
                 <div className={cn("flex-wrap gap-2", showFilters ? "flex" : "hidden lg:flex", "w-full lg:w-auto")}>
-                    <Select value={filter} onValueChange={(v) => setFilter(v as any)}>
+                    <Select value={filter} onValueChange={(v) => setFilter(v as "todos" | "pendente" | "pago")}>
                         <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9">
                             <SelectValue />
                         </SelectTrigger>
@@ -48,7 +61,7 @@ export function TransactionFilters({
                             <SelectItem value="pago">Pagos</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
+                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as "todos" | "pagamento" | "ganho")}>
                         <SelectTrigger className="w-full sm:w-36 bg-card border-border text-foreground text-xs sm:text-sm h-8 sm:h-9">
                             <SelectValue />
                         </SelectTrigger>

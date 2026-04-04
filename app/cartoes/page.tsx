@@ -1,24 +1,35 @@
 "use client"
 
+// React & Hooks
 import { useState, useMemo } from "react"
+
+// Componentes Globais
 import { DemoBanner } from "@/components/demo-banner"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { CreditCard as CardIcon, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+// Contexto e Serviços
 import { useApp } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
+import { formatCurrency } from "@/lib/services"
+
+// Ícones
+import { CreditCard as CardIcon, Plus, Search, ArrowUpDown } from "lucide-react"
+
+// Tipos
 import type { CreditCard, CardExpense } from "@/lib/types"
 
-import { BUSINESS_RULES } from "@/lib/business-constants"
+// Hook de Negócio (projeção, limite real, mês selecionado)
+import { useCardProjection } from "./hooks/useCardProjection"
 
-// Local Atomic Components
+// Subcomponentes Atômicos
 import { CreditCardStack } from "./components/CreditCardStack"
 import { ExpenseTable } from "./components/ExpenseTable"
 import { InvoiceProjection } from "./components/InvoiceProjection"
 import { CardDialogs } from "./components/CardDialogs"
-import { Input } from "@/components/ui/input"
-import { Search, ArrowUpDown } from "lucide-react"
+
+// ─── Formulários Vazios ───────────────────────────────────────────────────────
 
 const emptyCardForm = {
     name: "",
@@ -34,8 +45,17 @@ const emptyExpenseForm = {
     totalAmount: 0,
     purchaseDate: new Date().toISOString().split("T")[0],
     installments: 1,
+    cardId: 0,
 }
 
+// ─── Página de Cartões ────────────────────────────────────────────────────────
+
+/**
+ * Página de Cartões de Crédito.
+ *
+ * Responsável pela composição de UI. Lógica de projeção de faturas,
+ * cálculo de limite disponível real e seleção de mês estão em `useCardProjection`.
+ */
 export default function CartoesPage() {
     const {
         creditCards,
@@ -48,6 +68,9 @@ export default function CartoesPage() {
         deleteCardExpense,
         settings,
     } = useApp()
+    const { toast } = useToast()
+
+    // ── Estado de UI ──────────────────────────────────────────────────────────
 
     const [activeCardId, setActiveCardId] = useState<number | null>(null)
     const [searchTerm, setSearchTerm] = useState("")
@@ -60,74 +83,41 @@ export default function CartoesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [cardToDelete, setCardToDelete] = useState<number | null>(null)
-    const { toast } = useToast()
 
-    // ── LOGIC: Projections & Lists ────────────────────────────────
+    // ── Hook de Negócio ───────────────────────────────────────────────────────
+
+    const {
+        projectionData,
+        selectedMonthIndex,
+        setSelectedMonthIndex,
+        getCardAvailableLimit,
+        getBankByIdSafe,
+    } = useCardProjection()
+
+    // ── Dados Derivados ───────────────────────────────────────────────────────
+
     const activeCard = useMemo(() =>
         creditCards.find(c => c.id === (activeCardId || creditCards[0]?.id)),
         [creditCards, activeCardId]
     )
 
     const activeExpenses = useMemo(() => {
-        let filtered = cardExpenses;
+        let filtered = cardExpenses
         if (activeCardId !== null && activeCardId !== 0) {
-            filtered = filtered.filter(e => e.cardId === activeCardId);
+            filtered = filtered.filter(e => e.cardId === activeCardId)
         }
-
         if (searchTerm) {
-            filtered = filtered.filter(e => e.description.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered = filtered.filter(e =>
+                e.description.toLowerCase().includes(searchTerm.toLowerCase())
+            )
         }
-
-        return filtered.sort((a, b) => {
-            if (sortOrder === "desc") return b.totalAmount - a.totalAmount;
-            return a.totalAmount - b.totalAmount;
-        });
+        return filtered.sort((a, b) =>
+            sortOrder === "desc" ? b.totalAmount - a.totalAmount : a.totalAmount - b.totalAmount
+        )
     }, [cardExpenses, activeCardId, searchTerm, sortOrder])
 
-    const getCardAvailableLimit = (card: CreditCard) => {
-        const used = cardExpenses
-            .filter(e => e.cardId === card.id)
-            .reduce((sum, e) => sum + e.totalAmount, 0)
-        return Math.max(0, card.limit - used)
-    }
+    // ── Handlers ──────────────────────────────────────────────────────────────
 
-    const projectionData = useMemo(() => {
-        const monthsNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
-        const data = Array.from({ length: BUSINESS_RULES.INVOICE_PROJECTION_MONTHS }).map((_, i) => {
-            const date = new Date()
-            date.setMonth(date.getMonth() + i)
-            const month = date.getMonth()
-            const year = date.getFullYear()
-
-            const cardBreakdown: Record<string, number> = {}
-            let total = 0
-
-            cardExpenses.forEach(e => {
-                const expenseDate = new Date(e.purchaseDate)
-                const startMonth = expenseDate.getMonth()
-                const startYear = expenseDate.getFullYear()
-
-                const monthsDiff = (year - startYear) * 12 + (month - startMonth)
-                if (monthsDiff >= 0 && monthsDiff < e.installments) {
-                    const installmentValue = e.totalAmount / e.installments
-                    total += installmentValue
-
-                    const card = creditCards.find(c => c.id === e.cardId)
-                    const cardName = card?.name || "Desconhecido"
-                    cardBreakdown[cardName] = (cardBreakdown[cardName] || 0) + installmentValue
-                }
-            })
-
-            return {
-                name: `${monthsNames[month]}`,
-                total: total,
-                breakdown: cardBreakdown
-            }
-        })
-        return data
-    }, [cardExpenses, creditCards])
-
-    // ── HANDLERS ──────────────────────────────────────────────────
     const handleCardSubmit = async () => {
         if (!cardForm.name || !cardForm.bankId) return
         setIsSubmitting(true)
@@ -151,10 +141,7 @@ export default function CartoesPage() {
         setIsSubmitting(true)
         try {
             await new Promise(r => setTimeout(r, 400))
-            addCardExpense({
-                ...expenseForm,
-                cardId: activeCard.id,
-            })
+            addCardExpense({ ...expenseForm, cardId: activeCard.id })
             toast({ title: "Gasto adicionado" })
             setExpenseDialogOpen(false)
             setExpenseForm(emptyExpenseForm)
@@ -172,7 +159,7 @@ export default function CartoesPage() {
         setEditingCardId(card.id)
         setCardForm({
             name: card.name,
-            bankId: card.bankId || 0,
+            bankId: card.bankId ?? 0,
             limit: card.limit,
             closingDay: card.closingDay,
             dueDay: card.dueDay,
@@ -181,8 +168,7 @@ export default function CartoesPage() {
         setCardDialogOpen(true)
     }
 
-    const getBankByIdSafe = (id: number) => banks.find(b => b.id === id)
-    const formatCurrency = (val: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val)
+    // ─── Render ───────────────────────────────────────────────────────────────
 
     return (
         <div className="min-h-screen bg-background transition-theme pb-20 sm:pb-0">
@@ -190,9 +176,7 @@ export default function CartoesPage() {
                 <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <CardIcon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-                        <div>
-                            <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight italic uppercase">Cartões</h2>
-                        </div>
+                        <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight italic uppercase">Cartões</h2>
                     </div>
                 </div>
             </header>
@@ -200,13 +184,13 @@ export default function CartoesPage() {
             <DemoBanner />
 
             <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+                {/* Stack de Cartões */}
                 <section>
                     <div className="flex items-center justify-between mb-4 border-b border-border/40 pb-2">
                         <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Meus Cartões</h3>
                         <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { setEditingCardId(null); setCardForm(emptyCardForm); setCardDialogOpen(true); }}
+                            variant="ghost" size="sm"
+                            onClick={() => { setEditingCardId(null); setCardForm(emptyCardForm); setCardDialogOpen(true) }}
                             className="text-primary hover:text-primary hover:bg-primary/10 font-bold uppercase tracking-tighter text-[10px]"
                         >
                             <Plus className="w-3 h-3 mr-1" /> Adicionar Cartão
@@ -234,6 +218,7 @@ export default function CartoesPage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     <div className="xl:col-span-2 space-y-6">
+                        {/* Histórico de Gastos */}
                         <section>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">
@@ -250,7 +235,7 @@ export default function CartoesPage() {
                                         />
                                     </div>
                                     <select
-                                        value={activeCardId || 0}
+                                        value={activeCardId ?? 0}
                                         onChange={(e) => setActiveCardId(parseInt(e.target.value))}
                                         className="bg-card text-xs font-bold text-primary border border-border rounded-md px-2 h-8 cursor-pointer focus:ring-1 focus:ring-primary outline-none"
                                     >
@@ -258,8 +243,7 @@ export default function CartoesPage() {
                                         {creditCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                     <Button
-                                        variant="outline"
-                                        size="sm"
+                                        variant="outline" size="sm"
                                         onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                                         className="h-8 text-[10px] font-bold uppercase tracking-tighter"
                                     >
@@ -271,14 +255,17 @@ export default function CartoesPage() {
                                 expenses={activeExpenses}
                                 onDeleteExpense={deleteCardExpense}
                                 formatCurrency={formatCurrency}
-                                isPrivate={settings.isPrivate || false}
+                                isPrivate={settings.isPrivate ?? false}
                             />
                         </section>
                     </div>
 
+                    {/* Projeção de Faturas com seleção de mês sincronizada (fix B1) */}
                     <div className="xl:col-span-3">
                         <InvoiceProjection
                             data={projectionData}
+                            selectedMonthIndex={selectedMonthIndex}
+                            onMonthSelect={setSelectedMonthIndex}
                             formatCurrency={formatCurrency}
                         />
                     </div>
@@ -297,7 +284,7 @@ export default function CartoesPage() {
                 setExpenseDialogOpen={setExpenseDialogOpen}
                 expenseForm={expenseForm}
                 setExpenseForm={setExpenseForm}
-                categories={[]} // Not used anymore in expenses
+                categories={[]}
                 onExpenseSubmit={handleExpenseSubmit}
                 isSubmitting={isSubmitting}
             />

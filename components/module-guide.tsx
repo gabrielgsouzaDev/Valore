@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useApp } from "@/contexts/app-context"
 import {
     X, ArrowRight, ArrowLeft, TrendingUp, Wallet, Target, Receipt, CreditCard, LayoutDashboard,
-    HelpCircle, Sparkles, CheckCircle2, Zap, Settings
+    Sparkles, CheckCircle2, Zap, Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -16,7 +16,6 @@ const GUIDE_LABELS = {
     FINISH: "Entendido",
     NEXT: "Próximo Passo",
     DISMISS: "Desativar Concierge",
-    BOAS_VINDAS: "Boas-vindas"
 }
 
 // Conteúdo dos guias por rota - Tom Profissional e de Valor

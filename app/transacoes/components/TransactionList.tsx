@@ -1,23 +1,37 @@
 "use client"
 
-import { ScheduledTransaction } from "@/lib/types"
+import { ScheduledTransaction, Bank } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Check, ArrowUpCircle, ArrowDownCircle, Repeat, Building2, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/services"
 
+/**
+ * Props para o componente de lista de transações.
+ */
 interface TransactionListProps {
+    /** Array de transações a serem exibidas. */
     transactions: ScheduledTransaction[]
-    getBankById: (id: number) => any
+    /** Função para buscar detalhes do banco pelo ID. */
+    getBankById: (id: number) => Bank | undefined
+    /** Função para buscar o nome da categoria pelo ID. */
     getCategoryName: (id?: number) => string | null
+    /** Callback para marcar uma transação como paga. */
     onMarkAsPaid: (id: number) => void
+    /** Callback para abrir o diálogo de edição. */
     onEdit: (t: ScheduledTransaction) => void
+    /** Callback para excluir uma transação. */
     onDelete: (id: number) => void
+    /** Conjunto de IDs selecionados para ações em lote. */
     selectedIds: Set<number>
+    /** Função para alternar a seleção de uma transação. */
     toggleSelection: (id: number) => void
+    /** Indica se os valores devem ser ocultados (modo privado). */
     isPrivate?: boolean
+    /** Transações agrupadas por período (hoje, semana, etc). */
     groupedTransactions?: Record<string, ScheduledTransaction[]>
+    /** Indica se a lista é exibida na aba de histórico. */
     isHistory?: boolean
 }
 
@@ -37,6 +51,22 @@ const getRecurrenceLabel = (recurrence: string) => {
     return map[recurrence] || recurrence
 }
 
+interface TransactionRowProps {
+    transaction: ScheduledTransaction
+    index: number
+    selected: boolean
+    toggle: (id: number) => void
+    bank?: Bank | null
+    categoryName: string | null
+    onMarkAsPaid: (id: number) => void
+    onEdit: (t: ScheduledTransaction) => void
+    onDelete: (id: number) => void
+    isPrivate?: boolean
+}
+
+/**
+ * Renderiza uma linha individual de transação com suporte a seleção e ações.
+ */
 function TransactionRow({
     transaction,
     index,
@@ -48,7 +78,7 @@ function TransactionRow({
     onEdit,
     onDelete,
     isPrivate
-}: any) {
+}: TransactionRowProps) {
     const isAtrasado = transaction.status === "atrasado"
     const isImported = transaction.notes?.includes("[IMPORTADO]")
 

@@ -48,6 +48,7 @@ export const FORMAT_CONFIG = {
 
 export const STORAGE_CONFIG = {
   KEY: "valore_app_data_v2",
+  VERSION: 2,
 } as const;
 
 export type BusinessRules = typeof BUSINESS_RULES;

@@ -1,18 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { DemoBanner } from "@/components/demo-banner"
-import { useToast } from "@/hooks/use-toast"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Settings, Download } from "lucide-react"
-import { useApp } from "@/contexts/app-context"
-import { appStorageSchema } from "@/lib/schemas"
-import { migrateBackup, formatCurrency } from "@/lib/services"
-import type { Bank, BankType, InvestmentStrategy } from "@/lib/types"
+import { Settings as SettingsIcon, Download } from "lucide-react"
+import { useSettingsLogic } from "./hooks/useSettingsLogic"
+import { formatCurrency } from "@/lib/services"
 import { usePWA } from "@/hooks/use-pwa"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 // Local Atomic Components
 import { ProfileSection } from "./components/ProfileSection"
@@ -48,154 +43,43 @@ function PWAInstallCard() {
   )
 }
 
+/**
+ * Página de Configurações
+ * Refatorada para usar hooks customizados e composição de seções.
+ */
 export default function ConfiguracoesPage() {
   const { toast } = useToast()
-  const [confirmState, setConfirmState] = useState<{
-    isOpen: boolean
-    title: string
-    description: string
-    confirmLabel?: string
-    variant?: "destructive" | "default"
-    action: () => void
-  }>({
-    isOpen: false,
-    title: "",
-    description: "",
-    action: () => { },
-  })
-
-  const router = useRouter()
   const {
-    settings,
-    updateSettings,
+    localSettings,
+    saveStatus,
+    isSubmitting,
+    confirmState,
+    banks,
+    totalNetWorth,
+    currentTheme,
+    handleUpdateLocalSetting,
+    handleSalvarPerfil,
+    handleSalvarPortfolio,
+    handleToggleModule,
+    handleImportarDados,
     exportData,
-    importData,
     addBank,
     updateBank,
     deleteBank,
     setTheme,
     clearAllData,
     loadExampleData,
-    totalNetWorth,
-    currentTheme,
-    banks
-  } = useApp()
-
-  const [localSettings, setLocalSettings] = useState({
-    nome: settings.nome,
-    rendaMensal: settings.rendaMensal.toString(),
-    capitalInvestido: settings.capitalInvestido.toString(),
-    metaReservaEmergencia: settings.metaReservaEmergencia.toString(),
-    investmentStrategy: settings.investmentStrategy || "rebalance",
-    activeModules: settings.activeModules || {
-      investimentos: true,
-      economia: true,
-      objetivos: true,
-      transacoes: true,
-      cartoes: true,
-    },
-  })
-
-  const [saveStatus, setSaveStatus] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleUpdateLocalSetting = (field: string, value: any) => {
-    setLocalSettings(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleSalvarPerfil = async () => {
-    setIsSubmitting(true)
-    try {
-      await new Promise(r => setTimeout(r, 600))
-      updateSettings({
-        nome: localSettings.nome,
-        rendaMensal: Number.parseFloat(localSettings.rendaMensal) || 0,
-      })
-      setSaveStatus("perfil")
-      toast({ title: "Perfil salvo" })
-      setTimeout(() => setSaveStatus(null), 2000)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleSalvarPortfolio = async () => {
-    setIsSubmitting(true)
-    try {
-      await new Promise(r => setTimeout(r, 600))
-      updateSettings({
-        capitalInvestido: Number.parseFloat(localSettings.capitalInvestido) || 0,
-        metaReservaEmergencia: Number.parseFloat(localSettings.metaReservaEmergencia) || 6,
-        investmentStrategy: localSettings.investmentStrategy as InvestmentStrategy,
-      })
-      setSaveStatus("portfolio")
-      toast({ title: "Portfolio salvo" })
-      setTimeout(() => setSaveStatus(null), 2000)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleToggleModule = (id: string, val: boolean) => {
-    const updatedModules = { ...localSettings.activeModules, [id]: val }
-    handleUpdateLocalSetting("activeModules", updatedModules)
-    updateSettings({ activeModules: updatedModules })
-    toast({ title: "Modulos atualizados" })
-  }
-
-
-
-  const handleImportarDados = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      try {
-        const rawJson = JSON.parse(event.target?.result as string)
-        if (rawJson._app !== "valore") {
-          toast({ title: "Arquivo inválido", variant: "destructive" })
-          return
-        }
-        const migratedData = migrateBackup(rawJson, rawJson._version || 1)
-        const validation = appStorageSchema.safeParse(migratedData)
-        if (!validation.success) {
-          toast({ title: "Backup corrompido", variant: "destructive" })
-          return
-        }
-        const validData = validation.data
-        setConfirmState({
-          isOpen: true,
-          title: "Importar Backup",
-          description: "Isso substituirá todos os seus dados atuais. Continuar?",
-          confirmLabel: "Importar",
-          variant: "destructive",
-          action: () => {
-            importData(validData)
-            setLocalSettings({
-              nome: validData.settings.nome,
-              rendaMensal: validData.settings.rendaMensal.toString(),
-              capitalInvestido: validData.settings.capitalInvestido.toString(),
-              metaReservaEmergencia: validData.settings.metaReservaEmergencia.toString(),
-              investmentStrategy: validData.settings.investmentStrategy,
-              activeModules: validData.settings.activeModules || localSettings.activeModules
-            })
-            toast({ title: "Backup importado!" })
-          }
-        })
-      } catch (err) {
-        toast({ title: "Erro na leitura", variant: "destructive" })
-      }
-    }
-    reader.readAsText(file)
-    e.target.value = ""
-  }
+    updateSettings,
+    router,
+    setConfirmState
+  } = useSettingsLogic()
 
   return (
     <>
       <header className="border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-30 transition-all duration-300">
         <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Settings className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+            <SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
             <div className="flex flex-col justify-center">
               <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">Configurações</h2>
             </div>
@@ -283,7 +167,7 @@ export default function ConfiguracoesPage() {
 
       <ConfirmDialog
         open={confirmState.isOpen}
-        onOpenChange={(open) => setConfirmState({ ...confirmState, isOpen: open })}
+        onOpenChange={(open) => setConfirmState(prev => ({ ...prev, isOpen: open }))}
         title={confirmState.title}
         description={confirmState.description}
         confirmLabel={confirmState.confirmLabel}

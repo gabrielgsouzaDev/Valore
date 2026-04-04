@@ -6,20 +6,39 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowUpCircle, ArrowDownCircle, Building2, Plus, Loader2 } from "lucide-react"
+import { Bank, Category } from "@/lib/types"
+import { TransactionForm } from "../hooks/useTransactions"
 
+/**
+ * Props para o diálogo de criação e edição de transações.
+ */
 interface TransactionDialogProps {
+    /** Indica se o diálogo está aberto. */
     open: boolean
+    /** Callback para alternar visibilidade do diálogo. */
     onOpenChange: (open: boolean) => void
-    form: any
-    setForm: (form: any) => void
+    /** Estado do formulário da transação. */
+    form: TransactionForm
+    /** Callback para atualizar o estado do formulário. */
+    setForm: (form: TransactionForm) => void
+    /** ID da transação em edição (ou null se for criação). */
     editingId: number | null
+    /** Indica se a submissão está em andamento. */
     isSubmitting: boolean
+    /** Callback para processar o formulário. */
     onSubmit: () => void
-    banks: any[]
-    categories: any[]
+    /** Lista de bancos disponíveis para vínculo. */
+    banks: Bank[]
+    /** Lista de categorias disponíveis para vínculo. */
+    categories: Category[]
+    /** Callback para abrir o fluxo de nova categoria. */
     onNewCategory: () => void
 }
 
+/**
+ * Diálogo responsivo para gerenciamento de transações financeiras.
+ * Suporta ganhos e pagamentos com vínculo a bancos e categorias.
+ */
 export function TransactionDialog({
     open,
     onOpenChange,
@@ -54,7 +73,7 @@ export function TransactionDialog({
             <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                     <Label className="text-muted-foreground text-xs sm:text-sm">Tipo</Label>
-                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as any })}>
+                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "ganho" | "pagamento" })}>
                         <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-card border-border">
                             <SelectItem value="ganho"><span className="flex items-center gap-2 text-success"><ArrowUpCircle className="h-3.5 w-3.5" /> Ganho</span></SelectItem>
@@ -74,7 +93,7 @@ export function TransactionDialog({
                 </div>
                 <div className="space-y-1.5">
                     <Label className="text-muted-foreground text-xs sm:text-sm">Recorrência</Label>
-                    <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as any })}>
+                    <Select value={form.recurrence} onValueChange={(v) => setForm({ ...form, recurrence: v as "unico" | "semanal" | "mensal" | "anual" })}>
                         <SelectTrigger className="bg-muted border-border text-foreground text-sm"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-card border-border">
                             <SelectItem value="unico">Único</SelectItem>

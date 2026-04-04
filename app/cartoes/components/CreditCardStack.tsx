@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Pencil, Trash2, CreditCard as CardIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { CreditCard } from "@/lib/types"
+import type { CreditCard, Bank } from "@/lib/types"
 
 const cardColors = [
     { value: "violet", label: "Roxo", class: "from-violet-600 to-violet-800" },
@@ -41,13 +41,23 @@ const getColorClass = (color: string) => {
     return cardColors.find((c) => c.value === color)?.class || "from-slate-600 to-slate-800"
 }
 
+/**
+ * Props para o componente de visualização de cartões em stack/grade.
+ */
 interface CreditCardStackProps {
+    /** Lista de cartões de crédito. */
     creditCards: CreditCard[]
+    /** Callback para editar um cartão. */
     onEditCard: (card: CreditCard) => void
+    /** Callback para excluir um cartão. */
     onDeleteCard: (id: number) => void
+    /** Callback para abrir o diálogo de nova despesa. */
     onAddExpense: (cardId: number) => void
-    getBankById: (id: number) => any
+    /** Função para buscar detalhes do banco pelo ID. */
+    getBankById: (id: number) => Bank | undefined
+    /** Função utilitária para formatação de moeda. */
     formatCurrency: (val: number) => string
+    /** Função para calcular o limite disponível real do cartão. */
     getCardAvailableLimit: (card: CreditCard) => number
 }
 

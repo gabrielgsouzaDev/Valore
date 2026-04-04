@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Plus, Save, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Bank, Category } from "@/lib/types"
+import type { Bank, Category, CreditCard, CardExpense } from "@/lib/types"
 
 const cardColors = [
     { value: "violet", label: "Roxo", class: "bg-violet-500" },
@@ -22,22 +22,40 @@ const cardColors = [
     { value: "indigo", label: "Indigo", class: "bg-indigo-500" },
 ]
 
+/**
+ * Props para o componente de diálogos do módulo de cartões.
+ * Gerencia tanto a criação/edição de cartões quanto o registro de despesas.
+ */
 interface CardDialogsProps {
+    /** Indica se o diálogo de cartão está aberto. */
     cardDialogOpen: boolean
+    /** Callback para alternar visibilidade do diálogo de cartão. */
     setCardDialogOpen: (open: boolean) => void
-    cardForm: any
-    setCardForm: (form: any) => void
+    /** Estado do formulário de cartão. */
+    cardForm: Omit<CreditCard, "id">
+    /** Callback para atualizar o estado do formulário de cartão. */
+    setCardForm: (form: any) => void // any aqui devido ao spread dinâmico de campos
+    /** ID do cartão em edição (ou null se for criação). */
     editingCardId: number | null
+    /** Lista de bancos para o Select de emissor. */
     banks: Bank[]
+    /** Callback para submissão do cartão. */
     onCardSubmit: () => void
 
+    /** Indica se o diálogo de despesa está aberto. */
     expenseDialogOpen: boolean
+    /** Callback para alternar visibilidade do diálogo de despesa. */
     setExpenseDialogOpen: (open: boolean) => void
-    expenseForm: any
-    setExpenseForm: (form: any) => void
+    /** Estado do formulário de despesa. */
+    expenseForm: Omit<CardExpense, "id">
+    /** Callback para atualizar o estado do formulário de despesa. */
+    setExpenseForm: (form: any) => void // any aqui devido ao spread dinâmico 
+    /** Lista de categorias para o Select. */
     categories: Category[]
+    /** Callback para submissão da despesa. */
     onExpenseSubmit: () => void
 
+    /** Indica se a operação está em processamento. */
     isSubmitting: boolean
 }
 

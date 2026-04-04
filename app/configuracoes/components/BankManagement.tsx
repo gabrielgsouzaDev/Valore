@@ -33,11 +33,19 @@ const bankColors = [
     { value: "slate", label: "Cinza", class: "bg-slate-500" },
 ]
 
+/**
+ * Props para o componente de gestão de bancos e contas.
+ */
 interface BankManagementProps {
+    /** Lista de bancos cadastrados. */
     banks: Bank[]
-    onAddBank: (bank: any) => void
-    onUpdateBank: (id: number, bank: any) => void
+    /** Callback para adicionar um novo banco. */
+    onAddBank: (bank: Omit<Bank, "id">) => void
+    /** Callback para atualizar um banco existente. */
+    onUpdateBank: (id: number, bank: Partial<Bank>) => void
+    /** Callback para excluir um banco. */
     onDeleteBank: (id: number) => void
+    /** Função utilitária para formatação de moeda. */
     formatCurrency: (val: number) => string
 }
 
@@ -74,7 +82,7 @@ export function BankManagement({
         setDialogOpen(true)
     }
 
-    const openEditBank = (bank: any) => {
+    const openEditBank = (bank: Bank) => {
         setEditingBank(bank)
         setBankForm({
             name: bank.name,
