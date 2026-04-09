@@ -1,0 +1,207 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Largura da sidebar desktop — alternada pelo toggle de colapso.
+     Definida aqui (16rem = expandida) e sobrescrita para 5rem quando
+     colapsada, tanto pelo boot script (anti-flash) quanto pelo Sidebar. */
+  --sidebar-w: 16rem;
+
+  /* Sistema de temas dinâmicos */
+  /* Fallbacks baseados no tema Paper */
+  --theme-background: 250 247 240;
+  --theme-card: 255 252 248;
+  --theme-card-hover: 245 240 232;
+  --theme-border: 220 210 195;
+  --theme-primary: 124 73 20;
+  --theme-primary-foreground: 255 255 255;
+  --theme-accent: 180 100 40;
+  --theme-accent-foreground: 255 255 255;
+  --theme-muted: 238 228 215;
+  --theme-muted-foreground: 130 110 85;
+  --theme-success: 76 140 74;
+  --theme-success-foreground: 255 255 255;
+  --theme-warning: 190 120 30;
+  --theme-danger: 185 50 50;
+
+  --success: rgb(var(--theme-success));
+  --success-foreground: rgb(var(--theme-success-foreground));
+
+  /* Fallbacks baseados no tema Paper */
+  --fallback-success: 76 140 74;
+  --fallback-warning: 190 120 30;
+  --fallback-danger: 185 50 50;
+  --fallback-primary: 124 73 20;
+
+  --background: rgb(var(--theme-background));
+  --foreground: oklch(0.145 0 0);
+  --card: rgb(var(--theme-card));
+  --card-foreground: oklch(0.145 0 0);
+  --popover: rgb(var(--theme-card));
+  --popover-foreground: oklch(0.145 0 0);
+  --success: rgb(var(--theme-success));
+  --success-foreground: rgb(var(--theme-success-foreground));
+  --warning: rgb(var(--theme-warning));
+  --danger: rgb(var(--theme-danger));
+  --primary: rgb(var(--theme-primary));
+  --primary-foreground: rgb(var(--theme-primary-foreground));
+  --secondary: rgb(var(--theme-muted));
+  --secondary-foreground: oklch(0.145 0 0);
+  --muted: rgb(var(--theme-muted));
+  --muted-foreground: rgb(var(--theme-muted-foreground));
+  --accent: rgb(var(--theme-accent));
+  --accent-foreground: rgb(var(--theme-accent-foreground));
+  --destructive: rgb(var(--theme-danger));
+  --destructive-foreground: oklch(0.145 0 0);
+  --border: rgb(var(--theme-border));
+  --input: rgb(var(--theme-border));
+  --ring: rgb(var(--theme-primary));
+  --chart-1: rgb(var(--theme-primary));
+  --chart-2: rgb(var(--theme-accent));
+  --chart-3: oklch(0.6 0.18 285);
+  --chart-4: rgb(var(--theme-danger));
+  --chart-5: rgb(var(--theme-warning));
+  /* Vintage Ledger — radius de "ficha de arquivo" (um toque mais reto que o moderno) */
+  --radius: 0.5rem;
+  --sidebar: rgb(var(--theme-card));
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: rgb(var(--theme-primary));
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: rgb(var(--theme-muted));
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: rgb(var(--theme-border));
+  --sidebar-ring: rgb(var(--theme-primary));
+}
+
+.dark {
+  --foreground: oklch(0.985 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --destructive-foreground: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), "Geist", "Geist Fallback", system-ui, sans-serif;
+  --font-mono: var(--font-space-mono), "Space Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-display: var(--font-oswald), "Oswald", "Arial Narrow", sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--theme-warning);
+  --color-danger: var(--theme-danger);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  @keyframes pulse-red {
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(185, 50, 50, 0);
+    }
+
+    50% {
+      box-shadow: 0 0 15px 5px rgba(185, 50, 50, 0.2);
+    }
+  }
+
+  .animate-pulse-critical {
+    animation: pulse-red 2s infinite ease-in-out;
+  }
+
+  /* Loading screen — barras "vivas" (gráfico de mercado) + progresso indeterminado */
+  @keyframes valore-bar {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.42); }
+  }
+
+  @keyframes valore-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(340%); }
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--theme-muted) / 0.5);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .transition-theme {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--calendar-invert, 0));
+    cursor: pointer;
+  }
+}

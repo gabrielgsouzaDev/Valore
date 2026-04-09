@@ -1,0 +1,41 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/ui-ux-pro-max-skill-main
+
+# skill packs (não fazem parte do app Valore)
+/skills
+/skills/
+
+# ferramentas de dev locais (não fazem parte do app)
+/.claude
+/.claude-flow
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env.local*
+.env
+# NOTE: .env.example é intencionalmente versionado (template sem segredos)
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+*.log
