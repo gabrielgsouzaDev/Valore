@@ -1,11 +1,11 @@
 /**
  * @file hooks/useLiveDb.ts
- * @description Hook central que expõe dados em tempo real do IndexedDB (Dexie) via `useLiveQuery`.
+ * @description Hook central que expõe dados em tempo real do IndexedDB (Dexie) via `useLive` (assinatura direta ao liveQuery).
  */
 
 "use client"
 
-import { useLiveQuery } from "dexie-react-hooks"
+import { useLive } from "@/hooks/useLive"
 import { useMemo, useEffect } from "react"
 import { db } from "@/lib/db"
 import type {
@@ -37,22 +37,22 @@ export type LiveDbData = {
  * Retorna todos os stores reativos. `undefined` indica carregamento inicial.
  *
  * PERFORMANCE:
- * - Cada `useLiveQuery` é independente: uma mudança em `transactions` não re-executa
+ * - Cada `useLive` é independente: uma mudança em `transactions` não re-executa
  *   a query de `assets`, reduzindo renders desnecessários.
  * - O `useMemo` de `isLoaded` só recalcula quando os dados mudam efetivamente.
  */
 export function useLiveDb(): LiveDbData {
-    const assets = useLiveQuery(() => db.assets.toArray(), [])
-    const categories = useLiveQuery(() => db.categories.toArray(), [])
-    const goals = useLiveQuery(() => db.goals.toArray(), [])
-    const transactions = useLiveQuery(() => db.transactions.orderBy("dueDate").toArray(), [])
-    const creditCards = useLiveQuery(() => db.creditCards.toArray(), [])
-    const cardExpenses = useLiveQuery(() => db.cardExpenses.toArray(), [])
-    const banks = useLiveQuery(() => db.banks.toArray(), [])
-    const patrimonialHistory = useLiveQuery(() => db.patrimonialHistory.orderBy("date").toArray(), [])
+    const assets = useLive(() => db.assets.toArray())
+    const categories = useLive(() => db.categories.toArray())
+    const goals = useLive(() => db.goals.toArray())
+    const transactions = useLive(() => db.transactions.orderBy("dueDate").toArray())
+    const creditCards = useLive(() => db.creditCards.toArray())
+    const cardExpenses = useLive(() => db.cardExpenses.toArray())
+    const banks = useLive(() => db.banks.toArray())
+    const patrimonialHistory = useLive(() => db.patrimonialHistory.orderBy("date").toArray())
 
     // Sincronização de Settings: Usamos null para diferenciar "Carregando" de "Vazio/Não Encontrado" (fix v0.1.11)
-    const settingsRecord = useLiveQuery(() => db.settings.get(1).then(s => s || null), [])
+    const settingsRecord = useLive(() => db.settings.get(1).then(s => s || null))
 
     /**
      * Normaliza o settings record (remove o id interno do Dexie).
