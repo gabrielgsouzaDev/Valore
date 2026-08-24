@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -85,6 +86,13 @@ export function CardDialogs({
     setActiveCardId,
     isSubmitting
 }: CardDialogsProps) {
+    const router = useRouter()
+
+    const goToAccounts = () => {
+        setCardDialogOpen(false)
+        router.push("/configuracoes")
+    }
+
     return (
         <>
             <Dialog open={cardDialogOpen} onOpenChange={setCardDialogOpen}>
@@ -104,18 +112,30 @@ export function CardDialogs({
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-foreground/80">Banco Emissor</Label>
-                                <Select
-                                    value={cardForm.bankId?.toString()}
-                                    onValueChange={(v) => setCardForm({ ...cardForm, bankId: parseInt(v) })}
-                                >
-                                    <SelectTrigger className="bg-muted border-border text-foreground">
-                                        <SelectValue placeholder="Selecione" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-card border-border">
-                                        {banks.map((b) => (<SelectItem key={b.id} value={b.id.toString()}>{b.name}</SelectItem>))}
-                                    </SelectContent>
-                                </Select>
+                                <Label className="text-foreground/80">Conta Bancária</Label>
+                                {banks.length > 0 ? (
+                                    <Select
+                                        value={cardForm.bankId?.toString()}
+                                        onValueChange={(v) => setCardForm({ ...cardForm, bankId: parseInt(v) })}
+                                    >
+                                        <SelectTrigger className="bg-muted border-border text-foreground">
+                                            <SelectValue placeholder="Selecione" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-card border-border">
+                                            {banks.map((b) => (<SelectItem key={b.id} value={b.id.toString()}>{b.name}</SelectItem>))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={goToAccounts}
+                                        className="w-full h-10 justify-start border-dashed border-border bg-transparent text-xs text-muted-foreground hover:text-foreground"
+                                        title="Você ainda não tem contas. Adicione uma nas Configurações."
+                                    >
+                                        <Plus className="h-3.5 w-3.5 mr-1.5" /> Adicionar
+                                    </Button>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-foreground/80">Limite (R$)</Label>
@@ -169,7 +189,7 @@ export function CardDialogs({
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setCardDialogOpen(false)} className="border-border bg-transparent">Cancelar</Button>
-                        <Button onClick={onCardSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button onClick={onCardSubmit} disabled={isSubmitting || !cardForm.bankId} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                             Salvar Cartão
                         </Button>
