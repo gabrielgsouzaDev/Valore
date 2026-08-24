@@ -11,3 +11,8 @@ export function parseCurrency(value: string | number): number {
   const parsed = parseFloat(cleanValue)
   return isNaN(parsed) ? 0 : parsed
 }
+
+/** Converte percentuais não-finitos (NaN, Infinity) em um fallback (0 por padrão). */
+export function safePercent(value: number, fallback = 0): number {
+    return Number.isFinite(value) ? value : fallback
+}

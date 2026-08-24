@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { TrendingUp, AlertTriangle, Pencil, Trash2, Check, X, RefreshCcw } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { formatCurrency, getAssetBarColor } from "@/lib/services"
-import { cn } from "@/lib/utils"
+import { cn, safePercent } from "@/lib/utils"
 import NumberTicker from "@/components/ui/number-ticker"
 import type { Asset } from "@/lib/types"
 
@@ -29,9 +29,9 @@ export const AssetCard = memo(function AssetCard({ asset, totalNetWorth, onEdit,
     quantity: asset.quantity.toString()
   })
 
-  const currentPercentage = (asset.currentValue / totalNetWorth) * 100
-  const difference = currentPercentage - asset.targetPercentage
-  const progressValue = (currentPercentage / asset.targetPercentage) * 100
+  const currentPercentage = safePercent((asset.currentValue / totalNetWorth) * 100)
+  const difference = safePercent(currentPercentage - asset.targetPercentage)
+  const progressValue = safePercent((currentPercentage / asset.targetPercentage) * 100)
 
   const totalCost = asset.quantity * asset.averagePrice
   const totalGain = asset.currentValue - totalCost
