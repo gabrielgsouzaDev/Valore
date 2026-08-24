@@ -36,16 +36,16 @@ interface SubcategoryInput extends Omit<Subcategory, "id" | "spent"> {
 }
 
 interface CategoryMutations {
-  addCategory: (data: CategoryInput) => void
-  updateCategory: (id: number, data: CategoryInput) => void
-  deleteCategory: (id: number) => void
-  addSubcategory: (categoryId: number, data: SubcategoryInput) => void
+  addCategory: (data: CategoryInput) => Promise<void>
+  updateCategory: (id: number, data: CategoryInput) => Promise<void>
+  deleteCategory: (id: number) => Promise<void>
+  addSubcategory: (categoryId: number, data: SubcategoryInput) => Promise<void>
   updateSubcategory: (
     categoryId: number,
     subcategoryId: number,
     data: Omit<Subcategory, "id" | "spent">
-  ) => void
-  deleteSubcategory: (categoryId: number, subcategoryId: number) => void
+  ) => Promise<void>
+  deleteSubcategory: (categoryId: number, subcategoryId: number) => Promise<void>
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -98,16 +98,20 @@ export function useCategoryActions({
     setCategoryDialogOpen(true)
   }
 
-  const handleSaveCategory = (data: CategoryInput) => {
-    if (editingCategory) {
-      updateCategory(editingCategory.id, data)
-      toast({ title: "Categoria atualizada" })
-    } else {
-      addCategory(data)
-      toast({ title: "Categoria adicionada" })
+  const handleSaveCategory = async (data: CategoryInput) => {
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, data)
+        toast({ title: "Categoria atualizada" })
+      } else {
+        await addCategory(data)
+        toast({ title: "Categoria adicionada" })
+      }
+      setCategoryDialogOpen(false)
+      setEditingCategory(null)
+    } catch (err) {
+      toast({ title: "Não foi possível salvar a categoria", description: String(err), variant: "destructive" })
     }
-    setCategoryDialogOpen(false)
-    setEditingCategory(null)
   }
 
   const handleDeleteCategory = (id: number) => {
@@ -127,33 +131,29 @@ export function useCategoryActions({
     setSubcategoryDialogOpen(true)
   }
 
-  const handleSaveSubcategory = (data: Omit<Subcategory, "id" | "spent">) => {
-    if (editingSubcategory?.subcategory) {
-      /*
-       * Modo edição — subcategoria existente.
-       * categoryId e subcategory.id sempre presentes neste branch.
-       */
-      updateSubcategory(
-        editingSubcategory.categoryId,
-        editingSubcategory.subcategory.id,
-        data
-      )
-      toast({ title: "Item atualizado" })
-    } else if (editingSubcategory?.categoryId) {
-      /*
-       * Modo criação — guard explícito no categoryId.
-       * Substitui o fallback ?? 0 do original, que era problemático.
-       * Se categoryId não existir por algum motivo, a operação
-       * não é executada silenciosamente com um ID inválido.
-       */
-      addSubcategory(
-        editingSubcategory.categoryId,
-        { ...data, spent: 0 }
-      )
-      toast({ title: "Item adicionado" })
+  const handleSaveSubcategory = async (data: Omit<Subcategory, "id" | "spent">) => {
+    try {
+      if (editingSubcategory?.subcategory) {
+        // Edição — subcategoria existente (categoryId e id sempre presentes).
+        await updateSubcategory(
+          editingSubcategory.categoryId,
+          editingSubcategory.subcategory.id,
+          data
+        )
+        toast({ title: "Item atualizado" })
+      } else if (editingSubcategory?.categoryId) {
+        // Criação — guard explícito no categoryId (evita ID inválido silencioso).
+        await addSubcategory(
+          editingSubcategory.categoryId,
+          { ...data, spent: 0 }
+        )
+        toast({ title: "Item adicionado" })
+      }
+      setSubcategoryDialogOpen(false)
+      setEditingSubcategory(null)
+    } catch (err) {
+      toast({ title: "Não foi possível salvar o item", description: String(err), variant: "destructive" })
     }
-    setSubcategoryDialogOpen(false)
-    setEditingSubcategory(null)
   }
 
   const handleDeleteSubcategory = (categoryId: number, subcategoryId: number) => {
