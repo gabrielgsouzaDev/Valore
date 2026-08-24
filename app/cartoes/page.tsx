@@ -188,13 +188,26 @@ export default function CartoesPage() {
                 <section>
                     <div className="flex items-center justify-between mb-4 border-b border-border/40 pb-2">
                         <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Meus Cartões</h3>
-                        <Button
-                            variant="ghost" size="sm"
-                            onClick={() => { setEditingCardId(null); setCardForm(emptyCardForm); setCardDialogOpen(true) }}
-                            className="text-primary hover:text-primary hover:bg-primary/10 font-bold uppercase tracking-tighter text-[10px]"
-                        >
-                            <Plus className="w-3 h-3 mr-1" /> Adicionar Cartão
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="default" size="sm"
+                                disabled={creditCards.length === 0}
+                                onClick={() => {
+                                    setActiveCardId(creditCards[0]?.id ?? null)
+                                    setExpenseDialogOpen(true)
+                                }}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-tighter text-[10px]"
+                            >
+                                <Plus className="w-3 h-3 mr-1" /> Nova Despesa
+                            </Button>
+                            <Button
+                                variant="ghost" size="sm"
+                                onClick={() => { setEditingCardId(null); setCardForm(emptyCardForm); setCardDialogOpen(true) }}
+                                className="text-primary hover:text-primary hover:bg-primary/10 font-bold uppercase tracking-tighter text-[10px]"
+                            >
+                                <Plus className="w-3 h-3 mr-1" /> Adicionar Cartão
+                            </Button>
+                        </div>
                     </div>
                     <CreditCardStack
                         creditCards={creditCards}
@@ -292,6 +305,9 @@ export default function CartoesPage() {
                 categories={[]}
                 onExpenseSubmit={handleExpenseSubmit}
                 isSubmitting={isSubmitting}
+                creditCards={creditCards}
+                activeCardId={activeCardId}
+                setActiveCardId={setActiveCardId}
             />
 
             <ConfirmDialog

@@ -55,6 +55,13 @@ interface CardDialogsProps {
     /** Callback para submissão da despesa. */
     onExpenseSubmit: () => void
 
+    /** Lista de cartões para o seletor de cartão-alvo da despesa. */
+    creditCards: CreditCard[]
+    /** ID do cartão atualmente selecionado como alvo da despesa. */
+    activeCardId: number | null
+    /** Callback para trocar o cartão-alvo da despesa. */
+    setActiveCardId: (id: number) => void
+
     /** Indica se a operação está em processamento. */
     isSubmitting: boolean
 }
@@ -73,6 +80,9 @@ export function CardDialogs({
     setExpenseForm,
     categories,
     onExpenseSubmit,
+    creditCards,
+    activeCardId,
+    setActiveCardId,
     isSubmitting
 }: CardDialogsProps) {
     return (
@@ -173,6 +183,20 @@ export function CardDialogs({
                         <DialogTitle className="text-foreground">Nova Despesa</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label className="text-foreground/80">Cartão</Label>
+                            <Select
+                                value={(activeCardId ?? creditCards[0]?.id ?? 0).toString()}
+                                onValueChange={(v) => setActiveCardId(parseInt(v))}
+                            >
+                                <SelectTrigger className="bg-muted border-border text-foreground">
+                                    <SelectValue placeholder="Selecione o cartão" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-card border-border">
+                                    {creditCards.map((c) => (<SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="space-y-2">
                             <Label className="text-foreground/80">Descrição</Label>
                             <Input
