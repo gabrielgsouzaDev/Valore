@@ -7,13 +7,13 @@ export function useAssetActions(
   setAssetsState: React.Dispatch<React.SetStateAction<Asset[]>>
 ) {
   const addAsset = useCallback(async (assetData: Omit<Asset, "id" | "currentValue">) => {
-    const newAsset: Asset = {
+    // Sem `id`: o `++id` do Dexie auto-incrementa. Passar `id: 0` usaria a
+    // chave 0 literal e o segundo add em diante falharia (ConstraintError).
+    const newAsset = {
       ...assetData,
-      id: 0, // Dexie auto-increment will override
       currentValue: assetData.quantity * assetData.price,
       lastUpdated: new Date().toISOString(),
     }
-    // Gravação direta no IndexedDB - useLiveDb cuidará da atualização da UI
     await db.table("assets").add(newAsset)
   }, [])
 
@@ -46,9 +46,9 @@ export function useCategoryActions(
   setTransactionsState: React.Dispatch<React.SetStateAction<ScheduledTransaction[]>>
 ) {
   const addCategory = useCallback(async (categoryData: Omit<Category, "id" | "spent" | "subcategories" | "expanded">) => {
-    const newCategory: Category = {
+    // Sem `id`: deixa o `++id` do Dexie auto-incrementar (ver addAsset).
+    const newCategory = {
       ...categoryData,
-      id: 0, // Dexie auto-increment will override
       spent: 0,
       subcategories: [],
       expanded: false,

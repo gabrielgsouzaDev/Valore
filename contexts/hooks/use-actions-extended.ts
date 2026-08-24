@@ -29,10 +29,10 @@ export function useCardActions(
   const addCardExpense = useCallback(async (expenseData: Omit<CardExpense, "id">) => {
     const newExpense = {
       ...expenseData,
-      id: 0, // Dexie auto-increment will override
       paidInstallments: 0,
     }
-    await db.table("cardExpenses").add(newExpense as CardExpense)
+    // Sem `id`: deixa o `++id` do Dexie auto-incrementar (ver addAsset).
+    await db.table("cardExpenses").add(newExpense)
   }, [])
 
   const updateCardExpense = useCallback(async (id: number, data: Partial<CardExpense>) => {
